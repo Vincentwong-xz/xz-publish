@@ -129,8 +129,8 @@
       <button class="export-btn" onclick="openExport()">⬇ 导出数据</button>
     </div>
     <div class="filters">
-      <div class="filter-chip">2026年4月22日 <span class="arrow">▾</span></div>
-      <div class="filter-chip">全部车辆 <span class="arrow">▾</span></div>
+      <div class="filter-chip" onclick="openDatePicker()"><span id="homeDateText">2026年4月22日</span> <span class="arrow">▾</span></div>
+      <div class="filter-chip" onclick="openVehiclePicker()"><span id="homeVehicleText">全部车辆</span> <span class="arrow">▾</span></div>
     </div>
 
     <div class="section">
@@ -177,7 +177,7 @@
     <div class="section">
       <div class="section-title"><span class="dot"></span>耗电量<span class="new-tag">新</span></div>
       <div class="stat-row">
-        <div class="stat-cell"><div class="num">186.4<span style="font-size:14px;color:#86909c;"> kWh</span></div><div class="lbl">总耗电量</div></div>
+        <div class="stat-cell"><div class="num">186.4<span style="font-size:14px;color:#86909c;"> kWh</span></div><div class="lbl">耗电量</div></div>
         <div class="divider-v"></div>
         <div class="stat-cell"><div class="num">8</div><div class="lbl">充电次数</div></div>
         <div class="divider-v"></div>
@@ -251,6 +251,50 @@
   </div>
 </div>
 
+<!-- Home Date Picker Modal -->
+<div class="modal-mask" id="datePickerModal">
+  <div class="modal">
+    <h3>选择日期<span class="close" onclick="closeDatePicker()">×</span></h3>
+    <div class="form-group">
+      <div class="radio-group" style="margin-bottom:8px;">
+        <div class="radio-chip" onclick="pickHomeDate(this,1)">今日</div>
+        <div class="radio-chip" onclick="pickHomeDate(this,7)">近7天</div>
+        <div class="radio-chip" onclick="pickHomeDate(this,30)">近30天</div>
+        <div class="radio-chip active" onclick="pickHomeDate(this,0)">自定义</div>
+      </div>
+      <div class="date-range">
+        <input type="date" class="form-input" id="homeStartDate" value="2026-04-22">
+        <span>至</span>
+        <input type="date" class="form-input" id="homeEndDate" value="2026-04-22">
+      </div>
+      <div class="hint">单次最多 90 天</div>
+    </div>
+    <button class="btn-primary-full" onclick="confirmHomeDate()">确认</button>
+  </div>
+</div>
+
+<!-- Home Vehicle Picker Modal -->
+<div class="modal-mask" id="vehiclePickerModal">
+  <div class="modal">
+    <h3>选择车辆<span class="close" onclick="closeVehiclePicker()">×</span></h3>
+    <div class="form-group">
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <div class="radio-chip active" id="homeVAll" onclick="switchHomeVehicleMode(this,'all')">全部车辆</div>
+        <div class="radio-chip" id="homeVSelect" onclick="switchHomeVehicleMode(this,'select')">指定车辆</div>
+      </div>
+      <div class="checkbox-list" id="homeVehicleList" style="display:none;">
+        <label class="checkbox-item"><input type="checkbox" value="S5-001">S5-001</label>
+        <label class="checkbox-item"><input type="checkbox" value="S5-002">S5-002</label>
+        <label class="checkbox-item"><input type="checkbox" value="S5-003">S5-003</label>
+        <label class="checkbox-item"><input type="checkbox" value="S6-101">S6-101</label>
+        <label class="checkbox-item"><input type="checkbox" value="S6-102">S6-102</label>
+        <label class="checkbox-item"><input type="checkbox" value="R2-201">R2-201</label>
+      </div>
+    </div>
+    <button class="btn-primary-full" onclick="confirmHomeVehicle()">确认</button>
+  </div>
+</div>
+
 <!-- Export Modal -->
 <div class="modal-mask" id="exportModal">
   <div class="modal">
@@ -309,6 +353,82 @@
 <div class="toast" id="toast"></div>
 
 <script>
+/* ===== Home filter state ===== */
+const homeFilter = {
+  dateMode: 'custom',        // 'day'|'7'|'30'|'custom'
+  startDate: '2026-04-22',
+  endDate: '2026-04-22',
+  dateLabel: '2026年4月22日',
+  vehicleMode: 'all',        // 'all' | 'select'
+  vehicles: []               // selected codes when mode==='select'
+};
+
+function openDatePicker(){
+  // preload
+  document.getElementById('homeStartDate').value = homeFilter.startDate;
+  document.getElementById('homeEndDate').value = homeFilter.endDate;
+  document.querySelectorAll('#datePickerModal .radio-chip').forEach(x=>x.classList.remove('active'));
+  const idx = {day:0,'7':1,'30':2,custom:3}[homeFilter.dateMode] ?? 3;
+  document.querySelectorAll('#datePickerModal .radio-chip')[idx].classList.add('active');
+  document.getElementById('datePickerModal').classList.add('show');
+}
+function closeDatePicker(){document.getElementById('datePickerModal').classList.remove('show');}
+function pickHomeDate(el,days){
+  el.parentNode.querySelectorAll('.radio-chip').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  if(days>0){
+    const end=new Date();const start=new Date();start.setDate(end.getDate()-days+1);
+    document.getElementById('homeStartDate').value=start.toISOString().slice(0,10);
+    document.getElementById('homeEndDate').value=end.toISOString().slice(0,10);
+    homeFilter.dateMode = days===1?'day':String(days);
+  }else{
+    homeFilter.dateMode='custom';
+  }
+}
+function confirmHomeDate(){
+  homeFilter.startDate=document.getElementById('homeStartDate').value;
+  homeFilter.endDate=document.getElementById('homeEndDate').value;
+  const s=homeFilter.startDate, e=homeFilter.endDate;
+  const fmtZh=d=>{const [y,m,day]=d.split('-');return `${y}年${+m}月${+day}日`;};
+  homeFilter.dateLabel = (s===e)? fmtZh(s) : `${fmtZh(s)} ~ ${fmtZh(e)}`;
+  document.getElementById('homeDateText').innerText=homeFilter.dateLabel;
+  closeDatePicker();
+  showToast('已更新筛选日期');
+}
+
+function openVehiclePicker(){
+  document.getElementById('homeVAll').classList.toggle('active',homeFilter.vehicleMode==='all');
+  document.getElementById('homeVSelect').classList.toggle('active',homeFilter.vehicleMode==='select');
+  document.getElementById('homeVehicleList').style.display=homeFilter.vehicleMode==='select'?'block':'none';
+  document.querySelectorAll('#homeVehicleList input[type=checkbox]').forEach(cb=>{
+    cb.checked = homeFilter.vehicles.includes(cb.value);
+  });
+  document.getElementById('vehiclePickerModal').classList.add('show');
+}
+function closeVehiclePicker(){document.getElementById('vehiclePickerModal').classList.remove('show');}
+function switchHomeVehicleMode(el,mode){
+  el.parentNode.querySelectorAll('.radio-chip').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('homeVehicleList').style.display=mode==='select'?'block':'none';
+  homeFilter.vehicleMode=mode;
+}
+function confirmHomeVehicle(){
+  if(homeFilter.vehicleMode==='all'){
+    homeFilter.vehicles=[];
+    document.getElementById('homeVehicleText').innerText='全部车辆';
+  }else{
+    const cbs=[...document.querySelectorAll('#homeVehicleList input[type=checkbox]:checked')];
+    homeFilter.vehicles=cbs.map(c=>c.value);
+    if(homeFilter.vehicles.length===0){
+      showToast('请至少选择一辆车');return;
+    }
+    document.getElementById('homeVehicleText').innerText =
+      homeFilter.vehicles.length<=2? homeFilter.vehicles.join(',') : `已选${homeFilter.vehicles.length}辆车`;
+  }
+  closeVehiclePicker();
+  showToast('已更新筛选车辆');
+}
+
 /* ===== Tab switching ===== */
 function switchTab(tab){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));
@@ -327,7 +447,26 @@ function showExportMgmt(){
 }
 
 /* ===== Export modal ===== */
-function openExport(){document.getElementById('exportModal').classList.add('show');}
+function openExport(){
+  // sync defaults from home filter
+  document.getElementById('startDate').value=homeFilter.startDate;
+  document.getElementById('endDate').value=homeFilter.endDate;
+  const dateChips=document.querySelectorAll('#exportModal .form-group:nth-of-type(1) .radio-chip');
+  dateChips.forEach(x=>x.classList.remove('active'));
+  const idx={day:0,'7':1,'30':2,custom:3}[homeFilter.dateMode] ?? 3;
+  if(dateChips[idx]) dateChips[idx].classList.add('active');
+
+  const vAll=document.querySelectorAll('#exportModal .form-group:nth-of-type(2) .radio-chip')[0];
+  const vSel=document.querySelectorAll('#exportModal .form-group:nth-of-type(2) .radio-chip')[1];
+  vAll.classList.toggle('active',homeFilter.vehicleMode==='all');
+  vSel.classList.toggle('active',homeFilter.vehicleMode==='select');
+  document.getElementById('vehicleList').style.display=homeFilter.vehicleMode==='select'?'block':'none';
+  document.querySelectorAll('#vehicleList input[type=checkbox]').forEach(cb=>{
+    cb.checked=homeFilter.vehicles.includes(cb.parentNode.innerText.trim());
+  });
+
+  document.getElementById('exportModal').classList.add('show');
+}
 function closeExport(){document.getElementById('exportModal').classList.remove('show');}
 function setDateRange(el,days){
   el.parentNode.querySelectorAll('.radio-chip').forEach(x=>x.classList.remove('active'));
