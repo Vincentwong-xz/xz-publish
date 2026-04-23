@@ -170,20 +170,16 @@
       <div class="stat-row">
         <div class="stat-cell"><div class="num">2,345<span style="font-size:14px;color:#86909c;"> L</span></div><div class="lbl">总用水量</div></div>
         <div class="divider-v"></div>
-        <div class="stat-cell"><div class="num">18.1<span style="font-size:14px;color:#86909c;"> L/km</span></div><div class="lbl">用水效率</div></div>
-        <div class="divider-v"></div>
         <div class="stat-cell"><div class="num">12</div><div class="lbl">加水次数</div></div>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>充电量<span class="new-tag">新</span></div>
+      <div class="section-title"><span class="dot"></span>耗电量<span class="new-tag">新</span></div>
       <div class="stat-row">
-        <div class="stat-cell"><div class="num">186.4<span style="font-size:14px;color:#86909c;"> kWh</span></div><div class="lbl">总充电量</div></div>
+        <div class="stat-cell"><div class="num">186.4<span style="font-size:14px;color:#86909c;"> kWh</span></div><div class="lbl">耗电量</div></div>
         <div class="divider-v"></div>
         <div class="stat-cell"><div class="num">8</div><div class="lbl">充电次数</div></div>
-        <div class="divider-v"></div>
-        <div class="stat-cell"><div class="num">3.2<span style="font-size:14px;color:#86909c;"> h</span></div><div class="lbl">平均时长</div></div>
       </div>
     </div>
   </div>
@@ -292,8 +288,8 @@
       <div class="checkbox-list">
         <label class="checkbox-item"><input type="checkbox" checked>任务统计（总数/完成/取消）</label>
         <label class="checkbox-item"><input type="checkbox" checked>里程（全部里程/清扫里程）</label>
-        <label class="checkbox-item"><input type="checkbox" checked>用水量（总用水量/用水效率/加水次数）</label>
-        <label class="checkbox-item"><input type="checkbox" checked>充电量（总充电量/充电次数/平均时长）</label>
+        <label class="checkbox-item"><input type="checkbox" checked>用水量（总用水量/加水次数）</label>
+        <label class="checkbox-item"><input type="checkbox" checked>耗电量（耗电量/充电次数）</label>
         <label class="checkbox-item"><input type="checkbox">任务取消原因明细</label>
       </div>
     </div>
@@ -349,7 +345,7 @@ function setFormat(el){
   el.parentNode.querySelectorAll('.radio-chip').forEach(x=>x.classList.remove('active'));
   el.classList.add('active');
 }
-function doExport(){closeExport();showToast('导出任务已创建，请到「我」-「导出管理」中查看');}
+function doExport(){closeExport();showToast('导出任务已创建，完成后将发送到您的飞书');}
 
 /* ===== Export history list ===== */
 const today=new Date();
