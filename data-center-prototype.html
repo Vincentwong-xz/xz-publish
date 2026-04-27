@@ -748,30 +748,7 @@
       </div>
       <div class="modal-body">
         <div class="form-row">
-          <div class="form-title">1. 导出日期区间</div>
-          <span class="date-range">
-            <input id="exportStartDate" type="date" value="2026-04-14">
-            <span class="dash">→</span>
-            <input id="exportEndDate" type="date" value="2026-04-27">
-          </span>
-        </div>
-        <div class="form-row">
-          <div class="form-title">2. 导出车辆选择</div>
-          <div class="radio-row">
-            <label class="choice"><input type="radio" name="vehicleMode" value="all" checked>全选</label>
-            <label class="choice"><input type="radio" name="vehicleMode" value="multi">多选</label>
-          </div>
-          <div class="choice-grid" id="vehicleChoices">
-            <label class="choice"><input type="checkbox" value="SWD-001" checked>SWD-001</label>
-            <label class="choice"><input type="checkbox" value="SWD-002" checked>SWD-002</label>
-            <label class="choice"><input type="checkbox" value="SWD-003" checked>SWD-003</label>
-            <label class="choice"><input type="checkbox" value="SWD-004" checked>SWD-004</label>
-            <label class="choice"><input type="checkbox" value="SWD-005" checked>SWD-005</label>
-            <label class="choice"><input type="checkbox" value="SWD-006" checked>SWD-006</label>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-title">3. 导出字段选择 <span class="empty-hint" id="fieldHint">请至少选择一个字段</span></div>
+          <div class="form-title">导出字段选择 <span class="empty-hint" id="fieldHint">请至少选择一个字段</span></div>
           <div class="choice-grid" id="fieldChoices">
             <label class="choice"><input type="checkbox" value="里程" checked>里程</label>
             <label class="choice"><input type="checkbox" value="时长" checked>时长</label>
@@ -1000,8 +977,6 @@
       }
       refreshTotals();
       charts.forEach(drawChart);
-      $("#exportStartDate").value = $("#startDate").value;
-      $("#exportEndDate").value = $("#endDate").value;
       updateExportSummary();
     }
 
@@ -1020,31 +995,11 @@
         });
       }
       $("#exportModal").classList.add("open");
-      updateVehicleMode();
       updateExportSummary();
     }
 
     function closeExport() {
       $("#exportModal").classList.remove("open");
-    }
-
-    function updateVehicleMode() {
-      const mode = $("input[name='vehicleMode']:checked").value;
-      const vehicleInputs = $$("#vehicleChoices input");
-      if (mode === "all") {
-        vehicleInputs.forEach(input => {
-          input.checked = true;
-          input.disabled = true;
-          input.type = "checkbox";
-        });
-      } else {
-        vehicleInputs.forEach(input => {
-          input.disabled = false;
-          input.type = "checkbox";
-          input.name = "";
-        });
-      }
-      updateExportSummary();
     }
 
     function selectedValues(selector) {
@@ -1054,11 +1009,9 @@
     function updateExportSummary() {
       if (!$("#exportSummary")) return;
       const fields = selectedValues("#fieldChoices input");
-      const vehicles = selectedValues("#vehicleChoices input");
       $("#fieldHint").classList.toggle("show", fields.length === 0);
       $("#exportSummary").innerHTML = [
-        `<b>日期：</b>${$("#exportStartDate").value} 至 ${$("#exportEndDate").value}`,
-        `<b>车辆：</b>${vehicles.length ? vehicles.join("、") : "未选择"}`,
+        `<b>日期：</b>${$("#startDate").value} 至 ${$("#endDate").value}`,
         `<b>字段：</b>${fields.length ? fields.join("、") : "未选择"}`
       ].join("<br>");
     }
@@ -1239,20 +1192,15 @@
     }
 
     function exportXlsx() {
-      const start = $("#exportStartDate").value;
-      const end = $("#exportEndDate").value;
+      const start = $("#startDate").value;
+      const end = $("#endDate").value;
       if (!daysBetween(start, end)) {
-        showToast("导出日期区间无效");
+        showToast("首页日期区间无效");
         return;
       }
       const fields = selectedValues("#fieldChoices input");
-      const vehicles = selectedValues("#vehicleChoices input");
       if (!fields.length) {
         $("#fieldHint").classList.add("show");
-        return;
-      }
-      if (!vehicles.length) {
-        showToast("请至少选择一辆车");
         return;
       }
       const metricValues = {
@@ -1263,8 +1211,8 @@
         "排污": () => `${$("#sewageHourTotal").textContent}h / ${$("#sewageTimesTotal").textContent}次`
       };
       const rows = [
-        ["导出日期区间", "车辆", ...fields],
-        ...vehicles.map(vehicle => [`${start} 至 ${end}`, vehicle, ...fields.map(field => metricValues[field]())])
+        ["首页日期区间", ...fields],
+        [`${start} 至 ${end}`, ...fields.map(field => metricValues[field]())]
       ];
       const blob = new Blob([buildXlsx(rows)], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -1303,9 +1251,6 @@
       if (event.target.id === "exportModal") closeExport();
     });
 
-    $$("input[name='vehicleMode']").forEach(input => input.addEventListener("change", updateVehicleMode));
-    ["exportStartDate", "exportEndDate"].forEach(id => document.getElementById(id).addEventListener("change", updateExportSummary));
-    $("#vehicleChoices").addEventListener("change", updateExportSummary);
     $("#fieldChoices").addEventListener("change", updateExportSummary);
     window.addEventListener("resize", renderAll);
 
