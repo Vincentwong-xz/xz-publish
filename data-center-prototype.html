@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>文远环卫 - 数据统计原型</title>
+  <style>
+    :root {
+      --brand: #20b8b6;
+      --brand-dark: #15aaa8;
+      --brand-soft: rgba(32, 184, 182, .18);
+      --text: #2d3a45;
+      --muted: #7d8993;
+      --line: #e8edf1;
+      --bg: #f3f3f3;
+      --card: #fff;
+      --shadow: 0 2px 10px rgba(28, 41, 55, .11);
+      --blue: #2c8fd3;
+      --blue-soft: rgba(44, 143, 211, .2);
+      --mint: #bfeeee;
+      --yellow: #d9a529;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 1360px;
+      color: var(--text);
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      font-size: 14px;
+    }
+
+    .topbar {
+      height: 54px;
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+      color: #fff;
+      background: linear-gradient(90deg, #20c7bd 0%, #16abae 58%, #1aa5ac 100%);
+      box-shadow: 0 1px 5px rgba(0, 0, 0, .12);
+    }
+
+    .brand {
+      width: 174px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: .5px;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 24px;
+      position: relative;
+      border-radius: 12px;
+      background: #fff;
+      transform: skew(-12deg);
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      top: 7px;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--brand);
+    }
+
+    .brand-mark::before { left: 7px; }
+    .brand-mark::after { right: 7px; }
+
+    .nav {
+      flex: 1;
+      display: flex;
+      align-items: stretch;
+      height: 54px;
+    }
+
+    .nav-item {
+      position: relative;
+      min-width: 112px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: rgba(255, 255, 255, .92);
+      font-size: 15px;
+      white-space: nowrap;
+    }
+
+    .nav-item.active {
+      background: rgba(0, 0, 0, .16);
+      font-weight: 600;
+    }
+
+    .nav-icon { font-size: 17px; opacity: .95; }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 14px;
+    }
+
+    .region-select {
+      width: 210px;
+      height: 30px;
+      border: 0;
+      border-radius: 4px;
+      padding: 0 10px;
+      color: #56616a;
+      background: #fff;
+      outline: none;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--brand);
+      background: #eaffff;
+      font-weight: 700;
+    }
+
+    .content {
+      padding: 22px 20px 30px;
+    }
+
+    .breadcrumb {
+      margin-bottom: 18px;
+      color: #66727d;
+      font-size: 14px;
+    }
+
+    .breadcrumb b { color: #26323c; }
+
+    .filter-card {
+      min-height: 76px;
+      margin-bottom: 24px;
+      padding: 21px 20px;
+      background: var(--card);
+      border-radius: 7px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 24px;
+    }
+
+    .field {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: #34424d;
+      white-space: nowrap;
+    }
+
+    .date-range {
+      height: 32px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px 0 13px;
+      border: 1px solid #d6dde3;
+      border-radius: 17px;
+      background: #fff;
+      gap: 8px;
+    }
+
+    input,
+    select {
+      font: inherit;
+    }
+
+    .date-range input {
+      width: 124px;
+      border: 0;
+      outline: 0;
+      color: #2d3a45;
+      background: transparent;
+    }
+
+    .date-range .dash { color: #9ba5ad; }
+
+    .tag-box,
+    .plain-input {
+      width: 320px;
+      height: 32px;
+      border: 1px solid #d6dde3;
+      border-radius: 17px;
+      padding: 0 13px;
+      background: #fff;
+      outline: none;
+    }
+
+    .tag-box {
+      display: flex;
+      align-items: center;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      max-width: 120px;
+      height: 23px;
+      padding: 0 9px;
+      border-radius: 3px;
+      color: #34424d;
+      background: #f1f2f3;
+      font-size: 13px;
+    }
+
+    .btn {
+      height: 34px;
+      border: 0;
+      border-radius: 18px;
+      padding: 0 22px;
+      color: #fff;
+      background: linear-gradient(90deg, #20c7c3, #07b7c9);
+      cursor: pointer;
+      box-shadow: 0 3px 9px rgba(18, 180, 190, .28);
+      font-weight: 600;
+    }
+
+    .btn:hover { filter: brightness(.97); }
+
+    .btn.secondary {
+      color: var(--brand);
+      background: #e9ffff;
+      border: 1px solid #9be6e5;
+      box-shadow: none;
+    }
+
+    .section {
+      margin-top: 18px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 35px;
+      font-size: 22px;
+      color: #222;
+      font-weight: 500;
+    }
+
+    .section-tools {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .detail-btn,
+    .export-btn {
+      height: 30px;
+      border: 0;
+      border-radius: 16px;
+      color: #fff;
+      padding: 0 18px;
+      background: linear-gradient(90deg, #19c4bf, #06b9d4);
+      box-shadow: 0 2px 7px rgba(18, 180, 190, .24);
+      cursor: pointer;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .chart-card {
+      height: 314px;
+      position: relative;
+      padding: 28px 25px 18px;
+      border-radius: 7px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .chart-card canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .unit {
+      position: absolute;
+      top: 42px;
+      left: 28px;
+      color: #2f3c46;
+      font-size: 13px;
+    }
+
+    .legend {
+      position: absolute;
+      right: 32px;
+      top: 38px;
+      display: flex;
+      gap: 22px;
+      align-items: center;
+      color: #7a858e;
+      font-size: 13px;
+      z-index: 2;
+    }
+
+    .legend.multi {
+      top: 28px;
+      right: 32px;
+      width: 380px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      row-gap: 8px;
+      column-gap: 14px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .swatch {
+      width: 20px;
+      height: 4px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .summary-strip {
+      position: absolute;
+      left: 34px;
+      right: 34px;
+      bottom: 17px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      color: #6d7780;
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    .toast {
+      position: fixed;
+      right: 26px;
+      top: 70px;
+      min-width: 260px;
+      max-width: 440px;
+      padding: 13px 16px;
+      border-radius: 7px;
+      color: #17575a;
+      background: #e7ffff;
+      border: 1px solid #9be5e4;
+      box-shadow: var(--shadow);
+      transform: translateY(-18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: .2s ease;
+      z-index: 20;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .modal-mask {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 27, 38, .35);
+      z-index: 40;
+    }
+
+    .modal-mask.open { display: flex; }
+
+    .modal {
+      width: 720px;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 16px 50px rgba(0, 0, 0, .22);
+      overflow: hidden;
+    }
+
+    .modal-head {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      color: #fff;
+      background: linear-gradient(90deg, #20beb9, #08adbe);
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .close {
+      border: 0;
+      background: transparent;
+      color: #fff;
+      font-size: 28px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-body {
+      padding: 22px 26px 6px;
+    }
+
+    .form-row {
+      margin-bottom: 22px;
+    }
+
+    .form-title {
+      margin-bottom: 11px;
+      font-weight: 600;
+      color: #26323c;
+    }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px 18px;
+    }
+
+    .choice {
+      height: 34px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #4b5862;
+    }
+
+    .choice input {
+      accent-color: var(--brand);
+    }
+
+    .radio-row {
+      display: flex;
+      gap: 28px;
+      margin-bottom: 12px;
+    }
+
+    .export-summary {
+      min-height: 42px;
+      margin-top: 6px;
+      padding: 11px 13px;
+      border-radius: 6px;
+      background: #f5fbfb;
+      color: #61707b;
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    .modal-foot {
+      height: 68px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+      padding: 0 26px;
+      border-top: 1px solid var(--line);
+    }
+
+    .ghost-btn {
+      height: 34px;
+      border-radius: 18px;
+      border: 1px solid #d4dce2;
+      background: #fff;
+      color: #596773;
+      padding: 0 22px;
+      cursor: pointer;
+    }
+
+    .empty-hint {
+      display: none;
+      margin-left: 10px;
+      color: #d75c5c;
+      font-size: 13px;
+    }
+
+    .empty-hint.show { display: inline; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>文远环卫</span>
+    </div>
+    <nav class="nav" aria-label="主导航">
+      <div class="nav-item"><span class="nav-icon">▥</span>实时大屏</div>
+      <div class="nav-item"><span class="nav-icon">▤</span>任务调度</div>
+      <div class="nav-item"><span class="nav-icon">⌁</span>区域管理</div>
+      <div class="nav-item"><span class="nav-icon">▣</span>人车管理</div>
+      <div class="nav-item"><span class="nav-icon">◈</span>运营中心</div>
+      <div class="nav-item active"><span class="nav-icon">▥</span>数据中心</div>
+      <div class="nav-item"><span class="nav-icon">▥</span>成本管理</div>
+      <div class="nav-item"><span class="nav-icon">♟</span>用户中心</div>
+      <div class="nav-item"><span class="nav-icon">▤</span>工具箱</div>
+    </nav>
+    <div class="top-actions">
+      <span>当前区域</span>
+      <select class="region-select" id="topRegion">
+        <option>生物岛</option>
+        <option>广州塔</option>
+        <option>大学城</option>
+      </select>
+      <span class="avatar">xi</span>
+      <span>退出</span>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="breadcrumb">数据中心&nbsp;&nbsp;&gt;&nbsp;&nbsp;<b>数据统计</b></div>
+
+    <section class="filter-card" aria-label="筛选条件">
+      <label class="field">
+        <span>日期范围：</span>
+        <span class="date-range">
+          <input id="startDate" type="date" value="2026-04-14">
+          <span class="dash">→</span>
+          <input id="endDate" type="date" value="2026-04-27">
+        </span>
+      </label>
+      <label class="field">
+        <span>运营区域：</span>
+        <span class="tag-box"><span class="tag" id="regionTag">生物岛 ×</span></span>
+      </label>
+      <label class="field">
+        <span>车辆编号：</span>
+        <input class="plain-input" id="vehicleNo" placeholder="请输入车辆编号">
+      </label>
+      <label class="field">
+        <span>车型：</span>
+        <input class="plain-input" id="vehicleType" placeholder="请输入车型">
+      </label>
+      <button class="btn" id="searchBtn">搜索</button>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <span>里程统计</span>
+        <div class="section-tools">
+          <button class="export-btn" data-export-section="里程">导出</button>
+          <button class="detail-btn">数据明细</button>
+        </div>
+      </div>
+      <div class="grid">
+        <article class="chart-card">
+          <span class="unit">单位: km</span>
+          <div class="legend">
+            <span class="legend-item"><i class="swatch" style="background: var(--mint)"></i>行驶里程: <b id="mileageTotal">687</b>(km)</span>
+            <span class="legend-item"><i class="swatch" style="background: var(--brand)"></i>作业里程: <b id="workMileageTotal">488</b>(km)</span>
+          </div>
+          <canvas id="mileageBars" width="900" height="260"></canvas>
+        </article>
+        <article class="chart-card">
+          <span class="unit">单位: km</span>
+          <div class="legend multi">
+            <span class="legend-item"><i class="swatch" style="background:#079ca3"></i>混扫模式里程: 488(km)</span>
+            <span class="legend-item"><i class="swatch" style="background:#d5a037"></i>全洗扫模式里程: 0(km)</span>
+            <span class="legend-item"><i class="swatch" style="background:#4b917a"></i>后喷雾模式里程: 0(km)</span>
+            <span class="legend-item"><i class="swatch" style="background:#2d90c7"></i>全扫模式里程: 0(km)</span>
+            <span class="legend-item"><i class="swatch" style="background:#5577a0"></i>对冲模式里程: 0(km)</span>
+          </div>
+          <canvas id="mileageArea" width="900" height="260"></canvas>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <span>时长统计</span>
+        <div class="section-tools">
+          <button class="export-btn" data-export-section="时长">导出</button>
+          <button class="detail-btn">数据明细</button>
+        </div>
+      </div>
+      <div class="grid">
+        <article class="chart-card">
+          <span class="unit">单位: h</span>
+          <div class="legend">
+            <span class="legend-item"><i class="swatch" style="background:#bdd9ef"></i>行驶时长: <b id="driveHourTotal">146.98</b>(h)</span>
+            <span class="legend-item"><i class="swatch" style="background: var(--blue)"></i>作业时长: <b id="workHourTotal">110</b>(h)</span>
+          </div>
+          <canvas id="durationBars" width="900" height="260"></canvas>
+        </article>
+        <article class="chart-card">
+          <span class="unit">单位: h</span>
+          <div class="legend multi">
+            <span class="legend-item"><i class="swatch" style="background:#079ca3"></i>混扫模式时长: 109.96(h)</span>
+            <span class="legend-item"><i class="swatch" style="background:#d5a037"></i>全洗扫模式时长: 0(h)</span>
+            <span class="legend-item"><i class="swatch" style="background:#4b917a"></i>后喷雾模式时长: 0(h)</span>
+            <span class="legend-item"><i class="swatch" style="background:#2d90c7"></i>全扫模式时长: 0(h)</span>
+            <span class="legend-item"><i class="swatch" style="background:#5577a0"></i>对冲模式时长: 0(h)</span>
+          </div>
+          <canvas id="durationArea" width="900" height="260"></canvas>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <span>用水统计</span>
+        <div class="section-tools">
+          <button class="export-btn" data-export-section="用水">导出</button>
+          <button class="detail-btn">数据明细</button>
+        </div>
+      </div>
+      <div class="grid">
+        <article class="chart-card">
+          <span class="unit">单位: t / 次</span>
+          <div class="legend">
+            <span class="legend-item"><i class="swatch" style="background: var(--mint)"></i>总用水量: <b id="waterTotal">126</b>(t)</span>
+            <span class="legend-item"><i class="swatch" style="background: var(--brand)"></i>加水次数: <b id="waterTimesTotal">42</b>(次)</span>
+          </div>
+          <canvas id="waterBars" width="900" height="260"></canvas>
+        </article>
+        <article class="chart-card">
+          <span class="unit">单位: t</span>
+          <div class="legend multi">
+            <span class="legend-item"><i class="swatch" style="background:#079ca3"></i>日用水趋势</span>
+            <span class="legend-item"><i class="swatch" style="background:#d5a037"></i>加水次数趋势</span>
+          </div>
+          <canvas id="waterArea" width="900" height="260"></canvas>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <span>耗电统计</span>
+        <div class="section-tools">
+          <button class="export-btn" data-export-section="耗电">导出</button>
+          <button class="detail-btn">数据明细</button>
+        </div>
+      </div>
+      <div class="grid">
+        <article class="chart-card">
+          <span class="unit">单位: kWh / 次</span>
+          <div class="legend">
+            <span class="legend-item"><i class="swatch" style="background:#bdd9ef"></i>总耗电量: <b id="powerTotal">943</b>(kWh)</span>
+            <span class="legend-item"><i class="swatch" style="background: var(--blue)"></i>充电次数: <b id="chargeTimesTotal">31</b>(次)</span>
+          </div>
+          <canvas id="powerBars" width="900" height="260"></canvas>
+        </article>
+        <article class="chart-card">
+          <span class="unit">单位: kWh</span>
+          <div class="legend multi">
+            <span class="legend-item"><i class="swatch" style="background:#079ca3"></i>日耗电趋势</span>
+            <span class="legend-item"><i class="swatch" style="background:#d5a037"></i>充电次数趋势</span>
+          </div>
+          <canvas id="powerArea" width="900" height="260"></canvas>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <span>排污统计</span>
+        <div class="section-tools">
+          <button class="export-btn" data-export-section="排污">导出</button>
+          <button class="detail-btn">数据明细</button>
+        </div>
+      </div>
+      <div class="grid">
+        <article class="chart-card">
+          <span class="unit">单位: h / 次</span>
+          <div class="legend">
+            <span class="legend-item"><i class="swatch" style="background: var(--mint)"></i>排污时长: <b id="sewageHourTotal">18.5</b>(h)</span>
+            <span class="legend-item"><i class="swatch" style="background: var(--brand)"></i>排污次数: <b id="sewageTimesTotal">24</b>(次)</span>
+          </div>
+          <canvas id="sewageBars" width="900" height="260"></canvas>
+        </article>
+        <article class="chart-card">
+          <span class="unit">单位: h</span>
+          <div class="legend multi">
+            <span class="legend-item"><i class="swatch" style="background:#079ca3"></i>排污时长趋势</span>
+            <span class="legend-item"><i class="swatch" style="background:#d5a037"></i>排污次数趋势</span>
+          </div>
+          <canvas id="sewageArea" width="900" height="260"></canvas>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-mask" id="exportModal" role="dialog" aria-modal="true" aria-labelledby="exportTitle">
+    <div class="modal">
+      <div class="modal-head">
+        <span id="exportTitle">导出数据</span>
+        <button class="close" id="closeModal" aria-label="关闭">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-title">1. 导出日期区间</div>
+          <span class="date-range">
+            <input id="exportStartDate" type="date" value="2026-04-14">
+            <span class="dash">→</span>
+            <input id="exportEndDate" type="date" value="2026-04-27">
+          </span>
+        </div>
+        <div class="form-row">
+          <div class="form-title">2. 导出车辆选择</div>
+          <div class="radio-row">
+            <label class="choice"><input type="radio" name="vehicleMode" value="all" checked>全选</label>
+            <label class="choice"><input type="radio" name="vehicleMode" value="multi">多选</label>
+            <label class="choice"><input type="radio" name="vehicleMode" value="single">单选</label>
+          </div>
+          <div class="choice-grid" id="vehicleChoices">
+            <label class="choice"><input type="checkbox" value="SWD-001" checked>SWD-001</label>
+            <label class="choice"><input type="checkbox" value="SWD-002" checked>SWD-002</label>
+            <label class="choice"><input type="checkbox" value="SWD-003" checked>SWD-003</label>
+            <label class="choice"><input type="checkbox" value="SWD-004" checked>SWD-004</label>
+            <label class="choice"><input type="checkbox" value="SWD-005" checked>SWD-005</label>
+            <label class="choice"><input type="checkbox" value="SWD-006" checked>SWD-006</label>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-title">3. 导出字段选择 <span class="empty-hint" id="fieldHint">请至少选择一个字段</span></div>
+          <div class="choice-grid" id="fieldChoices">
+            <label class="choice"><input type="checkbox" value="里程" checked>里程</label>
+            <label class="choice"><input type="checkbox" value="时长" checked>时长</label>
+            <label class="choice"><input type="checkbox" value="用水" checked>用水</label>
+            <label class="choice"><input type="checkbox" value="耗电" checked>耗电</label>
+            <label class="choice"><input type="checkbox" value="排污" checked>排污</label>
+          </div>
+        </div>
+        <div class="export-summary" id="exportSummary"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="ghost-btn" id="cancelExport">取消</button>
+        <button class="btn" id="confirmExport">确认导出</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const chartSeeds = {
+      mileage: [40, 30, 38, 33, 37, 36, 31, 39, 41, 34, 34, 36, 41, 18],
+      duration: [8.6, 8.5, 8.0, 7.5, 8.4, 8.4, 6.6, 8.1, 8.7, 8.8, 7.4, 7.7, 8.6, 4.1],
+      water: [9, 7, 8, 8, 10, 9, 8, 11, 10, 9, 8, 10, 12, 7],
+      power: [65, 60, 72, 70, 63, 69, 58, 74, 76, 68, 62, 67, 70, 49],
+      sewage: [1.3, 1.1, 1.4, 1.2, 1.5, 1.6, 1.0, 1.4, 1.3, 1.4, 1.2, 1.5, 1.6, .9]
+    };
+
+    const charts = [
+      { id: "mileageBars", type: "bar", labels: "days", unit: "km", max: 60, series: [
+        { name: "行驶里程", color: "#bfeeee", data: chartSeeds.mileage.map(v => v + 15), width: 6, offset: -5 },
+        { name: "作业里程", color: "#20b8b6", data: chartSeeds.mileage, width: 6, offset: 5 }
+      ]},
+      { id: "mileageArea", type: "area", labels: "days", unit: "km", max: 60, series: [
+        { name: "混扫模式", color: "#079ca3", fill: "rgba(32,184,182,.26)", data: chartSeeds.mileage },
+        { name: "全洗扫", color: "#d5a037", data: chartSeeds.mileage.map(() => 0) }
+      ]},
+      { id: "durationBars", type: "bar", labels: "days", unit: "h", max: 13, series: [
+        { name: "行驶时长", color: "#bdd9ef", data: chartSeeds.duration.map(v => +(v + 2.3).toFixed(1)), width: 6, offset: -5 },
+        { name: "作业时长", color: "#2c8fd3", data: chartSeeds.duration, width: 6, offset: 5 }
+      ]},
+      { id: "durationArea", type: "area", labels: "days", unit: "h", max: 12, series: [
+        { name: "混扫模式", color: "#079ca3", fill: "rgba(32,184,182,.26)", data: chartSeeds.duration },
+        { name: "全洗扫", color: "#d5a037", data: chartSeeds.duration.map(() => 0) }
+      ]},
+      { id: "waterBars", type: "bar", labels: "days", unit: "t", max: 16, series: [
+        { name: "总用水量", color: "#bfeeee", data: chartSeeds.water, width: 6, offset: -5 },
+        { name: "加水次数", color: "#20b8b6", data: chartSeeds.water.map(v => Math.max(1, Math.round(v / 3))), width: 6, offset: 5 }
+      ]},
+      { id: "waterArea", type: "area", labels: "days", unit: "t", max: 16, series: [
+        { name: "日用水趋势", color: "#079ca3", fill: "rgba(32,184,182,.26)", data: chartSeeds.water },
+        { name: "加水次数趋势", color: "#d5a037", data: chartSeeds.water.map(v => Math.max(1, Math.round(v / 3))) }
+      ]},
+      { id: "powerBars", type: "bar", labels: "days", unit: "kWh", max: 90, series: [
+        { name: "总耗电量", color: "#bdd9ef", data: chartSeeds.power, width: 6, offset: -5 },
+        { name: "充电次数", color: "#2c8fd3", data: chartSeeds.power.map(v => Math.max(1, Math.round(v / 25))), width: 6, offset: 5 }
+      ]},
+      { id: "powerArea", type: "area", labels: "days", unit: "kWh", max: 90, series: [
+        { name: "日耗电趋势", color: "#079ca3", fill: "rgba(32,184,182,.26)", data: chartSeeds.power },
+        { name: "充电次数趋势", color: "#d5a037", data: chartSeeds.power.map(v => Math.max(1, Math.round(v / 25))) }
+      ]},
+      { id: "sewageBars", type: "bar", labels: "days", unit: "h", max: 2.2, series: [
+        { name: "排污时长", color: "#bfeeee", data: chartSeeds.sewage, width: 6, offset: -5 },
+        { name: "排污次数", color: "#20b8b6", data: chartSeeds.sewage.map(v => Math.max(1, Math.round(v * 1.4))), width: 6, offset: 5 }
+      ]},
+      { id: "sewageArea", type: "area", labels: "days", unit: "h", max: 2.2, series: [
+        { name: "排污时长趋势", color: "#079ca3", fill: "rgba(32,184,182,.26)", data: chartSeeds.sewage },
+        { name: "排污次数趋势", color: "#d5a037", data: chartSeeds.sewage.map(v => Math.max(1, Math.round(v * 1.4))) }
+      ]}
+    ];
+
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => Array.from(document.querySelectorAll(selector));
+
+    function daysBetween(start, end) {
+      const s = new Date(start + "T00:00:00");
+      const e = new Date(end + "T00:00:00");
+      if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime()) || s > e) return null;
+      const days = [];
+      for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+        days.push(String(d.getDate()).padStart(2, "0"));
+      }
+      return days.slice(0, 31);
+    }
+
+    function scaledData(seed, count, factor = 1) {
+      return Array.from({ length: count }, (_, i) => {
+        const base = seed[i % seed.length];
+        const wave = 1 + ((i % 5) - 2) * 0.035;
+        return +(base * wave * factor).toFixed(2);
+      });
+    }
+
+    function getLabels() {
+      return daysBetween($("#startDate").value, $("#endDate").value) || ["14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27"];
+    }
+
+    function drawGrid(ctx, plot, max, ticks = 5) {
+      ctx.strokeStyle = "#e8edf1";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "#6f7d87";
+      ctx.font = "12px Arial";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      for (let i = 0; i <= ticks; i += 1) {
+        const y = plot.y + plot.h - (plot.h / ticks) * i;
+        ctx.beginPath();
+        ctx.moveTo(plot.x, y);
+        ctx.lineTo(plot.x + plot.w, y);
+        ctx.stroke();
+        const value = (max / ticks) * i;
+        ctx.fillText(Number.isInteger(value) ? value : value.toFixed(1), plot.x - 14, y);
+      }
+    }
+
+    function drawAxisLabels(ctx, labels, plot) {
+      ctx.fillStyle = "#6f7d87";
+      ctx.font = "12px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      const step = plot.w / Math.max(labels.length - 1, 1);
+      labels.forEach((label, i) => {
+        if (labels.length > 18 && i % 2 === 1) return;
+        ctx.fillText(label, plot.x + step * i, plot.y + plot.h + 14);
+      });
+    }
+
+    function valueY(value, max, plot) {
+      return plot.y + plot.h - (value / max) * plot.h;
+    }
+
+    function drawBars(ctx, chart, labels, plot) {
+      const step = plot.w / Math.max(labels.length - 1, 1);
+      chart.series.forEach(series => {
+        ctx.fillStyle = series.color;
+        const data = scaledData(series.data, labels.length);
+        data.forEach((value, i) => {
+          const x = plot.x + step * i + (series.offset || 0) - (series.width || 6) / 2;
+          const y = valueY(value, chart.max, plot);
+          ctx.beginPath();
+          roundRect(ctx, x, y, series.width || 6, plot.y + plot.h - y, 4);
+          ctx.fill();
+        });
+      });
+    }
+
+    function drawArea(ctx, chart, labels, plot) {
+      const step = plot.w / Math.max(labels.length - 1, 1);
+      chart.series.forEach((series, seriesIndex) => {
+        const data = scaledData(series.data, labels.length);
+        ctx.beginPath();
+        data.forEach((value, i) => {
+          const x = plot.x + step * i;
+          const y = valueY(value, chart.max, plot);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        if (series.fill) {
+          ctx.lineTo(plot.x + step * (data.length - 1), plot.y + plot.h);
+          ctx.lineTo(plot.x, plot.y + plot.h);
+          ctx.closePath();
+          ctx.fillStyle = series.fill;
+          ctx.fill();
+          ctx.beginPath();
+          data.forEach((value, i) => {
+            const x = plot.x + step * i;
+            const y = valueY(value, chart.max, plot);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          });
+        }
+        ctx.strokeStyle = series.color;
+        ctx.lineWidth = seriesIndex === 0 ? 2 : 1.5;
+        ctx.stroke();
+      });
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      const r = Math.min(radius, Math.abs(height) / 2, width / 2);
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + width, y, x + width, y + height, r);
+      ctx.arcTo(x + width, y + height, x, y + height, r);
+      ctx.arcTo(x, y + height, x, y, r);
+      ctx.arcTo(x, y, x + width, y, r);
+      ctx.closePath();
+    }
+
+    function drawChart(chart) {
+      const canvas = document.getElementById(chart.id);
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      const labels = getLabels();
+      const plot = { x: 52, y: 64, w: rect.width - 82, h: rect.height - 104 };
+      drawGrid(ctx, plot, chart.max);
+      if (chart.type === "bar") drawBars(ctx, chart, labels, plot);
+      if (chart.type === "area") drawArea(ctx, chart, labels, plot);
+      drawAxisLabels(ctx, labels, plot);
+    }
+
+    function refreshTotals() {
+      const labels = getLabels();
+      const count = labels.length;
+      const sum = values => values.reduce((acc, value) => acc + Number(value), 0);
+      $("#mileageTotal").textContent = Math.round(sum(scaledData(chartSeeds.mileage.map(v => v + 15), count)));
+      $("#workMileageTotal").textContent = Math.round(sum(scaledData(chartSeeds.mileage, count)));
+      $("#driveHourTotal").textContent = sum(scaledData(chartSeeds.duration.map(v => v + 2.3), count)).toFixed(2);
+      $("#workHourTotal").textContent = Math.round(sum(scaledData(chartSeeds.duration, count)));
+      $("#waterTotal").textContent = Math.round(sum(scaledData(chartSeeds.water, count)));
+      $("#waterTimesTotal").textContent = Math.round(sum(scaledData(chartSeeds.water.map(v => Math.max(1, Math.round(v / 3))), count)));
+      $("#powerTotal").textContent = Math.round(sum(scaledData(chartSeeds.power, count)));
+      $("#chargeTimesTotal").textContent = Math.round(sum(scaledData(chartSeeds.power.map(v => Math.max(1, Math.round(v / 25))), count)));
+      $("#sewageHourTotal").textContent = sum(scaledData(chartSeeds.sewage, count)).toFixed(1);
+      $("#sewageTimesTotal").textContent = Math.round(sum(scaledData(chartSeeds.sewage.map(v => Math.max(1, Math.round(v * 1.4))), count)));
+    }
+
+    function renderAll() {
+      const labels = daysBetween($("#startDate").value, $("#endDate").value);
+      if (!labels) {
+        showToast("日期区间无效：开始日期不能晚于结束日期");
+        return;
+      }
+      refreshTotals();
+      charts.forEach(drawChart);
+      $("#exportStartDate").value = $("#startDate").value;
+      $("#exportEndDate").value = $("#endDate").value;
+      updateExportSummary();
+    }
+
+    function showToast(message) {
+      const toast = $("#toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove("show"), 2400);
+    }
+
+    function openExport(section) {
+      if (section) {
+        $$("#fieldChoices input").forEach(input => {
+          input.checked = section === "全部" || input.value === section;
+        });
+      }
+      $("#exportModal").classList.add("open");
+      updateVehicleMode();
+      updateExportSummary();
+    }
+
+    function closeExport() {
+      $("#exportModal").classList.remove("open");
+    }
+
+    function updateVehicleMode() {
+      const mode = $("input[name='vehicleMode']:checked").value;
+      const vehicleInputs = $$("#vehicleChoices input");
+      if (mode === "all") {
+        vehicleInputs.forEach(input => {
+          input.checked = true;
+          input.disabled = true;
+          input.type = "checkbox";
+        });
+      } else {
+        vehicleInputs.forEach((input, index) => {
+          input.disabled = false;
+          input.type = mode === "single" ? "radio" : "checkbox";
+          input.name = mode === "single" ? "singleVehicle" : "";
+          if (mode === "single") input.checked = index === 0;
+        });
+      }
+      updateExportSummary();
+    }
+
+    function selectedValues(selector) {
+      return $$(selector).filter(input => input.checked).map(input => input.value);
+    }
+
+    function updateExportSummary() {
+      if (!$("#exportSummary")) return;
+      const fields = selectedValues("#fieldChoices input");
+      const vehicles = selectedValues("#vehicleChoices input");
+      $("#fieldHint").classList.toggle("show", fields.length === 0);
+      $("#exportSummary").innerHTML = [
+        `<b>日期：</b>${$("#exportStartDate").value} 至 ${$("#exportEndDate").value}`,
+        `<b>车辆：</b>${vehicles.length ? vehicles.join("、") : "未选择"}`,
+        `<b>字段：</b>${fields.length ? fields.join("、") : "未选择"}`
+      ].join("<br>");
+    }
+
+    function exportCsv() {
+      const start = $("#exportStartDate").value;
+      const end = $("#exportEndDate").value;
+      if (!daysBetween(start, end)) {
+        showToast("导出日期区间无效");
+        return;
+      }
+      const fields = selectedValues("#fieldChoices input");
+      const vehicles = selectedValues("#vehicleChoices input");
+      if (!fields.length) {
+        $("#fieldHint").classList.add("show");
+        return;
+      }
+      if (!vehicles.length) {
+        showToast("请至少选择一辆车");
+        return;
+      }
+      const header = ["导出日期区间", "导出车辆", "导出字段"];
+      const row = [`${start} 至 ${end}`, vehicles.join(" / "), fields.join(" / ")];
+      const csv = [header, row].map(items => items.map(v => `"${String(v).replaceAll('"', '""')}"`).join(",")).join("\n");
+      const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `数据统计导出_${start}_${end}.csv`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      closeExport();
+      showToast("已生成导出文件");
+    }
+
+    $("#searchBtn").addEventListener("click", () => {
+      renderAll();
+      const region = $("#topRegion").value;
+      $("#regionTag").textContent = `${region} ×`;
+      showToast(`已按 ${$("#startDate").value} 至 ${$("#endDate").value} 更新统计图表`);
+    });
+
+    ["startDate", "endDate"].forEach(id => {
+      document.getElementById(id).addEventListener("change", renderAll);
+    });
+
+    $("#topRegion").addEventListener("change", event => {
+      $("#regionTag").textContent = `${event.target.value} ×`;
+      showToast(`当前区域已切换为：${event.target.value}`);
+    });
+
+    $$(".export-btn").forEach(button => {
+      button.addEventListener("click", () => openExport(button.dataset.exportSection || "全部"));
+    });
+
+    $("#closeModal").addEventListener("click", closeExport);
+    $("#cancelExport").addEventListener("click", closeExport);
+    $("#confirmExport").addEventListener("click", exportCsv);
+    $("#exportModal").addEventListener("click", event => {
+      if (event.target.id === "exportModal") closeExport();
+    });
+
+    $$("input[name='vehicleMode']").forEach(input => input.addEventListener("change", updateVehicleMode));
+    ["exportStartDate", "exportEndDate"].forEach(id => document.getElementById(id).addEventListener("change", updateExportSummary));
+    $("#vehicleChoices").addEventListener("change", updateExportSummary);
+    $("#fieldChoices").addEventListener("change", updateExportSummary);
+    window.addEventListener("resize", renderAll);
+
+    renderAll();
+  </script>
+</body>
+</html>
