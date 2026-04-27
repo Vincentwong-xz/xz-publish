@@ -43,13 +43,21 @@
     }
 
     .brand {
-      width: 174px;
+      flex: 0 0 188px;
       display: flex;
       align-items: center;
       gap: 10px;
       font-weight: 700;
       font-size: 18px;
       letter-spacing: .5px;
+      white-space: nowrap;
+      overflow: visible;
+    }
+
+    .brand-text {
+      display: inline-block;
+      color: #fff;
+      line-height: 54px;
     }
 
     .brand-mark {
@@ -80,6 +88,7 @@
       display: flex;
       align-items: stretch;
       height: 54px;
+      min-width: 0;
     }
 
     .nav-item {
@@ -103,6 +112,7 @@
     .nav-icon { font-size: 17px; opacity: .95; }
 
     .top-actions {
+      flex: 0 0 auto;
       display: flex;
       align-items: center;
       gap: 14px;
@@ -152,7 +162,7 @@
       box-shadow: var(--shadow);
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: stretch;
       justify-content: flex-end;
       gap: 14px;
     }
@@ -161,14 +171,22 @@
       width: 100%;
       display: flex;
       align-items: center;
-      justify-content: flex-end;
-      gap: 24px;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      gap: 16px 24px;
     }
 
-    .filter-export-row {
-      width: 100%;
+    .search-actions {
       display: flex;
-      justify-content: flex-end;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    .search-actions .btn,
+    .search-actions .export-btn {
+      width: 86px;
+      height: 34px;
     }
 
     .field {
@@ -219,6 +237,14 @@
     .tag-box {
       display: flex;
       align-items: center;
+    }
+
+    .date-field {
+      padding: 8px 14px;
+      border-radius: 22px;
+      background: #f5ffff;
+      border: 1px solid #c4eeee;
+      font-weight: 600;
     }
 
     .tag {
@@ -515,7 +541,7 @@
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark" aria-hidden="true"></span>
-      <span>文远环卫</span>
+      <span class="brand-text">文远环卫</span>
     </div>
     <nav class="nav" aria-label="主导航">
       <div class="nav-item"><span class="nav-icon">▥</span>实时大屏</div>
@@ -545,8 +571,8 @@
 
     <section class="filter-card" aria-label="筛选条件">
       <div class="filter-row">
-        <label class="field">
-          <span>首页日期区间：</span>
+        <label class="field date-field">
+          <span>日期筛选：</span>
           <span class="date-range">
             <input id="startDate" type="date" value="2026-04-14">
             <span class="dash">→</span>
@@ -565,10 +591,10 @@
           <span>车型：</span>
           <input class="plain-input" id="vehicleType" placeholder="请输入车型">
         </label>
-        <button class="btn" id="searchBtn">搜索</button>
-      </div>
-      <div class="filter-export-row">
-        <button class="export-btn" id="globalExportBtn" type="button">导出</button>
+        <div class="search-actions">
+          <button class="btn" id="searchBtn">搜索</button>
+          <button class="export-btn" id="globalExportBtn" type="button">导出</button>
+        </div>
       </div>
     </section>
 
@@ -734,7 +760,6 @@
           <div class="radio-row">
             <label class="choice"><input type="radio" name="vehicleMode" value="all" checked>全选</label>
             <label class="choice"><input type="radio" name="vehicleMode" value="multi">多选</label>
-            <label class="choice"><input type="radio" name="vehicleMode" value="single">单选</label>
           </div>
           <div class="choice-grid" id="vehicleChoices">
             <label class="choice"><input type="checkbox" value="SWD-001" checked>SWD-001</label>
@@ -1013,11 +1038,10 @@
           input.type = "checkbox";
         });
       } else {
-        vehicleInputs.forEach((input, index) => {
+        vehicleInputs.forEach(input => {
           input.disabled = false;
-          input.type = mode === "single" ? "radio" : "checkbox";
-          input.name = mode === "single" ? "singleVehicle" : "";
-          if (mode === "single") input.checked = index === 0;
+          input.type = "checkbox";
+          input.name = "";
         });
       }
       updateExportSummary();
@@ -1039,7 +1063,182 @@
       ].join("<br>");
     }
 
-    function exportCsv() {
+    function xmlEscape(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&apos;");
+    }
+
+    function columnName(index) {
+      let name = "";
+      let current = index + 1;
+      while (current > 0) {
+        const remainder = (current - 1) % 26;
+        name = String.fromCharCode(65 + remainder) + name;
+        current = Math.floor((current - 1) / 26);
+      }
+      return name;
+    }
+
+    function worksheetXml(rows) {
+      const sheetRows = rows.map((row, rowIndex) => {
+        const cells = row.map((value, colIndex) => {
+          const ref = `${columnName(colIndex)}${rowIndex + 1}`;
+          return `<c r="${ref}" t="inlineStr"><is><t>${xmlEscape(value)}</t></is></c>`;
+        }).join("");
+        return `<row r="${rowIndex + 1}">${cells}</row>`;
+      }).join("");
+
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+        `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
+        `<sheetViews><sheetView workbookViewId="0"/></sheetViews>` +
+        `<sheetData>${sheetRows}</sheetData>` +
+        `</worksheet>`;
+    }
+
+    function crc32(bytes) {
+      if (!crc32.table) {
+        crc32.table = Array.from({ length: 256 }, (_, index) => {
+          let value = index;
+          for (let bit = 0; bit < 8; bit += 1) {
+            value = (value & 1) ? (0xedb88320 ^ (value >>> 1)) : (value >>> 1);
+          }
+          return value >>> 0;
+        });
+      }
+
+      let crc = 0xffffffff;
+      bytes.forEach(byte => {
+        crc = crc32.table[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+      });
+      return (crc ^ 0xffffffff) >>> 0;
+    }
+
+    function setUint16(view, offset, value) {
+      view.setUint16(offset, value, true);
+    }
+
+    function setUint32(view, offset, value) {
+      view.setUint32(offset, value >>> 0, true);
+    }
+
+    function dosDateTime(date = new Date()) {
+      const time = (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2);
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      const year = Math.max(date.getFullYear() - 1980, 0);
+      return { date: (year << 9) | (month << 5) | day, time };
+    }
+
+    function concatBytes(parts) {
+      const totalLength = parts.reduce((sum, part) => sum + part.length, 0);
+      const result = new Uint8Array(totalLength);
+      let offset = 0;
+      parts.forEach(part => {
+        result.set(part, offset);
+        offset += part.length;
+      });
+      return result;
+    }
+
+    function createZip(files) {
+      const encoder = new TextEncoder();
+      const localParts = [];
+      const centralParts = [];
+      const { date, time } = dosDateTime();
+      let offset = 0;
+
+      Object.entries(files).forEach(([name, content]) => {
+        const nameBytes = encoder.encode(name);
+        const dataBytes = encoder.encode(content);
+        const checksum = crc32(dataBytes);
+
+        const localHeader = new Uint8Array(30 + nameBytes.length);
+        const localView = new DataView(localHeader.buffer);
+        setUint32(localView, 0, 0x04034b50);
+        setUint16(localView, 4, 20);
+        setUint16(localView, 6, 0);
+        setUint16(localView, 8, 0);
+        setUint16(localView, 10, time);
+        setUint16(localView, 12, date);
+        setUint32(localView, 14, checksum);
+        setUint32(localView, 18, dataBytes.length);
+        setUint32(localView, 22, dataBytes.length);
+        setUint16(localView, 26, nameBytes.length);
+        setUint16(localView, 28, 0);
+        localHeader.set(nameBytes, 30);
+        localParts.push(localHeader, dataBytes);
+
+        const centralHeader = new Uint8Array(46 + nameBytes.length);
+        const centralView = new DataView(centralHeader.buffer);
+        setUint32(centralView, 0, 0x02014b50);
+        setUint16(centralView, 4, 20);
+        setUint16(centralView, 6, 20);
+        setUint16(centralView, 8, 0);
+        setUint16(centralView, 10, 0);
+        setUint16(centralView, 12, time);
+        setUint16(centralView, 14, date);
+        setUint32(centralView, 16, checksum);
+        setUint32(centralView, 20, dataBytes.length);
+        setUint32(centralView, 24, dataBytes.length);
+        setUint16(centralView, 28, nameBytes.length);
+        setUint16(centralView, 30, 0);
+        setUint16(centralView, 32, 0);
+        setUint16(centralView, 34, 0);
+        setUint16(centralView, 36, 0);
+        setUint32(centralView, 38, 0);
+        setUint32(centralView, 42, offset);
+        centralHeader.set(nameBytes, 46);
+        centralParts.push(centralHeader);
+
+        offset += localHeader.length + dataBytes.length;
+      });
+
+      const centralDirectory = concatBytes(centralParts);
+      const endRecord = new Uint8Array(22);
+      const endView = new DataView(endRecord.buffer);
+      setUint32(endView, 0, 0x06054b50);
+      setUint16(endView, 4, 0);
+      setUint16(endView, 6, 0);
+      setUint16(endView, 8, Object.keys(files).length);
+      setUint16(endView, 10, Object.keys(files).length);
+      setUint32(endView, 12, centralDirectory.length);
+      setUint32(endView, 16, offset);
+      setUint16(endView, 20, 0);
+
+      return concatBytes([...localParts, centralDirectory, endRecord]);
+    }
+
+    function buildXlsx(rows) {
+      const files = {
+        "[Content_Types].xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+          `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+          `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+          `<Default Extension="xml" ContentType="application/xml"/>` +
+          `<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>` +
+          `<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>` +
+          `</Types>`,
+        "_rels/.rels": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+          `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+          `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>` +
+          `</Relationships>`,
+        "xl/workbook.xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+          `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">` +
+          `<sheets><sheet name="数据统计导出" sheetId="1" r:id="rId1"/></sheets>` +
+          `</workbook>`,
+        "xl/_rels/workbook.xml.rels": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+          `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+          `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>` +
+          `</Relationships>`,
+        "xl/worksheets/sheet1.xml": worksheetXml(rows)
+      };
+      return createZip(files);
+    }
+
+    function exportXlsx() {
       const start = $("#exportStartDate").value;
       const end = $("#exportEndDate").value;
       if (!daysBetween(start, end)) {
@@ -1056,17 +1255,27 @@
         showToast("请至少选择一辆车");
         return;
       }
-      const header = ["导出日期区间", "导出车辆", "导出字段"];
-      const row = [`${start} 至 ${end}`, vehicles.join(" / "), fields.join(" / ")];
-      const csv = [header, row].map(items => items.map(v => `"${String(v).replaceAll('"', '""')}"`).join(",")).join("\n");
-      const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+      const metricValues = {
+        "里程": () => `${$("#mileageTotal").textContent}km / ${$("#workMileageTotal").textContent}km`,
+        "时长": () => `${$("#driveHourTotal").textContent}h / ${$("#workHourTotal").textContent}h`,
+        "用水": () => `${$("#waterTotal").textContent}t / ${$("#waterTimesTotal").textContent}次`,
+        "耗电": () => `${$("#powerTotal").textContent}kWh / ${$("#chargeTimesTotal").textContent}次`,
+        "排污": () => `${$("#sewageHourTotal").textContent}h / ${$("#sewageTimesTotal").textContent}次`
+      };
+      const rows = [
+        ["导出日期区间", "车辆", ...fields],
+        ...vehicles.map(vehicle => [`${start} 至 ${end}`, vehicle, ...fields.map(field => metricValues[field]())])
+      ];
+      const blob = new Blob([buildXlsx(rows)], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `数据统计导出_${start}_${end}.csv`;
+      link.download = `数据统计导出_${start}_${end}.xlsx`;
       link.click();
       URL.revokeObjectURL(link.href);
       closeExport();
-      showToast("已生成导出文件");
+      showToast("已生成 Excel 导出文件");
     }
 
     $("#searchBtn").addEventListener("click", () => {
@@ -1089,7 +1298,7 @@
 
     $("#closeModal").addEventListener("click", closeExport);
     $("#cancelExport").addEventListener("click", closeExport);
-    $("#confirmExport").addEventListener("click", exportCsv);
+    $("#confirmExport").addEventListener("click", exportXlsx);
     $("#exportModal").addEventListener("click", event => {
       if (event.target.id === "exportModal") closeExport();
     });
