@@ -151,9 +151,24 @@
       border-radius: 7px;
       box-shadow: var(--shadow);
       display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 14px;
+    }
+
+    .filter-row {
+      width: 100%;
+      display: flex;
       align-items: center;
       justify-content: flex-end;
       gap: 24px;
+    }
+
+    .filter-export-row {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
     }
 
     .field {
@@ -529,34 +544,38 @@
     <div class="breadcrumb">数据中心&nbsp;&nbsp;&gt;&nbsp;&nbsp;<b>数据统计</b></div>
 
     <section class="filter-card" aria-label="筛选条件">
-      <label class="field">
-        <span>日期范围：</span>
-        <span class="date-range">
-          <input id="startDate" type="date" value="2026-04-14">
-          <span class="dash">→</span>
-          <input id="endDate" type="date" value="2026-04-27">
-        </span>
-      </label>
-      <label class="field">
-        <span>运营区域：</span>
-        <span class="tag-box"><span class="tag" id="regionTag">生物岛 ×</span></span>
-      </label>
-      <label class="field">
-        <span>车辆编号：</span>
-        <input class="plain-input" id="vehicleNo" placeholder="请输入车辆编号">
-      </label>
-      <label class="field">
-        <span>车型：</span>
-        <input class="plain-input" id="vehicleType" placeholder="请输入车型">
-      </label>
-      <button class="btn" id="searchBtn">搜索</button>
+      <div class="filter-row">
+        <label class="field">
+          <span>首页日期区间：</span>
+          <span class="date-range">
+            <input id="startDate" type="date" value="2026-04-14">
+            <span class="dash">→</span>
+            <input id="endDate" type="date" value="2026-04-27">
+          </span>
+        </label>
+        <label class="field">
+          <span>运营区域：</span>
+          <span class="tag-box"><span class="tag" id="regionTag">生物岛 ×</span></span>
+        </label>
+        <label class="field">
+          <span>车辆编号：</span>
+          <input class="plain-input" id="vehicleNo" placeholder="请输入车辆编号">
+        </label>
+        <label class="field">
+          <span>车型：</span>
+          <input class="plain-input" id="vehicleType" placeholder="请输入车型">
+        </label>
+        <button class="btn" id="searchBtn">搜索</button>
+      </div>
+      <div class="filter-export-row">
+        <button class="export-btn" id="globalExportBtn" type="button">导出</button>
+      </div>
     </section>
 
     <section class="section">
       <div class="section-head">
         <span>里程统计</span>
         <div class="section-tools">
-          <button class="export-btn" data-export-section="里程">导出</button>
           <button class="detail-btn">数据明细</button>
         </div>
       </div>
@@ -587,7 +606,6 @@
       <div class="section-head">
         <span>时长统计</span>
         <div class="section-tools">
-          <button class="export-btn" data-export-section="时长">导出</button>
           <button class="detail-btn">数据明细</button>
         </div>
       </div>
@@ -618,7 +636,6 @@
       <div class="section-head">
         <span>用水统计</span>
         <div class="section-tools">
-          <button class="export-btn" data-export-section="用水">导出</button>
           <button class="detail-btn">数据明细</button>
         </div>
       </div>
@@ -646,7 +663,6 @@
       <div class="section-head">
         <span>耗电统计</span>
         <div class="section-tools">
-          <button class="export-btn" data-export-section="耗电">导出</button>
           <button class="detail-btn">数据明细</button>
         </div>
       </div>
@@ -674,7 +690,6 @@
       <div class="section-head">
         <span>排污统计</span>
         <div class="section-tools">
-          <button class="export-btn" data-export-section="排污">导出</button>
           <button class="detail-btn">数据明细</button>
         </div>
       </div>
@@ -1070,9 +1085,7 @@
       showToast(`当前区域已切换为：${event.target.value}`);
     });
 
-    $$(".export-btn").forEach(button => {
-      button.addEventListener("click", () => openExport(button.dataset.exportSection || "全部"));
-    });
+    $("#globalExportBtn").addEventListener("click", () => openExport("全部"));
 
     $("#closeModal").addEventListener("click", closeExport);
     $("#cancelExport").addEventListener("click", closeExport);
