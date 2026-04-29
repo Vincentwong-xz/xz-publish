@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Cloud Helper · 总览</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <div class="main">
+    <div class="top-banner">
+      <span class="countdown"><b id="cd">25</b>s 将接入新的车辆监控</span>
+      <button class="primary" onclick="resetCountdown()">换一换</button>
+    </div>
+    <div class="tile-grid" id="grid"></div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="user-card">
+      <div class="user-row">
+        <div class="avatar">X</div>
+        <div style="flex:1">
+          <div style="font-weight:600">xinzhangwang</div>
+          <div style="font-size:11px;color:var(--text-dim)">操作员</div>
+        </div>
+        <span class="badge purple">接单中</span>
+      </div>
+      <div class="stat-line link" onclick="location.href='personal-stats.html'">
+        <span>今日完成工单</span><span class="v">0 单 →</span>
+      </div>
+      <div class="stat-line">
+        <span>今日在线时长</span><span class="v">0 小时 4 分钟</span>
+      </div>
+      <button class="white" style="width:100%;margin-top:8px">退出接单</button>
+    </div>
+
+    <div style="display:flex;gap:6px">
+      <select style="flex:1"><option>车辆</option><option>区域</option></select>
+      <input style="flex:1" placeholder="车辆编号">
+    </div>
+
+    <div class="section-title"><span>巡查中</span><span style="color:var(--accent)">25s 后刷新</span></div>
+    <div class="veh-group">
+      <div class="gname">生物岛</div>
+      <div class="veh-item"><span>GZU_YKU_25214</span><span class="badge green">作业中</span></div>
+      <div class="veh-item"><span>GZU_YKU_25216</span><span class="badge green">作业中</span></div>
+      <div class="gname">生物岛-测试</div>
+      <div class="veh-item"><span>GZU_YKN_24088</span><span class="badge orange">待接单</span></div>
+      <div class="veh-item"><span>GZU_YKU_25218</span><span class="badge orange">待接单</span></div>
+      <div class="veh-item"><span>GZU_YKN_24121</span><span class="badge orange">待接单</span></div>
+      <div class="veh-item"><span>GZU_YKU_25215</span><span class="badge purple">接单中</span></div>
+    </div>
+
+    <div class="section-title"><span>待巡查</span></div>
+    <div class="veh-group">
+      <div class="gname">南沙区</div>
+      <div class="veh-item"><span>GZU_YKN_24051</span><span class="badge purple">接单中</span></div>
+      <div class="gname">生物岛</div>
+      <div class="veh-item"><span>GZU_YKU_25187</span><span class="badge green">作业中</span></div>
+      <div class="veh-item"><span>GZU_YKU_25190</span><span class="badge green">作业中</span></div>
+    </div>
+  </aside>
+</div>
+
+<script>
+const tiles = [
+  { vid: 'GZU_YKN_24088', lat: 999, latBad: true, speed: '3.8', mode: '自动' },
+  { vid: 'GZU_YKU_25214', lat: 137, latBad: false, speed: '4.2', mode: '自动' },
+  { vid: 'GZU_YKU_25216', lat: 158, latBad: false, speed: '0.0', mode: '自动', loading: true },
+  { vid: 'GZU_YKU_25218', lat: 142, latBad: false, speed: '5.1', mode: '自动' },
+  { vid: 'GZU_YKN_24121', lat: 165, latBad: false, speed: '2.3', mode: '自动' },
+  { vid: 'GZU_YKU_25215', lat: 178, latBad: false, speed: '6.0', mode: '自动' },
+];
+const bgs = [
+  'linear-gradient(135deg,#3b5998,#8b9dc3)',
+  'linear-gradient(135deg,#2c3e50,#4a6572)',
+  '#000',
+  'linear-gradient(135deg,#1e3c72,#2a5298)',
+  'linear-gradient(135deg,#373b44,#4286f4)',
+  'linear-gradient(135deg,#283048,#859398)'
+];
+const grid = document.getElementById('grid');
+tiles.forEach((t, i) => {
+  const el = document.createElement('div');
+  el.className = 'tile' + (t.loading ? ' loading' : '');
+  el.onclick = () => location.href = `vehicle-detail.html?id=${t.vid}`;
+  el.innerHTML = `
+    <div class="tile-bar">
+      <span class="latency ${t.latBad ? 'lat-bad' : 'lat-good'}">${t.lat}ms</span>
+      <span class="vid">${t.vid}</span>
+      <span class="meta">行驶速度: ${t.speed}km/h　模式: ${t.mode}</span>
+    </div>
+    <div class="feed" style="background:${bgs[i]}"></div>
+  `;
+  grid.appendChild(el);
+});
+
+let cd = 25;
+setInterval(() => {
+  cd--;
+  if (cd < 0) cd = 25;
+  document.getElementById('cd').textContent = cd;
+}, 1000);
+function resetCountdown() { cd = 25; }
+</script>
+</body>
+</html>
