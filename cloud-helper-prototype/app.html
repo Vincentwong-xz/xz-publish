@@ -550,6 +550,56 @@ table.tickets tr:hover { background: #1a1a20; }
 .report-card h4 { font-size: 14px; margin-bottom: 8px; }
 .report-card p { color: var(--text-dim); font-size: 12px; margin-bottom: 10px; }
 .report-card .row { display: flex; gap: 6px; }
+
+/* ===== Insight Center ===== */
+.heatmap {
+  display: grid;
+  grid-template-columns: 80px repeat(24, 1fr);
+  gap: 2px;
+  font-size: 10px;
+}
+.heatmap .hh { color: var(--text-dim); text-align: center; padding: 2px; }
+.heatmap .hl { color: var(--text-dim); padding: 4px 6px; font-size: 11px; }
+.heatmap .hc {
+  height: 22px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.heatmap .hc:hover { outline: 1px solid var(--accent); }
+.heat-legend { display: flex; gap: 4px; align-items: center; font-size: 11px; color: var(--text-dim); }
+.heat-legend .sw { width: 16px; height: 12px; border-radius: 2px; }
+
+.insight-card {
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.insight-card .it { font-weight: 600; margin-bottom: 4px; }
+.insight-card .id { color: var(--text-dim); font-size: 11px; margin-bottom: 6px; }
+.insight-card .ia { display: flex; gap: 8px; font-size: 11px; }
+.insight-card.warn { border-left-color: var(--orange); }
+.insight-card.err { border-left-color: var(--red); }
+.insight-card.good { border-left-color: var(--green); }
+
+.trend-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 60px;
+  padding: 4px 0;
+}
+.trend-bar .b {
+  flex: 1;
+  background: var(--accent);
+  border-radius: 2px 2px 0 0;
+  min-height: 4px;
+  position: relative;
+}
+.trend-bar .b.before { background: #555; }
+.trend-bar .b.after { background: var(--green); }
 </style>
 </head>
 <body>
@@ -830,6 +880,7 @@ table.tickets tr:hover { background: #1a1a20; }
       <div class="item" data-page="tickets" onclick="adminNav(this)"><span class="ic">📋</span>工单管理</div>
       <div class="item" data-page="vehicles" onclick="adminNav(this)"><span class="ic">🚗</span>车辆管理</div>
       <div class="item" data-page="monitor" onclick="adminNav(this)"><span class="ic">⚡</span>主动监管中心</div>
+      <div class="item" data-page="insight" onclick="adminNav(this)"><span class="ic">🧠</span>数据决策中心</div>
       <div class="item" data-page="reports" onclick="adminNav(this)"><span class="ic">📊</span>报表中心</div>
       <div class="footer">
         <div class="u">admin</div>
@@ -980,6 +1031,229 @@ table.tickets tr:hover { background: #1a1a20; }
         </div>
       </div>
 
+      <!-- 数据决策中心 -->
+      <div class="admin-page" data-page="insight">
+        <h2>🧠 数据决策中心</h2>
+        <div class="page-sub">场景洞察 · 车端反馈 · 知识沉淀 · 运营建议</div>
+
+        <div class="kpi-row">
+          <div class="stat-card"><div class="lbl">高频路段</div><div class="num" style="color:var(--orange)">8</div></div>
+          <div class="stat-card"><div class="lbl">同质 case 簇</div><div class="num">14</div></div>
+          <div class="stat-card"><div class="lbl">车端误判待反馈</div><div class="num" style="color:var(--red)">6</div></div>
+          <div class="stat-card"><div class="lbl">沉淀案例</div><div class="num" style="color:var(--green)">128</div></div>
+        </div>
+
+        <!-- 1. 场景洞察 -->
+        <div class="panel-block">
+          <h3>① 场景洞察 · 求助热力图（路段 × 时段）
+            <span class="actions">
+              <select><option>全部 hint 类型</option><option>变道</option><option>绕行</option><option>路口通过</option><option>贴边作业</option></select>
+              <select><option>近 7 天</option><option>近 30 天</option><option>本月</option></select>
+            </span>
+          </h3>
+          <div id="heat" class="heatmap"></div>
+          <div class="heat-legend" style="margin-top:10px">
+            <span>低</span>
+            <span class="sw" style="background:#16332e"></span>
+            <span class="sw" style="background:#1e6b3a"></span>
+            <span class="sw" style="background:#f39c12"></span>
+            <span class="sw" style="background:#e74c3c"></span>
+            <span class="sw" style="background:#a02828"></span>
+            <span>高</span>
+            <span style="margin-left:auto">提示：颜色越红表示该时段-路段求助越频繁</span>
+          </div>
+        </div>
+
+        <div class="panel-block">
+          <h3>同质化 Case 聚合 <span class="actions"><button>导出簇报告</button></span></h3>
+          <div class="insight-card warn">
+            <div class="it">🔁 生物岛-科研路口红绿灯（簇号 C-018，30 天 47 次）</div>
+            <div class="id">连续 30 天每天均出现路口通过求助，大概率为信号灯识别盲区。涉及 6 台车，平均一致率 73%。</div>
+            <div class="ia"><span class="link-btn">查看簇详情</span><span class="link-btn">推送车端</span><span class="link-btn">添加到知识库</span></div>
+          </div>
+          <div class="insight-card warn">
+            <div class="it">🔁 南沙区-文体大道贴边作业偏离（簇号 C-024，30 天 31 次）</div>
+            <div class="id">该路段路沿被遮挡严重，建议路线规划绕开此段或调整作业方向。</div>
+            <div class="ia"><span class="link-btn">查看簇详情</span><span class="link-btn">推送路线团队</span><span class="link-btn">添加到知识库</span></div>
+          </div>
+          <div class="insight-card err">
+            <div class="it">🔁 黄埔-学院路施工绕行（簇号 C-031，30 天 22 次）</div>
+            <div class="id">施工路障识别失败，所有车次均求助。已持续 12 天，建议立即更新地图。</div>
+            <div class="ia"><span class="link-btn">查看簇详情</span><span class="link-btn">⚠ 紧急上报</span></div>
+          </div>
+        </div>
+
+        <div class="panel-block">
+          <h3>路线问题诊断 · Top 高求助率路段</h3>
+          <table class="tickets">
+            <thead><tr><th>路段</th><th>区域</th><th>30天求助率</th><th>主要问题</th><th>优化建议</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td>科研路 × 螺旋一路</td><td>生物岛</td><td><span class="pill red">38%</span></td><td>红绿灯识别</td><td>建议调整路线绕行 / 推送车端样本</td><td><span class="link-btn">应用建议</span></td></tr>
+              <tr><td>文体大道 (南段)</td><td>南沙区</td><td><span class="pill orange">22%</span></td><td>路沿被遮挡</td><td>反向作业 / 调整贴边参数</td><td><span class="link-btn">应用建议</span></td></tr>
+              <tr><td>学院路施工区</td><td>黄埔区</td><td><span class="pill red">41%</span></td><td>临时路障</td><td>立即更新地图</td><td><span class="link-btn">应用建议</span></td></tr>
+              <tr><td>香山路 × 银蕊街</td><td>生物岛</td><td><span class="pill orange">18%</span></td><td>行人密集</td><td>调整作业时段</td><td><span class="link-btn">应用建议</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel-block">
+          <h3>时段问题诊断 · 求助高峰</h3>
+          <div style="display:flex;gap:18px;align-items:center">
+            <div style="flex:1">
+              <div class="trend-bar" id="hour-trend"></div>
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-dim)">
+                <span>0</span><span>6</span><span>12</span><span>18</span><span>23</span>
+              </div>
+            </div>
+            <div style="width:280px">
+              <div class="insight-card">
+                <div class="it">📈 早高峰 07:00-09:00</div>
+                <div class="id">求助量为日均 2.8 倍。建议增加 2 名早班坐席。</div>
+              </div>
+              <div class="insight-card">
+                <div class="it">📈 晚高峰 17:00-19:00</div>
+                <div class="id">求助量日均 2.3 倍。建议高峰期暂停 C 级低优先路段作业。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 车端反馈 -->
+        <div class="panel-block">
+          <h3>② 车端误判榜单 <span class="actions"><button class="primary">批量推送车端</button></span></h3>
+          <table class="tickets">
+            <thead><tr><th>Hint 类型</th><th>样本量</th><th>一致率</th><th>典型场景</th><th>建议</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td><span class="pill blue">路口通过</span></td><td>2,184</td><td><span class="pill red">68%</span></td><td>红绿灯识别错误</td><td>补充样本</td><td><span class="link-btn">查看样本</span> · <span class="link-btn">推送</span></td></tr>
+              <tr><td><span class="pill blue">贴边作业</span></td><td>1,560</td><td><span class="pill orange">76%</span></td><td>路沿被遮挡</td><td>感知模型迭代</td><td><span class="link-btn">查看样本</span> · <span class="link-btn">推送</span></td></tr>
+              <tr><td><span class="pill blue">绕行</span></td><td>980</td><td><span class="pill orange">79%</span></td><td>临时障碍物</td><td>语义分割增强</td><td><span class="link-btn">查看样本</span> · <span class="link-btn">推送</span></td></tr>
+              <tr><td><span class="pill blue">避障</span></td><td>720</td><td><span class="pill green">88%</span></td><td>行人闯入</td><td>预测模型微调</td><td><span class="link-btn">查看样本</span> · <span class="link-btn">推送</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel-block">
+          <h3>新场景发现（操作员备注 · 待评估）</h3>
+          <div class="insight-card good">
+            <div class="it">🆕 雨天落叶堆积导致路沿误判</div>
+            <div class="id">操作员 liming 标记 5 次，分布在 3 个不同区域。建议沉淀为新需求。</div>
+            <div class="ia"><span class="link-btn">查看 case</span><span class="link-btn">沉淀为需求</span><span class="link-btn">忽略</span></div>
+          </div>
+          <div class="insight-card good">
+            <div class="it">🆕 临时市集摊位</div>
+            <div class="id">huzhi 在生物岛科技园周末多次标记。建议作为周末特殊场景。</div>
+            <div class="ia"><span class="link-btn">查看 case</span><span class="link-btn">沉淀为需求</span><span class="link-btn">忽略</span></div>
+          </div>
+          <div class="insight-card good">
+            <div class="it">🆕 逆光强反光导致信号灯识别失败</div>
+            <div class="id">3 名操作员独立标记。建议反馈给感知组。</div>
+            <div class="ia"><span class="link-btn">查看 case</span><span class="link-btn">沉淀为需求</span><span class="link-btn">忽略</span></div>
+          </div>
+        </div>
+
+        <div class="panel-block">
+          <h3>模型迭代追踪 · 一致率发版前后对比</h3>
+          <table class="tickets">
+            <thead><tr><th>Hint 类型</th><th>发版前 (一致率)</th><th>发版后 (一致率)</th><th>趋势</th><th>样本量</th><th>结论</th></tr></thead>
+            <tbody>
+              <tr><td>变道</td><td>81%</td><td>89%</td><td><span style="color:var(--green)">↑ +8pp</span></td><td>1,200</td><td><span class="pill green">显著改善</span></td></tr>
+              <tr><td>路口通过</td><td>71%</td><td>68%</td><td><span style="color:var(--red)">↓ -3pp</span></td><td>2,184</td><td><span class="pill red">回退</span></td></tr>
+              <tr><td>贴边作业</td><td>72%</td><td>76%</td><td><span style="color:var(--green)">↑ +4pp</span></td><td>1,560</td><td><span class="pill orange">轻微改善</span></td></tr>
+              <tr><td>避障</td><td>85%</td><td>88%</td><td><span style="color:var(--green)">↑ +3pp</span></td><td>720</td><td><span class="pill green">改善</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 3. 知识沉淀 -->
+        <div class="panel-block">
+          <h3>③ 案例库 <span class="actions"><input placeholder="搜索案例" style="width:200px"><button class="primary">+ 标注新案例</button></span></h3>
+          <table class="tickets">
+            <thead><tr><th>编号</th><th>标题</th><th>类型</th><th>Hint</th><th>标注人</th><th>标签</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td>K-0042</td><td>复杂十字路口黄灯通过</td><td><span class="pill green">标准处理</span></td><td>路口通过</td><td>admin</td><td>培训用 · 标杆</td><td><span class="link-btn">查看</span> · <span class="link-btn">引用为 SOP</span></td></tr>
+              <tr><td>K-0078</td><td>错误判断：将塑料袋识别为障碍</td><td><span class="pill red">错误处理</span></td><td>避障</td><td>admin</td><td>反面教材</td><td><span class="link-btn">查看</span> · <span class="link-btn">加入培训</span></td></tr>
+              <tr><td>K-0091</td><td>窄路对向会车标准流程</td><td><span class="pill blue">模板</span></td><td>变道</td><td>admin</td><td>SOP</td><td><span class="link-btn">查看</span> · <span class="link-btn">引用为 SOP</span></td></tr>
+              <tr><td>K-0113</td><td>夜间施工区域多次绕行</td><td><span class="pill green">标准处理</span></td><td>绕行</td><td>admin</td><td>夜班 · 培训</td><td><span class="link-btn">查看</span> · <span class="link-btn">加入培训</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel-block">
+          <h3>培训素材库 <span class="actions"><button>导出培训包</button></span></h3>
+          <div class="report-cards">
+            <div class="report-card"><h4>🎯 新人入门 · 12 个案例</h4><p>覆盖 6 类基础 hint，平均时长 90s</p><div class="row"><button>查看</button><button>分配</button></div></div>
+            <div class="report-card"><h4>⭐ 优秀处理标杆 · 18 个</h4><p>一致率 95%+，处理时长低于均值</p><div class="row"><button>查看</button><button>分配</button></div></div>
+            <div class="report-card"><h4>⚠ 反面案例 · 8 个</h4><p>升级 / 超时 / 判断不一致典型</p><div class="row"><button>查看</button><button>分配</button></div></div>
+          </div>
+        </div>
+
+        <div class="panel-block">
+          <h3>SOP 沉淀 · 高频处理流程</h3>
+          <table class="tickets">
+            <thead><tr><th>SOP 编号</th><th>名称</th><th>覆盖场景</th><th>版本</th><th>使用次数</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td>SOP-001</td><td>路口红绿灯通过</td><td>路口通过</td><td>v2.3</td><td>1,420</td><td><span class="link-btn">查看</span> · <span class="link-btn">编辑</span></td></tr>
+              <tr><td>SOP-005</td><td>临时障碍物绕行</td><td>绕行</td><td>v1.8</td><td>980</td><td><span class="link-btn">查看</span> · <span class="link-btn">编辑</span></td></tr>
+              <tr><td>SOP-012</td><td>贴边作业偏离纠正</td><td>贴边作业</td><td>v1.2</td><td>650</td><td><span class="link-btn">查看</span> · <span class="link-btn">编辑</span></td></tr>
+              <tr><td>SOP-018</td><td>低电量返充流程</td><td>电量管理</td><td>v1.0</td><td>320</td><td><span class="link-btn">查看</span> · <span class="link-btn">编辑</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 4. 运营建议 -->
+        <div class="panel-block">
+          <h3>④ 自动周报 · 本周运营摘要 <span class="actions"><button>查看完整周报</button><button>订阅</button></span></h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <div class="insight-card err">
+              <div class="it">🚨 异常 Top 10</div>
+              <div class="id">学院路施工区连续 12 天异常 · 科研路口 47 次求助 · GZU_YKU_25216 异常率 18% ...</div>
+              <div class="ia"><span class="link-btn">查看全部</span></div>
+            </div>
+            <div class="insight-card good">
+              <div class="it">⭐ 操作员 Top 3</div>
+              <div class="id">huzhi (一致率 96.2%) · liming (95.8%) · lvjia (95.1%)</div>
+              <div class="ia"><span class="link-btn">查看绩效</span></div>
+            </div>
+            <div class="insight-card warn">
+              <div class="it">⚠ 操作员 Bottom 3</div>
+              <div class="id">xubo (一致率 78.3%) · gaohe (81.0%) · chenyu (82.4%)</div>
+              <div class="ia"><span class="link-btn">查看绩效</span><span class="link-btn">分配培训</span></div>
+            </div>
+          </div>
+          <div class="insight-card" style="margin-top:8px">
+            <div class="it">💡 建议事项</div>
+            <div class="id">
+              1. 学院路施工区建议立即更新地图，预计减少 22% 异常工单<br>
+              2. 早高峰建议增加 2 名坐席（已连续 3 周高峰超载）<br>
+              3. 路口通过 Hint 一致率回退，建议联系车端模型团队复盘
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-block">
+          <h3>🤖 AI 辅助预测</h3>
+          <div class="insight-card warn">
+            <div class="it">📅 明日 (04-30) 预测</div>
+            <div class="id">
+              • 黄埔区学院路 — 预计 35-45 次求助（施工持续）<br>
+              • 生物岛-科研路口 — 早高峰预计 12-18 次求助<br>
+              • 建议提前调配：早班 +2 坐席 / 晚班正常
+            </div>
+            <div class="ia"><span class="link-btn">应用排班建议</span><span class="link-btn">查看预测模型</span></div>
+          </div>
+          <div class="insight-card warn">
+            <div class="it">⛅ 天气联动预测</div>
+            <div class="id">明日大雨概率 80%，雨天求助量历史均值 +45%。建议：低优作业暂停，预留 3 名机动坐席。</div>
+            <div class="ia"><span class="link-btn">应用建议</span></div>
+          </div>
+          <div class="insight-card good">
+            <div class="it">📊 区域趋势</div>
+            <div class="id">南沙区一致率连续 4 周提升（+6pp），可考虑该区域接入更多车辆。</div>
+            <div class="ia"><span class="link-btn">查看详情</span></div>
+          </div>
+        </div>
+      </div>
+
       <!-- 报表中心 -->
       <div class="admin-page" data-page="reports">
         <h2>报表中心</h2>
@@ -1093,6 +1367,50 @@ function renderAdminPage(page){
   if (page === 'tickets') renderAdminTickets();
   if (page === 'vehicles') renderVehicles();
   if (page === 'monitor') renderMonitor();
+  if (page === 'insight') renderInsight();
+}
+
+function renderInsight(){
+  // Heatmap: 8 roads × 24 hours
+  const ROADS = ['科研路×螺旋一路','文体大道(南)','学院路施工区','香山路×银蕊街','生物岛主环路','南沙文体路','黄埔学院南路','生物岛科技园'];
+  const heat = document.getElementById('heat');
+  if (heat){
+    let html = '<div class="hl"></div>';
+    for (let h=0;h<24;h++) html += `<div class="hh">${h}</div>`;
+    ROADS.forEach((r, ri) => {
+      html += `<div class="hl">${r}</div>`;
+      for (let h=0;h<24;h++){
+        // Simulate: peak around 7-9 and 17-19, road-specific intensity
+        const base = (h>=7&&h<=9)||(h>=17&&h<=19) ? 0.8 : (h>=22||h<=5) ? 0.15 : 0.4;
+        const roadFactor = [1.4, 0.9, 1.6, 0.7, 0.6, 0.5, 1.2, 0.8][ri];
+        const v = base * roadFactor * (0.7 + Math.random()*0.6);
+        let color;
+        if (v < 0.2) color = '#16332e';
+        else if (v < 0.4) color = '#1e6b3a';
+        else if (v < 0.7) color = '#f39c12';
+        else if (v < 1.0) color = '#e74c3c';
+        else color = '#a02828';
+        html += `<div class="hc" style="background:${color}" title="${r} ${h}:00 求助强度 ${v.toFixed(2)}"></div>`;
+      }
+    });
+    heat.innerHTML = html;
+  }
+
+  // Hour trend bar
+  const hour = document.getElementById('hour-trend');
+  if (hour){
+    const hours = [];
+    for (let h=0;h<24;h++){
+      let v;
+      if (h>=7 && h<=9) v = 70 + rand(0,20);
+      else if (h>=17 && h<=19) v = 60 + rand(0,15);
+      else if (h>=12 && h<=14) v = 35 + rand(0,10);
+      else if (h<=5 || h>=22) v = 5 + rand(0,8);
+      else v = 20 + rand(0,15);
+      hours.push(v);
+    }
+    hour.innerHTML = hours.map(v => `<div class="b" style="height:${v}%" title="${v}"></div>`).join('');
+  }
 }
 
 function renderTeam(){
