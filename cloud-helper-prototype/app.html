@@ -709,6 +709,7 @@ table.tickets tr:hover { background: #1a1a20; }
       <button class="active">广角</button>
       <button>鱼眼</button>
     </div>
+    <div id="vd-clock" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.65);padding:6px 12px;border-radius:4px;font-family:Menlo,Consolas,monospace;font-size:13px;color:#0f0;letter-spacing:1px;z-index:3">--:--:--</div>
     <div class="hud">
       <div class="grp"><div class="l">限速</div><div class="speed-limit">5</div></div>
       <div class="grp"><div class="l">行驶速度</div><div style="font-size:18px;font-weight:700">3.8<span style="font-size:11px;color:var(--text-dim)">km/h</span></div></div>
@@ -1604,6 +1605,14 @@ setInterval(() => {
   document.getElementById('cd').textContent = cd;
 }, 1000);
 function resetCountdown() { cd = 25; }
+
+// ====== 实时时间戳 (车辆详情主视图) ======
+setInterval(() => {
+  const el = document.getElementById('vd-clock');
+  if (!el) return;
+  const d = new Date();
+  el.textContent = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}, 1000);
 
 // ====== 统计 ======
 const HINT = ['变道','绕行','路口通过','贴边作业','避障','泊车'];
