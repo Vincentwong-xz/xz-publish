@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Cloud Helper · 个人统计</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="stats-wrap">
+  <div class="stats-header">
+    <span class="back" onclick="location.href='index.html'">← 返回总览</span>
+    <h2>个人接单统计 · xinzhangwang</h2>
+  </div>
+
+  <div class="stats-cards">
+    <div class="stat-card"><div class="lbl">累计接单</div><div class="num" id="kpi-total">0</div></div>
+    <div class="stat-card"><div class="lbl">在线时长(h)</div><div class="num" id="kpi-online">0</div></div>
+    <div class="stat-card"><div class="lbl">平均一致率</div><div class="num" id="kpi-cons">0%</div></div>
+    <div class="stat-card"><div class="lbl">升单率</div><div class="num" id="kpi-esc">0%</div></div>
+    <div class="stat-card"><div class="lbl">平均处理时长(s)</div><div class="num" id="kpi-dur">0</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <label>时间范围</label>
+    <input type="datetime-local" id="from">
+    <span style="color:var(--text-dim)">至</span>
+    <input type="datetime-local" id="to">
+    <label style="margin-left:12px">车辆</label>
+    <input id="f-vid" placeholder="例: GZU_YKN_24088" style="width:180px">
+    <label style="margin-left:12px">Hint 类型</label>
+    <select id="f-hint">
+      <option value="">全部</option>
+      <option>变道</option>
+      <option>绕行</option>
+      <option>路口通过</option>
+      <option>贴边作业</option>
+      <option>避障</option>
+      <option>泊车</option>
+    </select>
+    <button class="primary" onclick="render()" style="margin-left:auto">查询</button>
+    <button onclick="exportCSV()">导出</button>
+  </div>
+
+  <table class="tickets">
+    <thead>
+      <tr>
+        <th>时间</th>
+        <th>车辆</th>
+        <th>Hint 类型</th>
+        <th>处理时长</th>
+        <th>一致率</th>
+        <th>升单率</th>
+        <th>状态</th>
+        <th>操作录屏 / 监控日志</th>
+        <th>备注</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+</div>
+
+<script>
+const HINT = ['变道','绕行','路口通过','贴边作业','避障','泊车'];
+const STATUS = [['已完成','green'],['已升单','orange'],['已超时','red'],['已转交','blue']];
+const VIDS = ['GZU_YKN_24088','GZU_YKU_25214','GZU_YKU_25216','GZU_YKU_25218','GZU_YKN_24121','GZU_YKU_25215','GZU_YKN_24051'];
+
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function pad(n){return String(n).padStart(2,'0')}
+function genData(n){
+  const arr = [];
+  const now = new Date();
+  for (let i=0;i<n;i++){
+    const d = new Date(now.getTime() - i*rand(5,90)*60000);
+    const cons = rand(70,99);
+    const esc = Math.random() < 0.18;
+    const dur = rand(8,180);
+    const st = esc ? STATUS[1] : (dur > 120 ? STATUS[2] : STATUS[Math.random()<0.05?3:0]);
+    arr.push({
+      time: `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`,
+      vid: VIDS[rand(0,VIDS.length-1)],
+      hint: HINT[rand(0,HINT.length-1)],
+      dur, cons, esc: esc?'是':'否',
+      status: st,
+      log: `LOG-${100000+i}`,
+      note: ['','行人闯入','障碍物较多','信号波动','正常处理'][rand(0,4)]
+    });
+  }
+  return arr;
+}
+
+let DATA = genData(48);
+
+function render(){
+  const from = document.getElementById('from').value;
+  const to = document.getElementById('to').value;
+  const fv = document.getElementById('f-vid').value.trim().toUpperCase();
+  const fh = document.getElementById('f-hint').value;
+  const filtered = DATA.filter(r => {
+    if (from && r.time < from.replace('T',' ')) return false;
+    if (to && r.time > to.replace('T',' ')) return false;
+    if (fv && !r.vid.includes(fv)) return false;
+    if (fh && r.hint !== fh) return false;
+    return true;
+  });
+  const rows = document.getElementById('rows');
+  rows.innerHTML = filtered.map(r => `
+    <tr>
+      <td>${r.time}</td>
+      <td>${r.vid}</td>
+      <td><span class="pill blue">${r.hint}</span></td>
+      <td>${r.dur}s</td>
+      <td>${r.cons}%</td>
+      <td>${r.esc}</td>
+      <td><span class="pill ${r.status[1]}">${r.status[0]}</span></td>
+      <td><span class="link-btn" onclick="alert('打开录屏: ${r.log}')">▶ 回放</span> · <span class="link-btn" onclick="alert('查看日志: ${r.log}')">日志</span></td>
+      <td style="color:var(--text-dim)">${r.note||'-'}</td>
+    </tr>
+  `).join('');
+  // KPIs
+  const n = filtered.length || 1;
+  document.getElementById('kpi-total').textContent = filtered.length;
+  document.getElementById('kpi-online').textContent = (filtered.length*0.05).toFixed(1);
+  document.getElementById('kpi-cons').textContent = Math.round(filtered.reduce((s,r)=>s+r.cons,0)/n)+'%';
+  document.getElementById('kpi-esc').textContent = Math.round(filtered.filter(r=>r.esc==='是').length/n*100)+'%';
+  document.getElementById('kpi-dur').textContent = Math.round(filtered.reduce((s,r)=>s+r.dur,0)/n);
+}
+
+function exportCSV(){
+  const head = ['时间','车辆','Hint类型','处理时长(s)','一致率(%)','升单','状态','日志ID','备注'];
+  const rows = DATA.map(r=>[r.time,r.vid,r.hint,r.dur,r.cons,r.esc,r.status[0],r.log,r.note]);
+  const csv = [head, ...rows].map(r=>r.join(',')).join('\n');
+  const blob = new Blob(['\ufeff'+csv],{type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'tickets.csv';
+  a.click();
+}
+
+render();
+</script>
+</body>
+</html>
