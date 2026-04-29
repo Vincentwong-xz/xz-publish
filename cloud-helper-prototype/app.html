@@ -960,7 +960,7 @@ table.tickets tr:hover { background: #1a1a20; }
         <div class="panel-block">
           <h3>实时告警流</h3>
           <table class="tickets">
-            <thead><tr><th>时间</th><th>规则</th><th>对象</th><th>级别</th><th>通知</th><th>状态</th><th>操作</th></tr></thead>
+            <thead><tr><th>时间</th><th>规则</th><th>对象</th><th>级别</th><th>状态</th><th>操作</th></tr></thead>
             <tbody id="alerts-rows"></tbody>
           </table>
         </div>
@@ -1238,7 +1238,6 @@ function renderMonitor(){
         <td>${r.name}</td>
         <td>${target}</td>
         <td><span class="pill ${r.level}">${r.level==='red'?'高':r.level==='orange'?'中':'低'}</span></td>
-        <td style="font-size:11px;color:var(--text-dim)">钉钉 / 短信 / 系统</td>
         <td><span class="pill ${sColor}">${status}</span></td>
         <td><span class="link-btn">处理</span> · <span class="link-btn">详情</span></td>
       </tr>`);
