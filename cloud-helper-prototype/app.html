@@ -830,7 +830,7 @@ table.tickets tr:hover { background: #1a1a20; }
     <div class="stats-cards">
       <div class="stat-card"><div class="lbl">累计接单</div><div class="num" id="kpi-total">0</div></div>
       <div class="stat-card"><div class="lbl">在线时长(h)</div><div class="num" id="kpi-online">0</div></div>
-      <div class="stat-card"><div class="lbl">平均一致率</div><div class="num" id="kpi-cons">0%</div></div>
+      <div class="stat-card"><div class="lbl">平均执行成功率</div><div class="num" id="kpi-cons">0%</div></div>
       <div class="stat-card"><div class="lbl">升单率</div><div class="num" id="kpi-esc">0%</div></div>
       <div class="stat-card"><div class="lbl">平均处理时长(s)</div><div class="num" id="kpi-dur">0</div></div>
     </div>
@@ -860,7 +860,7 @@ table.tickets tr:hover { background: #1a1a20; }
       <thead>
         <tr>
           <th>时间</th><th>车辆</th><th>Hint 类型</th><th>处理时长</th>
-          <th>一致率</th><th>升单率</th><th>状态</th>
+          <th>执行成功率</th><th>升单率</th><th>状态</th>
           <th>操作录屏 / 监控日志</th><th>备注</th>
         </tr>
       </thead>
@@ -923,7 +923,7 @@ table.tickets tr:hover { background: #1a1a20; }
         <div class="panel-block">
           <h3>操作员档案 <span class="actions"><input placeholder="搜索操作员" style="width:200px"></span></h3>
           <table class="tickets">
-            <thead><tr><th>姓名</th><th>工号</th><th>技能等级</th><th>培训记录</th><th>累计接单</th><th>平均一致率</th><th>升单率</th><th>操作</th></tr></thead>
+            <thead><tr><th>姓名</th><th>工号</th><th>技能等级</th><th>培训记录</th><th>累计接单</th><th>平均执行成功率</th><th>升单率</th><th>操作</th></tr></thead>
             <tbody id="prof-rows"></tbody>
           </table>
         </div>
@@ -939,7 +939,7 @@ table.tickets tr:hover { background: #1a1a20; }
           <div class="stat-card"><div class="lbl">超时</div><div class="num" style="color:var(--red)">12</div></div>
           <div class="stat-card"><div class="lbl">多次转派</div><div class="num" style="color:var(--orange)">5</div></div>
           <div class="stat-card"><div class="lbl">升级 Remote</div><div class="num" style="color:var(--orange)">8</div></div>
-          <div class="stat-card"><div class="lbl">判断不一致</div><div class="num" style="color:var(--red)">3</div></div>
+          <div class="stat-card"><div class="lbl">执行失败</div><div class="num" style="color:var(--red)">3</div></div>
         </div>
 
         <div class="panel-block">
@@ -947,7 +947,7 @@ table.tickets tr:hover { background: #1a1a20; }
           <div class="filter-bar" style="margin-bottom:10px">
             <label>异常类型</label>
             <select id="t-anomaly">
-              <option value="">全部</option><option>超时</option><option>多次转派</option><option>升级 Remote</option><option>判断不一致</option>
+              <option value="">全部</option><option>超时</option><option>多次转派</option><option>升级 Remote</option><option>执行失败</option>
             </select>
             <label style="margin-left:12px">操作员</label>
             <input id="t-op" placeholder="姓名">
@@ -1069,7 +1069,7 @@ table.tickets tr:hover { background: #1a1a20; }
           <h3>同质化 Case 聚合 <span class="actions"><button>导出簇报告</button></span></h3>
           <div class="insight-card warn">
             <div class="it">🔁 生物岛-科研路口红绿灯（簇号 C-018，30 天 47 次）</div>
-            <div class="id">连续 30 天每天均出现路口通过求助，大概率为信号灯识别盲区。涉及 6 台车，平均一致率 73%。</div>
+            <div class="id">连续 30 天每天均出现路口通过求助，大概率为信号灯识别盲区。涉及 6 台车，平均执行成功率 73%。</div>
             <div class="ia"><span class="link-btn">查看簇详情</span><span class="link-btn">推送车端</span><span class="link-btn">添加到知识库</span></div>
           </div>
           <div class="insight-card warn">
@@ -1123,7 +1123,7 @@ table.tickets tr:hover { background: #1a1a20; }
         <div class="panel-block">
           <h3>② 车端误判榜单 <span class="actions"><button class="primary">批量推送车端</button></span></h3>
           <table class="tickets">
-            <thead><tr><th>Hint 类型</th><th>样本量</th><th>一致率</th><th>典型场景</th><th>建议</th><th>操作</th></tr></thead>
+            <thead><tr><th>Hint 类型</th><th>样本量</th><th>执行成功率</th><th>典型场景</th><th>建议</th><th>操作</th></tr></thead>
             <tbody>
               <tr><td><span class="pill blue">路口通过</span></td><td>2,184</td><td><span class="pill red">68%</span></td><td>红绿灯识别错误</td><td>补充样本</td><td><span class="link-btn">查看样本</span> · <span class="link-btn">推送</span></td></tr>
               <tr><td><span class="pill blue">贴边作业</span></td><td>1,560</td><td><span class="pill orange">76%</span></td><td>路沿被遮挡</td><td>感知模型迭代</td><td><span class="link-btn">查看样本</span> · <span class="link-btn">推送</span></td></tr>
@@ -1153,9 +1153,9 @@ table.tickets tr:hover { background: #1a1a20; }
         </div>
 
         <div class="panel-block">
-          <h3>模型迭代追踪 · 一致率发版前后对比</h3>
+          <h3>模型迭代追踪 · 执行成功率发版前后对比</h3>
           <table class="tickets">
-            <thead><tr><th>Hint 类型</th><th>发版前 (一致率)</th><th>发版后 (一致率)</th><th>趋势</th><th>样本量</th><th>结论</th></tr></thead>
+            <thead><tr><th>Hint 类型</th><th>发版前 (执行成功率)</th><th>发版后 (执行成功率)</th><th>趋势</th><th>样本量</th><th>结论</th></tr></thead>
             <tbody>
               <tr><td>变道</td><td>81%</td><td>89%</td><td><span style="color:var(--green)">↑ +8pp</span></td><td>1,200</td><td><span class="pill green">显著改善</span></td></tr>
               <tr><td>路口通过</td><td>71%</td><td>68%</td><td><span style="color:var(--red)">↓ -3pp</span></td><td>2,184</td><td><span class="pill red">回退</span></td></tr>
@@ -1183,8 +1183,8 @@ table.tickets tr:hover { background: #1a1a20; }
           <h3>培训素材库 <span class="actions"><button>导出培训包</button></span></h3>
           <div class="report-cards">
             <div class="report-card"><h4>🎯 新人入门 · 12 个案例</h4><p>覆盖 6 类基础 hint，平均时长 90s</p><div class="row"><button>查看</button><button>分配</button></div></div>
-            <div class="report-card"><h4>⭐ 优秀处理标杆 · 18 个</h4><p>一致率 95%+，处理时长低于均值</p><div class="row"><button>查看</button><button>分配</button></div></div>
-            <div class="report-card"><h4>⚠ 反面案例 · 8 个</h4><p>升级 / 超时 / 判断不一致典型</p><div class="row"><button>查看</button><button>分配</button></div></div>
+            <div class="report-card"><h4>⭐ 优秀处理标杆 · 18 个</h4><p>执行成功率 95%+，处理时长低于均值</p><div class="row"><button>查看</button><button>分配</button></div></div>
+            <div class="report-card"><h4>⚠ 反面案例 · 8 个</h4><p>升级 / 超时 / 执行失败典型</p><div class="row"><button>查看</button><button>分配</button></div></div>
           </div>
         </div>
 
@@ -1212,12 +1212,12 @@ table.tickets tr:hover { background: #1a1a20; }
             </div>
             <div class="insight-card good">
               <div class="it">⭐ 操作员 Top 3</div>
-              <div class="id">huzhi (一致率 96.2%) · liming (95.8%) · lvjia (95.1%)</div>
+              <div class="id">huzhi (执行成功率 96.2%) · liming (95.8%) · lvjia (95.1%)</div>
               <div class="ia"><span class="link-btn">查看绩效</span></div>
             </div>
             <div class="insight-card warn">
               <div class="it">⚠ 操作员 Bottom 3</div>
-              <div class="id">xubo (一致率 78.3%) · gaohe (81.0%) · chenyu (82.4%)</div>
+              <div class="id">xubo (执行成功率 78.3%) · gaohe (81.0%) · chenyu (82.4%)</div>
               <div class="ia"><span class="link-btn">查看绩效</span><span class="link-btn">分配培训</span></div>
             </div>
           </div>
@@ -1226,7 +1226,7 @@ table.tickets tr:hover { background: #1a1a20; }
             <div class="id">
               1. 学院路施工区建议立即更新地图，预计减少 22% 异常工单<br>
               2. 早高峰建议增加 2 名坐席（已连续 3 周高峰超载）<br>
-              3. 路口通过 Hint 一致率回退，建议联系车端模型团队复盘
+              3. 路口通过 Hint 执行成功率回退，建议联系车端模型团队复盘
             </div>
           </div>
         </div>
@@ -1249,7 +1249,7 @@ table.tickets tr:hover { background: #1a1a20; }
           </div>
           <div class="insight-card good">
             <div class="it">📊 区域趋势</div>
-            <div class="id">南沙区一致率连续 4 周提升（+6pp），可考虑该区域接入更多车辆。</div>
+            <div class="id">南沙区执行成功率连续 4 周提升（+6pp），可考虑该区域接入更多车辆。</div>
             <div class="ia"><span class="link-btn">查看详情</span></div>
           </div>
         </div>
@@ -1460,13 +1460,13 @@ function renderTeam(){
 function renderAdminTickets(){
   const tbody = document.getElementById('ad-tickets');
   if (!tbody) return;
-  const ANOMALY = ['超时','多次转派','升级 Remote','判断不一致'];
+  const ANOMALY = ['超时','多次转派','升级 Remote','执行失败'];
   const rows = [];
   for (let i=0;i<30;i++){
     const d = new Date(Date.now() - rand(1,600)*60000);
     const t = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
     const an = ANOMALY[rand(0,3)];
-    const colors = {'超时':'red','多次转派':'orange','升级 Remote':'orange','判断不一致':'red'};
+    const colors = {'超时':'red','多次转派':'orange','升级 Remote':'orange','执行失败':'red'};
     rows.push(`<tr>
       <td>${t}</td><td>T${100000+i}</td>
       <td>${VIDS[rand(0,VIDS.length-1)]}</td>
@@ -1518,7 +1518,7 @@ const RULES = [
   {name:'连续同类 Hint', cond:'连续 3 次同类 hint', notify:'提示路线问题 + 派发巡检', enabled:true, level:'blue'},
   {name:'网络持续弱信号', cond:'信号 > 500ms 持续 5min', notify:'触发降级 + 通知 IT', enabled:true, level:'orange'},
   {name:'长时间停车未求助', cond:'静止 > 10min 且无 hint', notify:'主动派单核查', enabled:true, level:'red'},
-  {name:'判断不一致追踪', cond:'AI 与操作员判断不一致', notify:'记录到训练样本 + 复核', enabled:true, level:'blue'},
+  {name:'执行失败追踪', cond:'操作员指令车端执行失败', notify:'记录到训练样本 + 复核', enabled:true, level:'blue'},
   {name:'夜间异常停放', cond:'非充电桩区域停放 > 30min', notify:'通知运维 + 现场核查', enabled:true, level:'orange'},
   {name:'操作员长时间无响应', cond:'坐席 > 5min 无操作', notify:'告警 + 转派', enabled:true, level:'red'},
   {name:'超时工单', cond:'单工单处理 > 120s', notify:'升级 Remote', enabled:true, level:'red'},
@@ -1670,7 +1670,7 @@ function renderStats(){
   document.getElementById('kpi-dur').textContent = Math.round(filtered.reduce((s,r)=>s+r.dur,0)/n);
 }
 function exportCSV(){
-  const head = ['时间','车辆','Hint类型','处理时长(s)','一致率(%)','升单','状态','日志ID','备注'];
+  const head = ['时间','车辆','Hint类型','处理时长(s)','执行成功率(%)','升单','状态','日志ID','备注'];
   const rows = DATA.map(r=>[r.time,r.vid,r.hint,r.dur,r.cons,r.esc,r.status[0],r.log,r.note]);
   const csv = [head, ...rows].map(r=>r.join(',')).join('\n');
   const blob = new Blob(['\ufeff'+csv],{type:'text/csv'});
