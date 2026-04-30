@@ -860,7 +860,7 @@ table.tickets tr:hover { background: #1a1a20; }
       <thead>
         <tr>
           <th>时间</th><th>车辆</th><th>Hint 类型</th><th>处理时长</th>
-          <th>执行成功率</th><th>升单率</th><th>状态</th>
+          <th>是否执行成功</th><th>是否升单</th><th>状态</th>
           <th>操作录屏 / 监控日志</th><th>备注</th>
         </tr>
       </thead>
@@ -1624,7 +1624,7 @@ function genData(n){
   const arr = []; const now = new Date();
   for (let i=0;i<n;i++){
     const d = new Date(now.getTime() - i*rand(5,90)*60000);
-    const cons = rand(70,99);
+    const success = Math.random() < 0.92;
     const esc = Math.random() < 0.18;
     const dur = rand(8,180);
     const st = esc ? STATUS[1] : (dur > 120 ? STATUS[2] : STATUS[Math.random()<0.05?3:0]);
@@ -1632,7 +1632,7 @@ function genData(n){
       time: `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`,
       vid: VIDS[rand(0,VIDS.length-1)],
       hint: HINT[rand(0,HINT.length-1)],
-      dur, cons, esc: esc?'是':'否', status: st,
+      dur, success: success?'是':'否', esc: esc?'是':'否', status: st,
       log: `LOG-${100000+i}`,
       note: ['','行人闯入','障碍物较多','信号波动','正常处理'][rand(0,4)]
     });
@@ -1656,7 +1656,9 @@ function renderStats(){
     <tr>
       <td>${r.time}</td><td>${r.vid}</td>
       <td><span class="pill blue">${r.hint}</span></td>
-      <td>${r.dur}s</td><td>${r.cons}%</td><td>${r.esc}</td>
+      <td>${r.dur}s</td>
+      <td><span class="pill ${r.success==='是'?'green':'red'}">${r.success}</span></td>
+      <td><span class="pill ${r.esc==='是'?'orange':'green'}">${r.esc}</span></td>
       <td><span class="pill ${r.status[1]}">${r.status[0]}</span></td>
       <td><span class="link-btn" onclick="alert('打开录屏: ${r.log}')">▶ 回放</span> · <span class="link-btn" onclick="alert('查看日志: ${r.log}')">日志</span></td>
       <td style="color:var(--text-dim)">${r.note||'-'}</td>
@@ -1665,13 +1667,13 @@ function renderStats(){
   const n = filtered.length || 1;
   document.getElementById('kpi-total').textContent = filtered.length;
   document.getElementById('kpi-online').textContent = (filtered.length*0.05).toFixed(1);
-  document.getElementById('kpi-cons').textContent = Math.round(filtered.reduce((s,r)=>s+r.cons,0)/n)+'%';
+  document.getElementById('kpi-cons').textContent = Math.round(filtered.filter(r=>r.success==='是').length/n*100)+'%';
   document.getElementById('kpi-esc').textContent = Math.round(filtered.filter(r=>r.esc==='是').length/n*100)+'%';
   document.getElementById('kpi-dur').textContent = Math.round(filtered.reduce((s,r)=>s+r.dur,0)/n);
 }
 function exportCSV(){
-  const head = ['时间','车辆','Hint类型','处理时长(s)','执行成功率(%)','升单','状态','日志ID','备注'];
-  const rows = DATA.map(r=>[r.time,r.vid,r.hint,r.dur,r.cons,r.esc,r.status[0],r.log,r.note]);
+  const head = ['时间','车辆','Hint类型','处理时长(s)','是否执行成功','是否升单','状态','日志ID','备注'];
+  const rows = DATA.map(r=>[r.time,r.vid,r.hint,r.dur,r.success,r.esc,r.status[0],r.log,r.note]);
   const csv = [head, ...rows].map(r=>r.join(',')).join('\n');
   const blob = new Blob(['\ufeff'+csv],{type:'text/csv'});
   const a = document.createElement('a');
