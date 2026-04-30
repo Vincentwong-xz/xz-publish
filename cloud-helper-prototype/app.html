@@ -601,67 +601,76 @@ table.tickets tr:hover { background: #1a1a20; }
 .trend-bar .b.before { background: #555; }
 .trend-bar .b.after { background: var(--green); }
 
-/* ===== Gauge (Top 求助问题类型) ===== */
-.gauge-row {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 12px;
-}
-@media (max-width: 1400px) {
-  .gauge-row { grid-template-columns: repeat(3, 1fr); }
-}
-.gauge {
-  background: var(--bg-3);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 14px 10px 12px;
-  text-align: center;
-}
-.gauge-arc {
-  position: relative;
-  width: 130px;
-  height: 130px;
-  margin: 0 auto 6px;
-  border-radius: 50%;
+/* ===== Donut Chart (Top 求助问题类型) ===== */
+.donut-wrap {
   display: flex;
-  align-items: flex-end;
+  gap: 32px;
+  align-items: center;
   justify-content: center;
+  padding: 8px 0 4px;
 }
-.gauge-mask {
-  position: absolute;
-  top: 12px; left: 12px; right: 12px; bottom: 12px;
-  background: var(--bg-3);
+.donut {
+  position: relative;
+  width: 280px;
+  height: 280px;
   border-radius: 50%;
+  flex-shrink: 0;
+  transition: transform .3s;
+}
+.donut::before {
+  content: '';
+  position: absolute;
+  top: 60px; left: 60px; right: 60px; bottom: 60px;
+  background: var(--bg-2);
+  border-radius: 50%;
+  border: 1px solid var(--border);
   z-index: 1;
 }
-.gauge-num {
-  position: relative;
-  z-index: 2;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
-  margin-bottom: 22px;
-}
-.gauge-sub {
+.donut-center {
   position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 2;
-  bottom: 28px;
-  left: 0;
-  right: 0;
-  font-size: 10px;
-  color: var(--text-dim);
+  text-align: center;
+  pointer-events: none;
 }
-.gauge-name {
-  font-weight: 600;
-  font-size: 13px;
-  margin-top: 4px;
+.donut-center .num {
+  font-size: 26px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text);
 }
-.gauge-meta {
-  font-size: 10px;
+.donut-center .lbl {
+  font-size: 11px;
   color: var(--text-dim);
   margin-top: 2px;
 }
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 280px;
+}
+.donut-legend .item {
+  display: grid;
+  grid-template-columns: 14px 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.donut-legend .item:hover { border-color: var(--accent); }
+.donut-legend .sw {
+  width: 14px; height: 14px; border-radius: 3px;
+}
+.donut-legend .nm { font-weight: 600; }
+.donut-legend .ct { color: var(--text-dim); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.donut-legend .pc { font-weight: 700; font-family: 'JetBrains Mono', monospace; min-width: 48px; text-align: right; }
 </style>
 </head>
 <body>
@@ -1083,7 +1092,10 @@ table.tickets tr:hover { background: #1a1a20; }
               <button>导出</button>
             </span>
           </h3>
-          <div id="hint-gauges" class="gauge-row"></div>
+          <div class="donut-wrap">
+            <div id="hint-donut" class="donut"></div>
+            <div id="hint-legend" class="donut-legend"></div>
+          </div>
           <div style="margin-top:14px">
             <table class="tickets">
               <thead><tr><th>排名</th><th>问题类型</th><th>求助次数</th><th>占比</th><th>平均处理时长</th><th>总处理时长</th><th>操作</th></tr></thead>
@@ -1288,22 +1300,30 @@ function renderInsight(){
     {name:'泊车',     count:412,  avg:55, color:'#1abc9c'},
   ];
   const total = HINT_DATA.reduce((s,h)=>s+h.count,0);
-  const maxCount = Math.max(...HINT_DATA.map(h=>h.count));
-  const gauges = document.getElementById('hint-gauges');
-  if (gauges){
-    gauges.innerHTML = HINT_DATA.map(h => {
-      const pct = Math.round(h.count / maxCount * 100);
-      const angle = pct * 1.8; // 0~180deg semicircle
-      return `
-        <div class="gauge">
-          <div class="gauge-arc" style="background:conic-gradient(from 270deg, ${h.color} 0deg ${angle}deg, #2a2a30 ${angle}deg 180deg, transparent 180deg 360deg)">
-            <div class="gauge-mask"></div>
-            <div class="gauge-num">${h.count.toLocaleString()}</div>
-            <div class="gauge-sub">次</div>
-          </div>
-          <div class="gauge-name">${h.name}</div>
-          <div class="gauge-meta">平均 ${h.avg}s · 占比 ${(h.count/total*100).toFixed(1)}%</div>
-        </div>`;
+  // 饼图：conic-gradient 拼接
+  const donut = document.getElementById('hint-donut');
+  if (donut){
+    let acc = 0;
+    const stops = HINT_DATA.map(h => {
+      const start = (acc / total) * 360;
+      acc += h.count;
+      const end = (acc / total) * 360;
+      return `${h.color} ${start.toFixed(2)}deg ${end.toFixed(2)}deg`;
+    }).join(', ');
+    donut.style.background = `conic-gradient(from -90deg, ${stops})`;
+    donut.innerHTML = `<div class="donut-center"><div class="num">${total.toLocaleString()}</div><div class="lbl">总求助次数</div></div>`;
+  }
+  // 图例
+  const legend = document.getElementById('hint-legend');
+  if (legend){
+    legend.innerHTML = HINT_DATA.map(h => {
+      const pct = (h.count/total*100).toFixed(1);
+      return `<div class="item">
+        <span class="sw" style="background:${h.color}"></span>
+        <span class="nm">${h.name}</span>
+        <span class="ct">${h.count.toLocaleString()} 次</span>
+        <span class="pc" style="color:${h.color}">${pct}%</span>
+      </div>`;
     }).join('');
   }
   // Rank table
