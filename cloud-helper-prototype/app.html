@@ -953,12 +953,7 @@ table.tickets tr:hover { background: #1a1a20; }
             </select>
           </th>
           <th><span class="col-name">状态</span><select class="col-filter" id="cf-status" onchange="renderStats()"><option value="">全部</option></select></th>
-          <th><span class="col-name">操作录屏 / 监控日志</span><select class="col-filter" id="cf-log" onchange="renderStats()"><option value="">全部</option><option value="has">有录屏</option></select></th>
-          <th><span class="col-name">备注</span>
-            <select class="col-filter" id="cf-note" onchange="renderStats()">
-              <option value="">全部</option><option value="has">有备注</option><option value="none">无备注</option>
-            </select>
-          </th>
+          <th>操作录屏 / 监控日志</th>
         </tr>
       </thead>
       <tbody id="rows"></tbody>
@@ -1061,7 +1056,7 @@ table.tickets tr:hover { background: #1a1a20; }
                   </select>
                 </th>
                 <th><span class="col-name">状态</span><select class="col-filter" id="tf-status" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
-                <th><span class="col-name">操作</span><select class="col-filter" id="tf-act" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
+                <th>操作</th>
               </tr>
             </thead>
             <tbody id="ad-tickets"></tbody>
@@ -1492,7 +1487,6 @@ function renderAdminTickets(){
   fillIfEmpty('tf-op',  [...new Set(ADMIN_TICKETS.map(r=>r.op))].sort());
   fillIfEmpty('tf-hint',[...new Set(ADMIN_TICKETS.map(r=>r.hint))].sort());
   fillIfEmpty('tf-status',[...new Set(ADMIN_TICKETS.map(r=>r.status))]);
-  fillIfEmpty('tf-act', ['回放','强制转派','强制接管']);
 
   const from = document.getElementById('t-from')?.value || '';
   const to = document.getElementById('t-to')?.value || '';
@@ -1703,8 +1697,6 @@ function renderStats(){
   const cfSuc = document.getElementById('cf-success').value;
   const cfEsc = document.getElementById('cf-esc').value;
   const cfSt = document.getElementById('cf-status').value;
-  const cfLog = document.getElementById('cf-log').value;
-  const cfNote = document.getElementById('cf-note').value;
   const filtered = DATA.filter(r => {
     if (from && r.time < from.replace('T',' ')) return false;
     if (to && r.time > to.replace('T',' ')) return false;
@@ -1716,9 +1708,6 @@ function renderStats(){
     if (cfSuc && r.success !== cfSuc) return false;
     if (cfEsc && r.esc !== cfEsc) return false;
     if (cfSt && r.status[0] !== cfSt) return false;
-    if (cfLog === 'has' && !r.log) return false;
-    if (cfNote === 'has' && !r.note) return false;
-    if (cfNote === 'none' && r.note) return false;
     return true;
   });
   applyActiveFilterStyle();
@@ -1731,7 +1720,6 @@ function renderStats(){
       <td><span class="pill ${r.esc==='是'?'orange':'green'}">${r.esc}</span></td>
       <td><span class="pill ${r.status[1]}">${r.status[0]}</span></td>
       <td><span class="link-btn" onclick="alert('打开录屏: ${r.log}')">▶ 回放</span> · <span class="link-btn" onclick="alert('查看日志: ${r.log}')">日志</span></td>
-      <td style="color:var(--text-dim)">${r.note||'-'}</td>
     </tr>
   `).join('');
   const n = filtered.length || 1;
@@ -1742,8 +1730,8 @@ function renderStats(){
   document.getElementById('kpi-dur').textContent = Math.round(filtered.reduce((s,r)=>s+r.dur,0)/n);
 }
 function exportCSV(){
-  const head = ['时间','车辆','Hint类型','处理时长(s)','是否执行成功','是否升单','状态','日志ID','备注'];
-  const rows = DATA.map(r=>[r.time,r.vid,r.hint,r.dur,r.success,r.esc,r.status[0],r.log,r.note]);
+  const head = ['时间','车辆','Hint类型','处理时长(s)','是否执行成功','是否升单','状态','日志ID'];
+  const rows = DATA.map(r=>[r.time,r.vid,r.hint,r.dur,r.success,r.esc,r.status[0],r.log]);
   const csv = [head, ...rows].map(r=>r.join(',')).join('\n');
   const blob = new Blob(['\ufeff'+csv],{type:'text/csv'});
   const a = document.createElement('a');
