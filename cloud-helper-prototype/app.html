@@ -1107,12 +1107,12 @@ table.tickets tr:hover { background: #1a1a20; }
         <div class="panel-block">
           <h3>路线问题诊断 · Top 高求助率路段</h3>
           <table class="tickets">
-            <thead><tr><th>路段</th><th>区域</th><th>30天求助率</th><th>主要问题</th><th>优化建议</th><th>操作</th></tr></thead>
+            <thead><tr><th>路段</th><th>区域</th><th>30天求助率</th><th>主要问题</th><th>优化建议</th></tr></thead>
             <tbody>
-              <tr><td>科研路 × 螺旋一路</td><td>生物岛</td><td><span class="pill red">38%</span></td><td>红绿灯识别</td><td>建议调整路线绕行 / 推送车端样本</td><td><span class="link-btn">应用建议</span></td></tr>
-              <tr><td>文体大道 (南段)</td><td>南沙区</td><td><span class="pill orange">22%</span></td><td>路沿被遮挡</td><td>反向作业 / 调整贴边参数</td><td><span class="link-btn">应用建议</span></td></tr>
-              <tr><td>学院路施工区</td><td>黄埔区</td><td><span class="pill red">41%</span></td><td>临时路障</td><td>立即更新地图</td><td><span class="link-btn">应用建议</span></td></tr>
-              <tr><td>香山路 × 银蕊街</td><td>生物岛</td><td><span class="pill orange">18%</span></td><td>行人密集</td><td>调整作业时段</td><td><span class="link-btn">应用建议</span></td></tr>
+              <tr><td>科研路 × 螺旋一路</td><td>生物岛</td><td><span class="pill red">38%</span></td><td>红绿灯识别</td><td>建议调整路线绕行 / 推送车端样本</td></tr>
+              <tr><td>文体大道 (南段)</td><td>南沙区</td><td><span class="pill orange">22%</span></td><td>路沿被遮挡</td><td>反向作业 / 调整贴边参数</td></tr>
+              <tr><td>学院路施工区</td><td>黄埔区</td><td><span class="pill red">41%</span></td><td>临时路障</td><td>立即更新地图</td></tr>
+              <tr><td>香山路 × 银蕊街</td><td>生物岛</td><td><span class="pill orange">18%</span></td><td>行人密集</td><td>调整作业时段</td></tr>
             </tbody>
           </table>
         </div>
@@ -1161,7 +1161,7 @@ table.tickets tr:hover { background: #1a1a20; }
         <div class="panel-block">
           <h3>③ 车辆健康档案 (Top 高频求助)</h3>
           <table class="tickets">
-            <thead><tr><th>车辆</th><th>区域</th><th>近 30 天求助</th><th>故障次数</th><th>主要问题</th><th>评级</th><th>操作</th></tr></thead>
+            <thead><tr><th>车辆</th><th>区域</th><th>近 30 天求助</th><th>主要问题</th><th>操作</th></tr></thead>
             <tbody id="health-rows"></tbody>
           </table>
         </div>
@@ -1341,7 +1341,7 @@ function renderInsight(){
         <td>${pct}%</td>
         <td>${h.avg}s</td>
         <td>${totalH} h</td>
-        <td><span class="link-btn">钻取</span> · <span class="link-btn">导出样本</span></td>
+        <td><span class="link-btn">导出样本</span></td>
       </tr>`;
     }).join('');
   }
@@ -1366,11 +1366,8 @@ function renderInsight(){
   const hr = document.getElementById('health-rows');
   if (hr) hr.innerHTML = VIDS.slice(0,5).map(v => {
     const cnt = rand(20,80);
-    const f = rand(0,8);
     const issues = ['路沿识别失败','复杂路口','行人闯入','贴边偏离','低电量预警'][rand(0,4)];
-    const grade = ['A','B','B','C','C','D'][rand(0,5)];
-    const gColor = {A:'green',B:'blue',C:'orange',D:'red'}[grade];
-    return `<tr><td><b>${v}</b></td><td>生物岛</td><td>${cnt}</td><td>${f}</td><td>${issues}</td><td><span class="pill ${gColor}">${grade} 级</span></td><td><span class="link-btn">详细档案</span> · <span class="link-btn">监控规则</span></td></tr>`;
+    return `<tr><td><b>${v}</b></td><td>生物岛</td><td>${cnt}</td><td>${issues}</td><td><span class="link-btn">详细档案</span></td></tr>`;
   }).join('');
 }
 
