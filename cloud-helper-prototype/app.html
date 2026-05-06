@@ -384,6 +384,19 @@ table.tickets th, table.tickets td {
   border-bottom: 1px solid var(--border);
 }
 table.tickets th { background: var(--bg-3); color: var(--text-dim); font-weight: 500; }
+table.tickets th .col-name { display: block; margin-bottom: 4px; font-size: 11px; }
+table.tickets th select.col-filter {
+  width: 100%;
+  background: var(--bg-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 11px;
+  padding: 3px 4px;
+  cursor: pointer;
+}
+table.tickets th select.col-filter:focus { outline: none; border-color: var(--accent); }
+table.tickets th select.col-filter.active { border-color: var(--accent); color: var(--accent); }
 table.tickets tr:hover { background: #1a1a20; }
 .pill { padding: 2px 8px; border-radius: 10px; font-size: 11px; }
 .pill.green { background: #1e6b3a; color: #c8f7d4; }
@@ -911,18 +924,6 @@ table.tickets tr:hover { background: #1a1a20; }
       <input type="datetime-local" id="from">
       <span style="color:var(--text-dim)">至</span>
       <input type="datetime-local" id="to">
-      <label style="margin-left:12px">车辆</label>
-      <input id="f-vid" placeholder="例: GZU_YKN_24088" style="width:180px">
-      <label style="margin-left:12px">Hint 类型</label>
-      <select id="f-hint">
-        <option value="">全部</option>
-        <option>变道</option>
-        <option>绕行</option>
-        <option>路口通过</option>
-        <option>贴边作业</option>
-        <option>避障</option>
-        <option>泊车</option>
-      </select>
       <button class="primary" onclick="renderStats()" style="margin-left:auto">查询</button>
       <button onclick="exportCSV()">导出</button>
     </div>
@@ -930,9 +931,34 @@ table.tickets tr:hover { background: #1a1a20; }
     <table class="tickets">
       <thead>
         <tr>
-          <th>时间</th><th>车辆</th><th>Hint 类型</th><th>处理时长</th>
-          <th>是否执行成功</th><th>是否升单</th><th>状态</th>
-          <th>操作录屏 / 监控日志</th><th>备注</th>
+          <th>时间</th>
+          <th><span class="col-name">车辆</span><select class="col-filter" id="cf-vid" onchange="renderStats()"><option value="">全部</option></select></th>
+          <th><span class="col-name">Hint 类型</span><select class="col-filter" id="cf-hint" onchange="renderStats()"><option value="">全部</option></select></th>
+          <th><span class="col-name">处理时长</span>
+            <select class="col-filter" id="cf-dur" onchange="renderStats()">
+              <option value="">全部</option>
+              <option value="lt60">&lt; 60s</option>
+              <option value="60-120">60–120s</option>
+              <option value="gt120">&gt; 120s</option>
+            </select>
+          </th>
+          <th><span class="col-name">是否执行成功</span>
+            <select class="col-filter" id="cf-success" onchange="renderStats()">
+              <option value="">全部</option><option>是</option><option>否</option>
+            </select>
+          </th>
+          <th><span class="col-name">是否升单</span>
+            <select class="col-filter" id="cf-esc" onchange="renderStats()">
+              <option value="">全部</option><option>是</option><option>否</option>
+            </select>
+          </th>
+          <th><span class="col-name">状态</span><select class="col-filter" id="cf-status" onchange="renderStats()"><option value="">全部</option></select></th>
+          <th><span class="col-name">操作录屏 / 监控日志</span><select class="col-filter" id="cf-log" onchange="renderStats()"><option value="">全部</option><option value="has">有录屏</option></select></th>
+          <th><span class="col-name">备注</span>
+            <select class="col-filter" id="cf-note" onchange="renderStats()">
+              <option value="">全部</option><option value="has">有备注</option><option value="none">无备注</option>
+            </select>
+          </th>
         </tr>
       </thead>
       <tbody id="rows"></tbody>
@@ -1012,21 +1038,32 @@ table.tickets tr:hover { background: #1a1a20; }
         </div>
 
         <div class="panel-block">
-          <h3>异常工单 Dashboard</h3>
+          <h3>工单 Dashboard</h3>
           <div class="filter-bar" style="margin-bottom:10px">
-            <label>异常类型</label>
-            <select id="t-anomaly">
-              <option value="">全部</option><option>超时</option><option>多次转派</option><option>升级 Remote</option><option>执行失败</option>
-            </select>
-            <label style="margin-left:12px">操作员</label>
-            <input id="t-op" placeholder="姓名">
-            <label style="margin-left:12px">车辆</label>
-            <input id="t-vid" placeholder="车号">
+            <label>时间范围</label>
+            <input type="datetime-local" id="t-from">
+            <span style="color:var(--text-dim)">至</span>
+            <input type="datetime-local" id="t-to">
             <button class="primary" onclick="renderAdminTickets()" style="margin-left:auto">查询</button>
-            <button onclick="exportCSV()">导出</button>
+            <button onclick="exportAdminCSV()">导出</button>
           </div>
           <table class="tickets">
-            <thead><tr><th>时间</th><th>工单号</th><th>车辆</th><th>操作员</th><th>Hint</th><th>异常</th><th>状态</th><th>操作</th></tr></thead>
+            <thead>
+              <tr>
+                <th>时间</th>
+                <th><span class="col-name">工单号</span><select class="col-filter" id="tf-tid" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
+                <th><span class="col-name">车辆</span><select class="col-filter" id="tf-vid" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
+                <th><span class="col-name">操作员</span><select class="col-filter" id="tf-op" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
+                <th><span class="col-name">Hint</span><select class="col-filter" id="tf-hint" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
+                <th><span class="col-name">异常</span>
+                  <select class="col-filter" id="tf-anomaly" onchange="renderAdminTickets()">
+                    <option value="">全部</option><option value="none">无异常</option><option>超时</option><option>多次转派</option><option>升级 Remote</option><option>执行失败</option>
+                  </select>
+                </th>
+                <th><span class="col-name">状态</span><select class="col-filter" id="tf-status" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
+                <th><span class="col-name">操作</span><select class="col-filter" id="tf-act" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
+              </tr>
+            </thead>
             <tbody id="ad-tickets"></tbody>
           </table>
         </div>
@@ -1414,27 +1451,96 @@ function renderTeam(){
   }).join('');
 }
 
+// Generate admin ticket dataset once, then filter in-place
+let ADMIN_TICKETS = null;
+function buildAdminTickets(){
+  const ANOMALY = ['超时','多次转派','升级 Remote','执行失败','无异常','无异常','无异常'];
+  const STATUSES = ['处理中','已完成','已升单','已超时','已关闭'];
+  const arr = [];
+  for (let i=0;i<60;i++){
+    const d = new Date(Date.now() - rand(1,1440)*60000);
+    const t = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    arr.push({
+      time: t,
+      tid: `T${100000+i}`,
+      vid: VIDS[rand(0,VIDS.length-1)],
+      op: OPS[rand(0,OPS.length-1)][0],
+      hint: HINT[rand(0,HINT.length-1)],
+      anomaly: ANOMALY[rand(0,ANOMALY.length-1)],
+      status: STATUSES[rand(0,STATUSES.length-1)],
+    });
+  }
+  return arr;
+}
 function renderAdminTickets(){
   const tbody = document.getElementById('ad-tickets');
   if (!tbody) return;
-  const ANOMALY = ['超时','多次转派','升级 Remote','执行失败'];
-  const rows = [];
-  for (let i=0;i<30;i++){
-    const d = new Date(Date.now() - rand(1,600)*60000);
-    const t = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    const an = ANOMALY[rand(0,3)];
-    const colors = {'超时':'red','多次转派':'orange','升级 Remote':'orange','执行失败':'red'};
-    rows.push(`<tr>
-      <td>${t}</td><td>T${100000+i}</td>
-      <td>${VIDS[rand(0,VIDS.length-1)]}</td>
-      <td>${OPS[rand(0,OPS.length-1)][0]}</td>
-      <td><span class="pill blue">${HINT[rand(0,HINT.length-1)]}</span></td>
-      <td><span class="pill ${colors[an]}">${an}</span></td>
-      <td><span class="pill orange">处理中</span></td>
-      <td><span class="link-btn">回放</span> · <span class="link-btn">强制转派</span> · <span class="link-btn">强制接管</span></td>
-    </tr>`);
-  }
-  tbody.innerHTML = rows.join('');
+  if (!ADMIN_TICKETS) ADMIN_TICKETS = buildAdminTickets();
+  // Populate dropdowns once
+  const fillIfEmpty = (id, values) => {
+    const sel = document.getElementById(id);
+    if (!sel || sel.dataset.filled) return;
+    values.forEach(v => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = v;
+      sel.appendChild(o);
+    });
+    sel.dataset.filled = '1';
+  };
+  fillIfEmpty('tf-tid', [...new Set(ADMIN_TICKETS.map(r=>r.tid))]);
+  fillIfEmpty('tf-vid', [...new Set(ADMIN_TICKETS.map(r=>r.vid))].sort());
+  fillIfEmpty('tf-op',  [...new Set(ADMIN_TICKETS.map(r=>r.op))].sort());
+  fillIfEmpty('tf-hint',[...new Set(ADMIN_TICKETS.map(r=>r.hint))].sort());
+  fillIfEmpty('tf-status',[...new Set(ADMIN_TICKETS.map(r=>r.status))]);
+  fillIfEmpty('tf-act', ['回放','强制转派','强制接管']);
+
+  const from = document.getElementById('t-from')?.value || '';
+  const to = document.getElementById('t-to')?.value || '';
+  const fTid = document.getElementById('tf-tid').value;
+  const fVid = document.getElementById('tf-vid').value;
+  const fOp = document.getElementById('tf-op').value;
+  const fHint = document.getElementById('tf-hint').value;
+  const fAn = document.getElementById('tf-anomaly').value;
+  const fSt = document.getElementById('tf-status').value;
+  // (act filter is purely visual / no semantic field — non-functional but visible)
+
+  const colors = {'超时':'red','多次转派':'orange','升级 Remote':'orange','执行失败':'red','无异常':'green'};
+  const sColors = {'处理中':'orange','已完成':'green','已升单':'orange','已超时':'red','已关闭':'blue'};
+  const filtered = ADMIN_TICKETS.filter(r => {
+    if (from && r.time < from.replace('T',' ')) return false;
+    if (to && r.time > to.replace('T',' ')) return false;
+    if (fTid && r.tid !== fTid) return false;
+    if (fVid && r.vid !== fVid) return false;
+    if (fOp && r.op !== fOp) return false;
+    if (fHint && r.hint !== fHint) return false;
+    if (fAn === 'none' && r.anomaly !== '无异常') return false;
+    if (fAn && fAn !== 'none' && r.anomaly !== fAn) return false;
+    if (fSt && r.status !== fSt) return false;
+    return true;
+  });
+  tbody.innerHTML = filtered.map(r => `<tr>
+    <td>${r.time}</td><td>${r.tid}</td>
+    <td>${r.vid}</td>
+    <td>${r.op}</td>
+    <td><span class="pill blue">${r.hint}</span></td>
+    <td>${r.anomaly==='无异常' ? '<span class="pill green">无异常</span>' : `<span class="pill ${colors[r.anomaly]||'orange'}">${r.anomaly}</span>`}</td>
+    <td><span class="pill ${sColors[r.status]||'blue'}">${r.status}</span></td>
+    <td><span class="link-btn">回放</span> · <span class="link-btn">强制转派</span> · <span class="link-btn">强制接管</span></td>
+  </tr>`).join('');
+
+  document.querySelectorAll('#view-admin .col-filter').forEach(s => {
+    if (s.value) s.classList.add('active'); else s.classList.remove('active');
+  });
+}
+function exportAdminCSV(){
+  if (!ADMIN_TICKETS) return;
+  const head = ['时间','工单号','车辆','操作员','Hint','异常','状态'];
+  const rows = ADMIN_TICKETS.map(r=>[r.time,r.tid,r.vid,r.op,r.hint,r.anomaly,r.status]);
+  const csv = [head, ...rows].map(r=>r.join(',')).join('\n');
+  const blob = new Blob(['\ufeff'+csv],{type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'admin-tickets.csv'; a.click();
 }
 
 function renderVehicles(){ /* removed: merged into Insight Center */ }
@@ -1566,18 +1672,56 @@ function genData(n){
   return arr;
 }
 let DATA = genData(48);
+function populateColOptions(){
+  // Populate dropdowns once on first render
+  const fillIfEmpty = (id, values) => {
+    const sel = document.getElementById(id);
+    if (!sel || sel.dataset.filled) return;
+    values.forEach(v => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = v;
+      sel.appendChild(o);
+    });
+    sel.dataset.filled = '1';
+  };
+  fillIfEmpty('cf-vid', [...new Set(DATA.map(r=>r.vid))].sort());
+  fillIfEmpty('cf-hint', [...new Set(DATA.map(r=>r.hint))].sort());
+  fillIfEmpty('cf-status', [...new Set(DATA.map(r=>r.status[0]))]);
+}
+function applyActiveFilterStyle(){
+  document.querySelectorAll('.col-filter').forEach(s => {
+    if (s.value) s.classList.add('active'); else s.classList.remove('active');
+  });
+}
 function renderStats(){
+  populateColOptions();
   const from = document.getElementById('from').value;
   const to = document.getElementById('to').value;
-  const fv = document.getElementById('f-vid').value.trim().toUpperCase();
-  const fh = document.getElementById('f-hint').value;
+  const cfVid = document.getElementById('cf-vid').value;
+  const cfHint = document.getElementById('cf-hint').value;
+  const cfDur = document.getElementById('cf-dur').value;
+  const cfSuc = document.getElementById('cf-success').value;
+  const cfEsc = document.getElementById('cf-esc').value;
+  const cfSt = document.getElementById('cf-status').value;
+  const cfLog = document.getElementById('cf-log').value;
+  const cfNote = document.getElementById('cf-note').value;
   const filtered = DATA.filter(r => {
     if (from && r.time < from.replace('T',' ')) return false;
     if (to && r.time > to.replace('T',' ')) return false;
-    if (fv && !r.vid.includes(fv)) return false;
-    if (fh && r.hint !== fh) return false;
+    if (cfVid && r.vid !== cfVid) return false;
+    if (cfHint && r.hint !== cfHint) return false;
+    if (cfDur === 'lt60' && r.dur >= 60) return false;
+    if (cfDur === '60-120' && (r.dur < 60 || r.dur > 120)) return false;
+    if (cfDur === 'gt120' && r.dur <= 120) return false;
+    if (cfSuc && r.success !== cfSuc) return false;
+    if (cfEsc && r.esc !== cfEsc) return false;
+    if (cfSt && r.status[0] !== cfSt) return false;
+    if (cfLog === 'has' && !r.log) return false;
+    if (cfNote === 'has' && !r.note) return false;
+    if (cfNote === 'none' && r.note) return false;
     return true;
   });
+  applyActiveFilterStyle();
   document.getElementById('rows').innerHTML = filtered.map(r => `
     <tr>
       <td>${r.time}</td><td>${r.vid}</td>
