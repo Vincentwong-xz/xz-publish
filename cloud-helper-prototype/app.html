@@ -1022,12 +1022,11 @@ table.tickets tr:hover { background: #1a1a20; }
       <!-- 工单管理 -->
       <div class="admin-page" data-page="tickets">
         <h2>工单管理</h2>
-        <div class="page-sub">全量工单 · 异常监控 · 强制转派 / 接管 · 工单回放</div>
+        <div class="page-sub">全量工单 · 异常监控 · 强制接管 · 工单回放</div>
 
         <div class="kpi-row k5">
           <div class="stat-card"><div class="lbl">今日工单</div><div class="num">486</div></div>
           <div class="stat-card"><div class="lbl">超时</div><div class="num" style="color:var(--red)">12</div></div>
-          <div class="stat-card"><div class="lbl">多次转派</div><div class="num" style="color:var(--orange)">5</div></div>
           <div class="stat-card"><div class="lbl">升级 Remote</div><div class="num" style="color:var(--orange)">8</div></div>
           <div class="stat-card"><div class="lbl">执行失败</div><div class="num" style="color:var(--red)">3</div></div>
         </div>
@@ -1052,7 +1051,7 @@ table.tickets tr:hover { background: #1a1a20; }
                 <th><span class="col-name">Hint</span><select class="col-filter" id="tf-hint" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
                 <th><span class="col-name">异常</span>
                   <select class="col-filter" id="tf-anomaly" onchange="renderAdminTickets()">
-                    <option value="">全部</option><option value="none">无异常</option><option>超时</option><option>多次转派</option><option>升级 Remote</option><option>执行失败</option>
+                    <option value="">全部</option><option value="none">无异常</option><option>超时</option><option>升级 Remote</option><option>执行失败</option>
                   </select>
                 </th>
                 <th><span class="col-name">状态</span><select class="col-filter" id="tf-status" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
@@ -1449,7 +1448,7 @@ function renderTeam(){
 // Generate admin ticket dataset once, then filter in-place
 let ADMIN_TICKETS = null;
 function buildAdminTickets(){
-  const ANOMALY = ['超时','多次转派','升级 Remote','执行失败','无异常','无异常','无异常'];
+  const ANOMALY = ['超时','升级 Remote','执行失败','无异常','无异常','无异常'];
   const STATUSES = ['处理中','已完成','已升单','已超时','已关闭'];
   const arr = [];
   for (let i=0;i<60;i++){
@@ -1498,7 +1497,7 @@ function renderAdminTickets(){
   const fSt = document.getElementById('tf-status').value;
   // (act filter is purely visual / no semantic field — non-functional but visible)
 
-  const colors = {'超时':'red','多次转派':'orange','升级 Remote':'orange','执行失败':'red','无异常':'green'};
+  const colors = {'超时':'red','升级 Remote':'orange','执行失败':'red','无异常':'green'};
   const sColors = {'处理中':'orange','已完成':'green','已升单':'orange','已超时':'red','已关闭':'blue'};
   const filtered = ADMIN_TICKETS.filter(r => {
     if (from && r.time < from.replace('T',' ')) return false;
@@ -1519,7 +1518,7 @@ function renderAdminTickets(){
     <td><span class="pill blue">${r.hint}</span></td>
     <td>${r.anomaly==='无异常' ? '<span class="pill green">无异常</span>' : `<span class="pill ${colors[r.anomaly]||'orange'}">${r.anomaly}</span>`}</td>
     <td><span class="pill ${sColors[r.status]||'blue'}">${r.status}</span></td>
-    <td><span class="link-btn">回放</span> · <span class="link-btn">强制转派</span> · <span class="link-btn">强制接管</span></td>
+    <td><span class="link-btn">回放</span> · <span class="link-btn">强制接管</span></td>
   </tr>`).join('');
 
   document.querySelectorAll('#view-admin .col-filter').forEach(s => {
@@ -1546,7 +1545,7 @@ const RULES = [
   {name:'长时间停车未求助', cond:'静止 > 10min 且无 hint', notify:'主动派单核查', enabled:true, level:'red'},
   {name:'执行失败追踪', cond:'操作员指令车端执行失败', notify:'记录到训练样本 + 复核', enabled:true, level:'blue'},
   {name:'夜间异常停放', cond:'非充电桩区域停放 > 30min', notify:'通知运维 + 现场核查', enabled:true, level:'orange'},
-  {name:'操作员长时间无响应', cond:'坐席 > 5min 无操作', notify:'告警 + 转派', enabled:true, level:'red'},
+  {name:'操作员长时间无响应', cond:'坐席 > 5min 无操作', notify:'告警 + 通知主管', enabled:true, level:'red'},
   {name:'超时工单', cond:'单工单处理 > 120s', notify:'升级 Remote', enabled:true, level:'red'},
   {name:'升单率突增', cond:'操作员升单率 > 30%', notify:'通知主管复核', enabled:false, level:'orange'},
 ];
@@ -1642,7 +1641,7 @@ setInterval(() => {
 
 // ====== 统计 ======
 const HINT = ['变道','绕行','路口通过','贴边作业','避障','泊车'];
-const STATUS = [['已完成','green'],['已升单','orange'],['已超时','red'],['已转交','blue']];
+const STATUS = [['已完成','green'],['已升单','orange'],['已超时','red']];
 const VIDS = ['GZU_YKN_24088','GZU_YKU_25214','GZU_YKU_25216','GZU_YKU_25218','GZU_YKN_24121','GZU_YKU_25215','GZU_YKN_24051'];
 function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
 function pad(n){return String(n).padStart(2,'0')}
