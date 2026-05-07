@@ -1652,7 +1652,7 @@ function genData(n){
     const success = Math.random() < 0.92;
     const esc = Math.random() < 0.18;
     const dur = rand(8,180);
-    const st = esc ? STATUS[1] : (dur > 120 ? STATUS[2] : STATUS[Math.random()<0.05?3:0]);
+    const st = esc ? STATUS[1] : (dur > 120 ? STATUS[2] : STATUS[0]);
     arr.push({
       time: `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`,
       vid: VIDS[rand(0,VIDS.length-1)],
