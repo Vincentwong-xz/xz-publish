@@ -1112,7 +1112,7 @@ table.tickets tr:hover { background: #1a1a20; }
           <div class="stat-card"><div class="lbl">Top 问题类型</div><div class="num" style="color:var(--orange)">6</div></div>
           <div class="stat-card"><div class="lbl">高求助路段</div><div class="num">8</div></div>
           <div class="stat-card"><div class="lbl">车端误判待反馈</div><div class="num" style="color:var(--red)">42</div></div>
-          <div class="stat-card"><div class="lbl">高频求助车辆（月 &gt; 30 次）</div><div class="num" style="color:var(--red)">3</div></div>
+          <div class="stat-card"><div class="lbl">高频求助车辆（每公里求助次数 &gt; 0.5）</div><div class="num" style="color:var(--red)">3</div></div>
         </div>
 
         <!-- 1. 场景洞察 -->
@@ -1129,16 +1129,16 @@ table.tickets tr:hover { background: #1a1a20; }
           </div>
           <div style="margin-top:14px">
             <table class="tickets">
-              <thead><tr><th>排名</th><th>问题类型</th><th>求助次数</th><th>占比</th><th>平均处理时长</th><th>总处理时长</th><th>操作</th></tr></thead>
+              <thead><tr><th>排名</th><th>问题类型</th><th>每公里求助次数</th><th>占比</th><th>平均处理时长</th><th>总处理时长</th><th>操作</th></tr></thead>
               <tbody id="hint-rank"></tbody>
             </table>
           </div>
         </div>
 
         <div class="panel-block">
-          <h3>路线问题诊断 · Top 高求助率路段</h3>
+          <h3>路线问题诊断 · Top 高每公里求助次数路段</h3>
           <table class="tickets">
-            <thead><tr><th>路段</th><th>区域</th><th>30天求助率</th><th>主要问题</th><th>优化建议</th></tr></thead>
+            <thead><tr><th>路段</th><th>区域</th><th>30天每公里求助次数</th><th>主要问题</th><th>优化建议</th></tr></thead>
             <tbody>
               <tr><td>科研路 × 螺旋一路</td><td>生物岛</td><td><span class="pill red">38%</span></td><td>红绿灯识别</td><td>建议调整路线绕行 / 推送车端样本</td></tr>
               <tr><td>文体大道 (南段)</td><td>南沙区</td><td><span class="pill orange">22%</span></td><td>路沿被遮挡</td><td>反向作业 / 调整贴边参数</td></tr>
@@ -1190,7 +1190,7 @@ table.tickets tr:hover { background: #1a1a20; }
 
         <!-- 3. 车辆健康（从原车辆管理迁移） -->
         <div class="panel-block">
-          <h3>③ 车辆健康档案 (Top 高频求助)</h3>
+          <h3>③ 车辆健康档案 (Top 高每公里求助次数)</h3>
           <table class="tickets">
             <thead><tr><th>车辆</th><th>区域</th><th>近 30 天求助</th><th>主要问题</th><th>操作</th></tr></thead>
             <tbody id="health-rows"></tbody>
@@ -1342,7 +1342,7 @@ function renderInsight(){
       return `${h.color} ${start.toFixed(2)}deg ${end.toFixed(2)}deg`;
     }).join(', ');
     donut.style.background = `conic-gradient(from -90deg, ${stops})`;
-    donut.innerHTML = `<div class="donut-center"><div class="num">${total.toLocaleString()}</div><div class="lbl">总求助次数</div></div>`;
+    donut.innerHTML = `<div class="donut-center"><div class="num">${total.toLocaleString()}</div><div class="lbl">每公里求助次数</div></div>`;
   }
   // 图例
   const legend = document.getElementById('hint-legend');
