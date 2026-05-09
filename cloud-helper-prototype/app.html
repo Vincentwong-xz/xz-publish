@@ -522,16 +522,20 @@ table.tickets tr:hover { background: #1a1a20; }
 
 .schedule-grid {
   display: grid;
-  grid-template-columns: 100px repeat(7, 1fr);
-  gap: 4px;
+  grid-template-columns: 90px repeat(7, 1fr);
+  gap: 3px;
   font-size: 11px;
 }
-.schedule-grid .h { padding: 6px; color: var(--text-dim); text-align: center; }
-.schedule-grid .cell { padding: 6px; background: var(--bg-3); border-radius: 3px; min-height: 28px; text-align: center; }
-.schedule-grid .cell.morning { background: #1e3a6b; color: #c8d4f7; }
-.schedule-grid .cell.day { background: #1e6b3a; color: #c8f7d4; }
-.schedule-grid .cell.night { background: #3a2a6b; color: #c8b8ff; }
-.schedule-grid .cell.off { background: var(--bg-3); color: var(--text-dim); }
+.schedule-grid .h { padding: 6px; color: var(--text-dim); text-align: center; font-weight: 600; }
+.schedule-grid .cell { padding: 4px 3px; background: var(--bg-3); border-radius: 3px; min-height: 32px; text-align: center; display: flex; flex-direction: column; gap: 2px; align-items: center; justify-content: center; cursor: pointer; transition: border .15s; border: 1px solid transparent; }
+.schedule-grid .cell:hover { border-color: var(--accent); }
+.schedule-grid .cell .time-slot { font-size: 10px; padding: 2px 5px; border-radius: 3px; white-space: nowrap; }
+.schedule-grid .cell .time-slot.s1 { background: #1e3a6b; color: #c8d4f7; }
+.schedule-grid .cell .time-slot.s2 { background: #1e6b3a; color: #c8f7d4; }
+.schedule-grid .cell .time-slot.s3 { background: #3a2a6b; color: #c8b8ff; }
+.schedule-grid .cell.off { color: var(--text-dim); font-size: 10px; }
+.schedule-grid .cell .add-slot { font-size: 10px; color: var(--accent); opacity: 0; transition: opacity .15s; }
+.schedule-grid .cell:hover .add-slot { opacity: 1; }
 
 .rule-card {
   background: var(--bg-3);
@@ -1308,8 +1312,18 @@ const OPS = [
   ['gaohe','操作员','offline','离线'],
 ];
 const SHIFT_DAYS = ['周一','周二','周三','周四','周五','周六','周日'];
-const SHIFTS = ['morning','day','night','off'];
-const SHIFT_LABEL = {morning:'早班 06-14', day:'白班 14-22', night:'夜班 22-06', off:'休'};
+const SLOT_POOL = [
+  ['06:00-14:00','s1'], ['07:00-15:00','s1'], ['08:00-16:00','s1'],
+  ['09:00-17:00','s1'], ['10:00-18:00','s2'], ['12:00-20:00','s2'],
+  ['14:00-22:00','s2'], ['16:00-00:00','s3'], ['18:00-02:00','s3'],
+  ['22:00-06:00','s3']
+];
+function genSlots(){
+  const r = Math.random();
+  if (r < 0.12) return [];
+  if (r < 0.25) return [SLOT_POOL[rand(0,SLOT_POOL.length-1)], SLOT_POOL[rand(0,SLOT_POOL.length-1)]];
+  return [SLOT_POOL[rand(0,SLOT_POOL.length-1)]];
+}
 
 function renderAdmin(){ renderAdminPage('team'); }
 
@@ -1417,8 +1431,12 @@ function renderTeam(){
     OPS.slice(0,8).forEach(o=>{
       html += `<div class="h" style="text-align:left;padding-left:8px">${o[0]}</div>`;
       for (let i=0;i<7;i++){
-        const s = SHIFTS[Math.floor(Math.random()*4)];
-        html += `<div class="cell ${s}">${SHIFT_LABEL[s]}</div>`;
+        const slots = genSlots();
+        if (slots.length === 0){
+          html += `<div class="cell off">休 <span class="add-slot">+ 排班</span></div>`;
+        } else {
+          html += `<div class="cell">${slots.map(s=>`<span class="time-slot ${s[1]}">${s[0]}</span>`).join('')}<span class="add-slot">+ 时段</span></div>`;
+        }
       }
     });
     sd.innerHTML = html;
