@@ -937,7 +937,7 @@ table.tickets tr:hover { background: #1a1a20; }
         <tr>
           <th>时间</th>
           <th><span class="col-name">车辆</span><select class="col-filter" id="cf-vid" onchange="renderStats()"><option value="">全部</option></select></th>
-          <th><span class="col-name">Hint 类型</span><select class="col-filter" id="cf-hint" onchange="renderStats()"><option value="">全部</option></select></th>
+          <th><span class="col-name">异常类型</span><select class="col-filter" id="cf-hint" onchange="renderStats()"><option value="">全部</option></select></th>
           <th><span class="col-name">处理时长</span>
             <select class="col-filter" id="cf-dur" onchange="renderStats()">
               <option value="">全部</option>
@@ -1052,7 +1052,7 @@ table.tickets tr:hover { background: #1a1a20; }
                 <th><span class="col-name">工单号</span><select class="col-filter" id="tf-tid" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
                 <th><span class="col-name">车辆</span><select class="col-filter" id="tf-vid" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
                 <th><span class="col-name">操作员</span><select class="col-filter" id="tf-op" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
-                <th><span class="col-name">Hint</span><select class="col-filter" id="tf-hint" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
+                <th><span class="col-name">异常类型</span><select class="col-filter" id="tf-hint" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
                 <th><span class="col-name">异常</span>
                   <select class="col-filter" id="tf-anomaly" onchange="renderAdminTickets()">
                     <option value="">全部</option><option value="none">无异常</option><option>超时</option><option>升级 Remote</option><option>执行失败</option>
@@ -1101,7 +1101,7 @@ table.tickets tr:hover { background: #1a1a20; }
               <tr><td>低电量车辆扫描</td><td>每 15 分钟</td><td>全部</td><td>5 分钟前</td><td><span class="pill orange">5 台预警</span></td><td><span class="link-btn">详情</span></td></tr>
               <tr><td>网络弱信号巡检</td><td>每 5 分钟</td><td>作业中</td><td>2 分钟前</td><td><span class="pill green">正常</span></td><td><span class="link-btn">详情</span></td></tr>
               <tr><td>长时间停车未求助核查</td><td>每 30 分钟</td><td>作业中</td><td>10 分钟前</td><td><span class="pill orange">2 台核查中</span></td><td><span class="link-btn">详情</span></td></tr>
-              <tr><td>同类 hint 频次分析</td><td>每小时</td><td>全部</td><td>30 分钟前</td><td><span class="pill blue">已生成 3 条建议</span></td><td><span class="link-btn">详情</span></td></tr>
+              <tr><td>同类异常频次分析</td><td>每小时</td><td>全部</td><td>30 分钟前</td><td><span class="pill blue">已生成 3 条建议</span></td><td><span class="link-btn">详情</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -1181,7 +1181,7 @@ table.tickets tr:hover { background: #1a1a20; }
             定义：车端提出遇到问题求助，但操作员评估后判断<b style="color:var(--text)">无需任何操作</b>，车辆继续保持正常作业即可。占比越高，说明车端越「过度敏感」。
           </div>
           <table class="tickets">
-            <thead><tr><th>Hint 类型</th><th>样本量</th><th>误判数（无需操作）</th><th>误判率</th><th>典型场景</th><th>建议</th><th>操作</th></tr></thead>
+            <thead><tr><th>异常类型</th><th>样本量</th><th>误判数（无需操作）</th><th>误判率</th><th>典型场景</th><th>建议</th><th>操作</th></tr></thead>
             <tbody>
               <tr><td><span class="pill blue">避障</span></td><td>720</td><td>198</td><td><span class="pill red">27.5%</span></td><td>塑料袋 / 落叶 / 飞鸟误识为障碍物</td><td>感知模型负样本补充</td><td><span class="link-btn">查看样本</span> · <span class="link-btn">推送</span></td></tr>
               <tr><td><span class="pill blue">路口通过</span></td><td>2,184</td><td>451</td><td><span class="pill red">20.6%</span></td><td>已是绿灯但模型保守不通过</td><td>红绿灯置信度阈值调优</td><td><span class="link-btn">查看样本</span> · <span class="link-btn">推送</span></td></tr>
@@ -1226,7 +1226,7 @@ table.tickets tr:hover { background: #1a1a20; }
             <div class="id">
               1. 学院路施工区建议立即更新地图，预计减少 22% 异常工单<br>
               2. 早高峰建议增加 2 名坐席（已连续 3 周高峰超载）<br>
-              3. 避障 Hint 误判率 27.5%，建议联系车端模型团队补充负样本
+              3. 避障异常误判率 27.5%，建议联系车端模型团队补充负样本
             </div>
           </div>
         </div>
@@ -1545,7 +1545,7 @@ function renderAdminTickets(){
 }
 function exportAdminCSV(){
   if (!ADMIN_TICKETS) return;
-  const head = ['时间','工单号','车辆','操作员','Hint','异常','状态'];
+  const head = ['时间','工单号','车辆','操作员','异常类型','异常','状态'];
   const rows = ADMIN_TICKETS.map(r=>[r.time,r.tid,r.vid,r.op,r.hint,r.anomaly,r.status]);
   const csv = [head, ...rows].map(r=>r.join(',')).join('\n');
   const blob = new Blob(['\ufeff'+csv],{type:'text/csv'});
@@ -1558,9 +1558,9 @@ function renderVehicles(){ /* removed: merged into Insight Center */ }
 
 const RULES = [
   {name:'低电量告警', cond:'电量 < 25%', notify:'告警 + 通知调度', enabled:true, level:'orange'},
-  {name:'连续同类 Hint', cond:'连续 3 次同类 hint', notify:'提示路线问题 + 派发巡检', enabled:true, level:'blue'},
+  {name:'连续同类异常', cond:'连续 3 次同类异常', notify:'提示路线问题 + 派发巡检', enabled:true, level:'blue'},
   {name:'网络持续弱信号', cond:'信号 > 500ms 持续 5min', notify:'触发降级 + 通知 IT', enabled:true, level:'orange'},
-  {name:'长时间停车未求助', cond:'静止 > 10min 且无 hint', notify:'主动派单核查', enabled:true, level:'red'},
+  {name:'长时间停车未求助', cond:'静止 > 10min 且无异常', notify:'主动派单核查', enabled:true, level:'red'},
   {name:'执行失败追踪', cond:'操作员指令车端执行失败', notify:'记录到训练样本 + 复核', enabled:true, level:'blue'},
   {name:'夜间异常停放', cond:'非充电桩区域停放 > 30min', notify:'通知运维 + 现场核查', enabled:true, level:'orange'},
   {name:'操作员长时间无响应', cond:'坐席 > 5min 无操作', notify:'告警 + 通知主管', enabled:true, level:'red'},
@@ -1747,7 +1747,7 @@ function renderStats(){
   document.getElementById('kpi-dur').textContent = Math.round(filtered.reduce((s,r)=>s+r.dur,0)/n);
 }
 function exportCSV(){
-  const head = ['时间','车辆','Hint类型','处理时长(s)','是否执行成功','是否升单','状态','日志ID'];
+  const head = ['时间','车辆','异常类型','处理时长(s)','是否执行成功','是否升单','状态','日志ID'];
   const rows = DATA.map(r=>[r.time,r.vid,r.hint,r.dur,r.success,r.esc,r.status[0],r.log]);
   const csv = [head, ...rows].map(r=>r.join(',')).join('\n');
   const blob = new Blob(['\ufeff'+csv],{type:'text/csv'});
