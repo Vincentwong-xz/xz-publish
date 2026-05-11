@@ -1053,7 +1053,7 @@ table.tickets tr:hover { background: #1a1a20; }
                 <th><span class="col-name">车辆</span><select class="col-filter" id="tf-vid" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
                 <th><span class="col-name">操作员</span><select class="col-filter" id="tf-op" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
                 <th><span class="col-name">异常类型</span><select class="col-filter" id="tf-hint" onchange="renderAdminTickets()"><option value="">全部</option></select></th>
-                <th><span class="col-name">异常</span>
+                <th><span class="col-name">处理结果</span>
                   <select class="col-filter" id="tf-anomaly" onchange="renderAdminTickets()">
                     <option value="">全部</option><option value="none">无异常</option><option>超时</option><option>升级 Remote</option><option>执行失败</option>
                   </select>
@@ -1545,7 +1545,7 @@ function renderAdminTickets(){
 }
 function exportAdminCSV(){
   if (!ADMIN_TICKETS) return;
-  const head = ['时间','工单号','车辆','操作员','异常类型','异常','状态'];
+  const head = ['时间','工单号','车辆','操作员','异常类型','处理结果','状态'];
   const rows = ADMIN_TICKETS.map(r=>[r.time,r.tid,r.vid,r.op,r.hint,r.anomaly,r.status]);
   const csv = [head, ...rows].map(r=>r.join(',')).join('\n');
   const blob = new Blob(['\ufeff'+csv],{type:'text/csv'});
