@@ -4,25 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>文远环卫APP - 用车</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: #f5f6fa;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      background: #e8eaf0;
       display: flex;
       justify-content: center;
       align-items: flex-start;
       min-height: 100vh;
-      padding: 20px;
+      padding: 24px 20px;
     }
 
-    /* 手机外壳 */
     .phone-frame {
       width: 375px;
       height: 812px;
-      background: #fff;
-      border-radius: 40px;
-      box-shadow: 0 25px 80px rgba(0,0,0,0.25);
+      background: #f5f6fa;
+      border-radius: 44px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.28), 0 0 0 1px rgba(0,0,0,0.08);
       overflow: hidden;
       position: relative;
       display: flex;
@@ -32,741 +32,1016 @@
       position: absolute;
       top: 0; left: 50%;
       transform: translateX(-50%);
-      width: 150px; height: 30px;
+      width: 126px; height: 34px;
       background: #000;
-      border-radius: 0 0 20px 20px;
-      z-index: 100;
+      border-radius: 0 0 22px 22px;
+      z-index: 200;
     }
 
-    /* 状态栏 */
+    /* 顶部白色区域 */
+    .top-area {
+      background: #fff;
+      flex-shrink: 0;
+    }
+
     .status-bar {
       height: 44px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 24px;
-      padding-top: 12px;
-      font-size: 15px;
-      font-weight: 600;
-      color: #000;
-      position: relative;
-      z-index: 10;
+      padding-top: 14px;
     }
-    .status-icons { display: flex; gap: 5px; align-items: center; }
-    .status-icons svg { width: 18px; height: 18px; }
+    .status-time { font-size: 15px; font-weight: 600; color: #000; }
+    .status-icons { display: flex; gap: 6px; align-items: center; }
 
-    /* 可滚动内容区 */
-    .content {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding-bottom: 90px;
-    }
-    .content::-webkit-scrollbar { display: none; }
-
-    /* 车辆切换标签 */
     .vehicle-tabs {
       display: flex;
-      gap: 20px;
-      padding: 8px 20px 0;
-      border-bottom: 1px solid #eee;
+      gap: 0;
+      padding: 4px 16px 0;
+      border-bottom: 1px solid #f0f0f0;
       overflow-x: auto;
       white-space: nowrap;
     }
     .vehicle-tabs::-webkit-scrollbar { display: none; }
     .vehicle-tab {
-      font-size: 15px;
-      color: #999;
-      padding-bottom: 10px;
+      font-size: 14px;
+      color: #aaa;
+      padding: 8px 12px 10px;
       cursor: pointer;
       position: relative;
       flex-shrink: 0;
+      letter-spacing: 0.3px;
     }
     .vehicle-tab.active {
-      color: #2c5aff;
+      color: #1a6eff;
       font-weight: 600;
     }
     .vehicle-tab.active::after {
       content: '';
       position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 3px;
-      background: #2c5aff;
+      bottom: 0; left: 12px; right: 12px;
+      height: 2px;
+      background: #1a6eff;
       border-radius: 2px;
     }
 
-    /* 状态信息栏 */
+    /* 状态信息行 */
     .info-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 20px;
+      padding: 10px 16px 8px;
+      background: #fff;
     }
-    .info-left {
-      display: flex;
-      gap: 12px;
-      font-size: 12px;
-      color: #666;
-      flex-wrap: wrap;
+    .info-chips { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .info-chip {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 12px; color: #666;
     }
-    .info-item { display: flex; align-items: center; gap: 4px; }
-    .info-item svg { width: 14px; height: 14px; }
+    .info-chip svg { flex-shrink: 0; }
 
     .speed-card {
       background: #fff;
       border: 1px solid #e8e8e8;
       border-radius: 10px;
-      padding: 6px 12px;
+      padding: 5px 10px;
       text-align: center;
-      min-width: 70px;
+      min-width: 64px;
     }
-    .speed-value { font-size: 22px; font-weight: 700; color: #333; }
-    .speed-unit { font-size: 10px; color: #999; }
-    .speed-mode { font-size: 10px; color: #999; margin-top: 2px; }
+    .speed-val { font-size: 20px; font-weight: 700; color: #1a1a1a; line-height: 1.2; }
+    .speed-unit { font-size: 10px; color: #aaa; }
+    .speed-mode { font-size: 10px; color: #aaa; margin-top: 1px; }
 
-    /* 车辆模型区 */
-    .vehicle-model-section {
-      padding: 0 20px;
+    /* 滚动内容 */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 84px;
+      background: #f5f6fa;
+    }
+    .content::-webkit-scrollbar { display: none; }
+
+    /* 3D 车辆模型区 */
+    .model-section {
+      padding: 10px 16px 0;
       position: relative;
     }
-    .model-container {
-      background: linear-gradient(135deg, #f8f9ff 0%, #eef1ff 100%);
+    .model-wrap {
+      background: linear-gradient(160deg, #edf1ff 0%, #f0f4ff 60%, #e8f0fe 100%);
       border-radius: 16px;
-      padding: 16px;
-      position: relative;
       overflow: hidden;
+      position: relative;
+      height: 200px;
     }
-
-    /* 故障提示弹窗 */
-    .fault-tooltip {
-      position: absolute;
-      background: rgba(220, 53, 69, 0.95);
-      color: #fff;
-      padding: 8px 14px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 500;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s;
-      z-index: 50;
-      white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(220,53,69,0.3);
-    }
-    .fault-tooltip::after {
-      content: '';
-      position: absolute;
-      bottom: -6px; left: 50%;
-      transform: translateX(-50%);
-      border-width: 6px 6px 0;
-      border-style: solid;
-      border-color: rgba(220,53,69,0.95) transparent transparent;
-    }
-    .fault-tooltip.show { opacity: 1; }
-
-    .component-label {
-      position: absolute;
-      background: rgba(44, 90, 255, 0.9);
-      color: #fff;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 10px;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s;
-      z-index: 40;
-      white-space: nowrap;
-    }
-    .component-label.show { opacity: 1; }
-
-    /* SVG 车辆模型 */
-    .vehicle-svg {
-      width: 100%;
-      height: auto;
+    #threeCanvas {
       display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
     }
-    .vehicle-part {
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .vehicle-part:hover { filter: brightness(1.15); }
-    .vehicle-part.faulty {
-      animation: pulse-red 1.2s infinite;
-    }
-    @keyframes pulse-red {
-      0%, 100% { filter: drop-shadow(0 0 0px rgba(220,53,69,0)); }
-      50% { filter: drop-shadow(0 0 6px rgba(220,53,69,0.7)); }
-    }
-    .vehicle-part.has-fault {
-      stroke: #dc3545;
-      stroke-width: 2;
-    }
+    #threeCanvas:active { cursor: grabbing; }
 
-    /* 故障指示器 */
-    .fault-indicator {
+    /* 旋转提示 */
+    .rotate-hint {
       position: absolute;
-      width: 10px; height: 10px;
-      background: #dc3545;
-      border-radius: 50%;
-      animation: pulse-red-dot 1.2s infinite;
+      bottom: 8px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: rgba(80,100,160,0.7);
+      display: flex; align-items: center; gap: 4px;
+      pointer-events: none;
+      background: rgba(255,255,255,0.6);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    /* 故障面板 */
+    .fault-panel {
+      position: absolute;
+      top: 10px; right: 10px;
+      display: flex; flex-direction: column; gap: 4px;
+      pointer-events: none;
+    }
+    .fault-badge {
+      background: rgba(220,53,69,0.92);
+      color: #fff;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 8px;
+      display: flex; align-items: center; gap: 4px;
+      animation: badge-pulse 2s infinite;
+      pointer-events: all;
       cursor: pointer;
-      z-index: 30;
-      border: 2px solid #fff;
     }
-    @keyframes pulse-red-dot {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(220,53,69,0.6); }
-      50% { box-shadow: 0 0 0 8px rgba(220,53,69,0); }
-    }
-
-    /* 任务状态 */
-    .task-status {
-      padding: 12px 20px 6px;
-    }
-    .status-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #e8f5e9;
-      color: #2e7d32;
-      font-size: 12px;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-weight: 500;
-    }
-    .status-tag::before {
-      content: '';
-      width: 6px; height: 6px;
-      background: #2e7d32;
+    .fault-dot {
+      width: 5px; height: 5px;
+      background: #fff;
       border-radius: 50%;
+      animation: dot-blink 1s infinite;
     }
-    .task-name {
-      font-size: 17px;
-      font-weight: 600;
-      color: #1a1a1a;
-      margin-top: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    @keyframes badge-pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(220,53,69,0.4); }
+      50% { box-shadow: 0 0 0 4px rgba(220,53,69,0); }
     }
-    .task-meta {
-      font-size: 13px;
-      color: #999;
-      margin-top: 4px;
+    @keyframes dot-blink {
+      0%,100% { opacity: 1; } 50% { opacity: 0.3; }
     }
-    .task-meta span { color: #2c5aff; font-weight: 600; }
 
-    /* 横版控车按钮 */
-    .control-bar {
-      display: flex;
-      gap: 10px;
-      padding: 12px 20px;
+    /* 组件状态栏 */
+    .comp-status {
+      position: absolute;
+      top: 10px; left: 10px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .comp-chip {
+      background: rgba(255,255,255,0.85);
+      font-size: 10px;
+      color: #444;
+      padding: 3px 8px;
+      border-radius: 8px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .comp-dot-ok { width:5px;height:5px;background:#4caf50;border-radius:50%; }
+    .comp-dot-err { width:5px;height:5px;background:#dc3545;border-radius:50%; }
+
+    /* 任务卡 */
+    .task-card {
+      margin: 10px 16px 0;
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px 14px;
+    }
+    .task-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #e8f5e9; color: #2e7d32;
+      font-size: 11px; font-weight: 600;
+      padding: 3px 9px; border-radius: 10px;
+    }
+    .tag-dot { width:5px;height:5px;background:#43a047;border-radius:50%; }
+    .task-name {
+      font-size: 16px; font-weight: 600; color: #111;
+      margin-top: 7px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .task-arrow {
+      color: #ccc;
+    }
+    .task-meta { font-size: 12px; color: #aaa; margin-top: 3px; }
+    .task-meta b { color: #1a6eff; font-weight: 600; }
+
+    /* 进度条 */
+    .progress-bar {
+      height: 3px; background: #eee;
+      border-radius: 2px; margin-top: 8px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; width: 60%;
+      background: linear-gradient(90deg, #1a6eff, #42a5f5);
+      border-radius: 2px;
+    }
+
+    /* 横版控制按钮 */
+    .ctrl-row {
+      display: flex; gap: 10px;
+      padding: 10px 16px 6px;
     }
     .ctrl-btn {
-      flex: 1;
-      height: 44px;
+      flex: 1; height: 44px;
       border-radius: 10px;
-      border: 1px solid #ddd;
+      border: 1.5px solid #e0e0e0;
       background: #fff;
-      font-size: 15px;
-      font-weight: 500;
+      font-size: 15px; font-weight: 500;
       color: #333;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .ctrl-btn:active { transform: scale(0.97); background: #f5f5f5; }
-    .ctrl-btn.primary {
-      background: #2c5aff;
-      color: #fff;
-      border-color: #2c5aff;
-    }
-    .ctrl-btn.danger {
-      background: #fff;
-      color: #dc3545;
-      border-color: #dc3545;
-    }
-
-    /* 功能按钮区 */
-    .function-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      padding: 6px 20px;
-    }
-    .func-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      display: flex; align-items: center; justify-content: center;
       gap: 6px;
       cursor: pointer;
-      padding: 8px 0;
-      border-radius: 12px;
-      transition: background 0.15s;
+      transition: all 0.12s;
+      -webkit-tap-highlight-color: transparent;
     }
-    .func-item:active { background: #f0f0f0; }
-    .func-icon {
-      width: 48px; height: 48px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
+    .ctrl-btn:active { transform: scale(0.96); background: #f5f5f5; }
+    .ctrl-btn.end {
+      color: #e53935; border-color: #ffcdd2;
+      background: #fff5f5;
     }
-    .func-icon.blue { background: #eef3ff; }
-    .func-icon.cyan { background: #e6f7ff; }
-    .func-icon.purple { background: #f3e8ff; }
-    .func-icon.green { background: #e8f5e9; }
-    .func-icon.orange { background: #fff3e0; }
-    .func-icon.red { background: #ffebee; }
-    .func-label {
-      font-size: 12px;
-      color: #666;
-    }
+    .ctrl-btn.end:active { background: #ffebee; }
 
-    /* 方块功能卡片 */
+    /* 4宫格功能 */
+    .func-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 6px 16px 4px;
+      gap: 4px;
+      background: #fff;
+      margin: 6px 16px 0;
+      border-radius: 14px;
+    }
+    .func-item {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 6px;
+      padding: 12px 4px;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: background 0.12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .func-item:active { background: #f0f4ff; }
+    .func-icon-wrap {
+      width: 46px; height: 46px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .fi-blue   { background: #eef3ff; }
+    .fi-cyan   { background: #e3f6ff; }
+    .fi-purple { background: #f3eaff; }
+    .fi-green  { background: #e8f5e9; }
+    .fi-red    { background: #fff0f0; }
+    .fi-orange { background: #fff4e6; }
+    .func-label { font-size: 12px; color: #555; }
+
+    /* 卡片区 */
+    .section-header {
+      font-size: 13px; font-weight: 600; color: #888;
+      padding: 14px 16px 6px;
+      letter-spacing: 0.5px;
+    }
     .card-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
-      padding: 10px 20px;
+      padding: 0 16px;
     }
-    .feature-card {
+    .feat-card {
       background: #fff;
       border-radius: 14px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      padding: 14px;
+      display: flex; flex-direction: column; gap: 8px;
       cursor: pointer;
-      transition: transform 0.15s;
+      transition: transform 0.12s;
+      -webkit-tap-highlight-color: transparent;
     }
-    .feature-card:active { transform: scale(0.98); }
-    .feature-card-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .feat-card:active { transform: scale(0.97); }
+    .feat-head { display: flex; align-items: center; gap: 8px; }
+    .feat-icon-wrap {
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
     }
-    .feature-icon {
-      width: 36px; height: 36px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-    }
-    .feature-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #1a1a1a;
-    }
-    .feature-desc {
-      font-size: 12px;
-      color: #999;
-    }
+    .feat-title { font-size: 13px; font-weight: 600; color: #111; }
+    .feat-desc  { font-size: 11px; color: #bbb; }
 
     /* 底部导航 */
     .tab-bar {
       position: absolute;
       bottom: 0; left: 0; right: 0;
       height: 84px;
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(20px);
-      border-top: 1px solid #eee;
+      background: rgba(255,255,255,0.97);
+      border-top: 1px solid #f0f0f0;
       display: flex;
       justify-content: space-around;
       align-items: flex-start;
-      padding-top: 8px;
+      padding-top: 10px;
       z-index: 100;
     }
     .tab-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      cursor: pointer;
-      padding: 0 10px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      cursor: pointer; padding: 0 8px;
+      -webkit-tap-highlight-color: transparent;
     }
-    .tab-item.active .tab-icon { color: #2c5aff; }
-    .tab-item.active .tab-label { color: #2c5aff; }
-    .tab-icon { font-size: 22px; color: #999; }
-    .tab-label { font-size: 10px; color: #999; }
+    .tab-item svg { color: #bbb; }
+    .tab-item.active svg { color: #1a6eff; }
+    .tab-label { font-size: 10px; color: #bbb; }
+    .tab-item.active .tab-label { color: #1a6eff; }
 
-    .section-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #1a1a1a;
-      padding: 12px 20px 4px;
+    /* 故障弹窗 */
+    .fault-modal {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: #fff;
+      border-radius: 18px;
+      padding: 20px;
+      width: 280px;
+      z-index: 300;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s;
+    }
+    .fault-modal.show {
+      opacity: 1; pointer-events: all;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .modal-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 250;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+    .modal-title { font-size: 16px; font-weight: 700; color: #111; margin-bottom: 12px; }
+    .modal-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .modal-item:last-of-type { border-bottom: none; }
+    .modal-badge {
+      font-size: 10px; padding: 2px 7px; border-radius: 6px; flex-shrink: 0; margin-top: 1px;
+    }
+    .badge-err { background: #ffebee; color: #e53935; }
+    .badge-warn { background: #fff8e1; color: #f9a825; }
+    .modal-text { font-size: 13px; color: #333; line-height: 1.5; }
+    .modal-close {
+      width: 100%; height: 42px;
+      background: #f5f6fa;
+      border: none; border-radius: 10px;
+      font-size: 14px; color: #666; font-weight: 500;
+      cursor: pointer; margin-top: 12px;
     }
   </style>
 </head>
 <body>
 
-<div class="phone-frame">
+<div class="phone-frame" id="app">
   <div class="notch"></div>
 
-  <!-- 状态栏 -->
-  <div class="status-bar">
-    <span>9:41</span>
-    <div class="status-icons">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C7.46 3 3.34 4.78.29 7.67c-.18.18-.29.43-.29.71 0 .28.11.53.29.71l11 11c.39.39 1.02.39 1.41 0l11-11c.18-.18.29-.43.29-.71 0-.28-.11-.53-.29-.71C20.66 4.78 16.54 3 12 3z"/></svg>
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 0 0-6 0zm-4-4l2 2a7.074 7.074 0 0 1 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
-    </div>
-  </div>
-
-  <!-- 车辆切换 -->
-  <div class="vehicle-tabs">
-    <div class="vehicle-tab active">GZU_SDD_22017</div>
-    <div class="vehicle-tab">GZU_SDD_22018</div>
-    <div class="vehicle-tab">GZU_YKN_24149</div>
-    <div class="vehicle-tab">GZU_XWQ_23005</div>
-  </div>
-
-  <div class="content">
-    <!-- 状态信息 -->
-    <div class="info-bar">
-      <div class="info-left">
-        <div class="info-item">
-          <svg viewBox="0 0 24 24" fill="#666"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
-          <span>未满</span>
-        </div>
-        <div class="info-item">
-          <svg viewBox="0 0 24 24" fill="#666"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z"/></svg>
-          <span>23ms</span>
-        </div>
-        <div class="info-item">
-          <svg viewBox="0 0 24 24" fill="#666"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
-          <span>90%</span>
-        </div>
-        <div class="info-item">
-          <svg viewBox="0 0 24 24" fill="#666"><path d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2c0-3.32-2.67-7.25-8-11.8z"/></svg>
-          <span>95%</span>
-        </div>
-      </div>
-      <div class="speed-card">
-        <div class="speed-value">12</div>
-        <div class="speed-unit">km/h</div>
-        <div class="speed-mode">自动模式</div>
-      </div>
-    </div>
-
-    <!-- 车辆模型区 -->
-    <div class="vehicle-model-section">
-      <div class="model-container" id="modelContainer">
-        <!-- 故障提示 -->
-        <div class="fault-tooltip" id="faultTooltip">组件故障：需检修</div>
-        <div class="component-label" id="compLabel">组件名称</div>
-
-        <!-- 故障闪烁点 -->
-        <div class="fault-indicator" style="top:32%; left:78%;" data-comp="雷达传感器" data-fault="雷达信号异常，请检查"></div>
-        <div class="fault-indicator" style="top:55%; left:22%;" data-comp="吸嘴总成" data-fault="吸嘴堵塞，请清理"></div>
-
-        <svg class="vehicle-svg" viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg">
-          <!-- 车身主体 -->
-          <g class="vehicle-part" data-comp="车身" data-fault="">
-            <!-- 车厢 -->
-            <rect x="30" y="55" width="170" height="90" rx="6" fill="#e0e4ec" stroke="#b0b8cc" stroke-width="1.5"/>
-            <!-- 驾驶室 -->
-            <rect x="200" y="45" width="110" height="105" rx="14" fill="#2a2f3a" stroke="#1a1f2a" stroke-width="1.5"/>
-            <!-- 顶部设备舱 -->
-            <rect x="210" y="32" width="70" height="18" rx="4" fill="#e0e4ec" stroke="#b0b8cc" stroke-width="1"/>
-            <!-- 底部连接 -->
-            <rect x="45" y="145" width="250" height="18" rx="3" fill="#3a3f4a" stroke="#2a2f3a" stroke-width="1"/>
-          </g>
-
-          <!-- 垃圾箱 -->
-          <g class="vehicle-part" data-comp="高位卸料垃圾箱" data-fault="垃圾箱未满，正常">
-            <rect x="40" y="48" width="110" height="20" rx="3" fill="#c8cdd8" stroke="#a0a8bc" stroke-width="1"/>
-            <rect x="45" y="52" width="100" height="12" rx="2" fill="#d8dce6"/>
-            <!-- 文字 -->
-            <text x="95" y="100" font-size="11" fill="#556070" text-anchor="middle" font-weight="bold">无人驾驶环卫车</text>
-            <text x="160" y="115" font-size="8" fill="#8899aa" text-anchor="middle">文远知行</text>
-          </g>
-
-          <!-- 加水口 -->
-          <g class="vehicle-part" data-comp="自动加水口" data-fault="">
-            <ellipse cx="185" cy="42" rx="10" ry="4" fill="#a0a8bc" stroke="#8899aa" stroke-width="1"/>
-            <rect x="180" y="38" width="10" height="5" rx="1" fill="#c8cdd8"/>
-          </g>
-          <g class="vehicle-part" data-comp="手动加水口" data-fault="">
-            <rect x="150" y="38" width="14" height="6" rx="2" fill="#c8cdd8" stroke="#a0a8bc" stroke-width="1"/>
-          </g>
-
-          <!-- 顶部天线/设备 -->
-          <g class="vehicle-part" data-comp="GPS集成天线" data-fault="">
-            <line x1="230" y1="32" x2="230" y2="18" stroke="#888" stroke-width="2"/>
-            <circle cx="230" cy="16" r="4" fill="#666"/>
-          </g>
-          <g class="vehicle-part" data-comp="路由器天线" data-fault="">
-            <line x1="245" y1="32" x2="245" y2="20" stroke="#888" stroke-width="1.5"/>
-            <circle cx="245" cy="18" r="3" fill="#888"/>
-          </g>
-          <g class="vehicle-part" data-comp="补光灯" data-fault="">
-            <rect x="255" y="28" width="16" height="6" rx="2" fill="#ffe082" stroke="#f9a825" stroke-width="0.5"/>
-          </g>
-
-          <!-- 前部传感器 -->
-          <g class="vehicle-part" data-comp="雷达+相机" data-fault="雷达信号异常，请检查">
-            <rect x="268" y="55" width="18" height="12" rx="3" fill="#444" stroke="#333" stroke-width="1"/>
-            <circle cx="277" cy="61" r="3" fill="#66bb6a"/>
-          </g>
-          <g class="vehicle-part" data-comp="摄像头" data-fault="">
-            <circle cx="250" cy="52" r="5" fill="#333" stroke="#222" stroke-width="1"/>
-            <circle cx="250" cy="52" r="2" fill="#448aff"/>
-          </g>
-          <g class="vehicle-part" data-comp="雷达" data-fault="雷达信号异常，请检查">
-            <rect x="285" y="70" width="8" height="8" rx="2" fill="#555" stroke="#444" stroke-width="1"/>
-          </g>
-
-          <!-- 车灯 -->
-          <g class="vehicle-part" data-comp="前大灯" data-fault="">
-            <rect x="295" y="115" width="12" height="8" rx="2" fill="#fff9c4" stroke="#f9a825" stroke-width="0.5"/>
-          </g>
-          <g class="vehicle-part" data-comp="转向灯" data-fault="">
-            <rect x="288" y="128" width="8" height="5" rx="1" fill="#ff9800" stroke="#e65100" stroke-width="0.5"/>
-          </g>
-          <g class="vehicle-part" data-comp="侧转向灯" data-fault="">
-            <rect x="240" y="145" width="6" height="4" rx="1" fill="#ff9800" stroke="#e65100" stroke-width="0.5"/>
-          </g>
-
-          <!-- 车轮 -->
-          <g class="vehicle-part" data-comp="前轮" data-fault="">
-            <circle cx="75" cy="165" r="22" fill="#222" stroke="#111" stroke-width="2"/>
-            <circle cx="75" cy="165" r="12" fill="#555" stroke="#444" stroke-width="1"/>
-            <circle cx="75" cy="165" r="5" fill="#888"/>
-          </g>
-          <g class="vehicle-part" data-comp="后轮" data-fault="">
-            <circle cx="260" cy="165" r="22" fill="#222" stroke="#111" stroke-width="2"/>
-            <circle cx="260" cy="165" r="12" fill="#555" stroke="#444" stroke-width="1"/>
-            <circle cx="260" cy="165" r="5" fill="#888"/>
-          </g>
-
-          <!-- 清扫系统 -->
-          <g class="vehicle-part" data-comp="清扫系统" data-fault="">
-            <rect x="120" y="155" width="60" height="12" rx="4" fill="#666" stroke="#555" stroke-width="1"/>
-            <line x1="125" y1="161" x2="175" y2="161" stroke="#888" stroke-width="1" stroke-dasharray="3,2"/>
-          </g>
-
-          <!-- 吸嘴总成 -->
-          <g class="vehicle-part has-fault" data-comp="吸嘴总成" data-fault="吸嘴堵塞，请清理">
-            <rect x="140" y="168" width="40" height="10" rx="3" fill="#777" stroke="#dc3545" stroke-width="2"/>
-            <polygon points="155,178 165,178 160,185" fill="#555"/>
-          </g>
-
-          <!-- 水箱液位计 -->
-          <g class="vehicle-part" data-comp="水箱液位计" data-fault="">
-            <rect x="95" y="125" width="6" height="25" rx="2" fill="#e3f2fd" stroke="#90caf9" stroke-width="1"/>
-            <rect x="96" y="130" width="4" height="18" rx="1" fill="#42a5f5"/>
-          </g>
-
-          <!-- 有线充电口 -->
-          <g class="vehicle-part" data-comp="有线充电口" data-fault="">
-            <rect x="35" y="120" width="10" height="14" rx="2" fill="#555" stroke="#444" stroke-width="1"/>
-            <circle cx="40" cy="127" r="3" fill="#333"/>
-          </g>
-
-          <!-- 检修门 -->
-          <g class="vehicle-part" data-comp="检修门" data-fault="">
-            <rect x="55" y="115" width="25" height="20" rx="2" fill="#d0d4de" stroke="#b0b8cc" stroke-width="1"/>
-            <line x1="60" y1="120" x2="75" y2="120" stroke="#a0a8bc" stroke-width="1"/>
-            <line x1="60" y1="125" x2="75" y2="125" stroke="#a0a8bc" stroke-width="1"/>
-            <line x1="60" y1="130" x2="70" y2="130" stroke="#a0a8bc" stroke-width="1"/>
-          </g>
-          <g class="vehicle-part" data-comp="检修门" data-fault="">
-            <rect x="205" y="90" width="18" height="28" rx="2" fill="#3a3f4a" stroke="#555" stroke-width="1"/>
-          </g>
-
-          <!-- 装饰线条 -->
-          <line x1="30" y1="85" x2="200" y2="85" stroke="#4caf50" stroke-width="3" opacity="0.8"/>
-          <line x1="30" y1="92" x2="180" y2="92" stroke="#ffeb3b" stroke-width="2" opacity="0.7"/>
+  <!-- 顶部白色区域 -->
+  <div class="top-area">
+    <!-- 状态栏 -->
+    <div class="status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <!-- 信号 -->
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+          <rect x="0" y="8" width="3" height="4" rx="0.5" fill="#000"/>
+          <rect x="4.5" y="5.5" width="3" height="6.5" rx="0.5" fill="#000"/>
+          <rect x="9" y="3" width="3" height="9" rx="0.5" fill="#000"/>
+          <rect x="13.5" y="0" width="2.5" height="12" rx="0.5" fill="#000"/>
+        </svg>
+        <!-- WiFi -->
+        <svg width="16" height="12" viewBox="0 0 24 18" fill="none">
+          <path d="M12 14a2 2 0 1 1 0 4 2 2 0 0 1 0-4z" fill="#000"/>
+          <path d="M6.5 11.5a7.7 7.7 0 0 1 11 0" stroke="#000" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <path d="M2 7.5a13.5 13.5 0 0 1 20 0" stroke="#000" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </svg>
+        <!-- 电池 -->
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none">
+          <rect x="0.5" y="0.5" width="21" height="11" rx="3" stroke="#000" stroke-opacity="0.35"/>
+          <rect x="22.5" y="3.5" width="2" height="5" rx="1" fill="#000" fill-opacity="0.4"/>
+          <rect x="2" y="2" width="16" height="8" rx="2" fill="#000"/>
         </svg>
       </div>
     </div>
 
-    <!-- 任务状态 -->
-    <div class="task-status">
-      <div class="status-tag">清扫中 60%</div>
+    <!-- 车辆标签 -->
+    <div class="vehicle-tabs" id="vehicleTabs">
+      <div class="vehicle-tab active">GZU_SDD_22017</div>
+      <div class="vehicle-tab">GZU_SDD_22018</div>
+      <div class="vehicle-tab">GZU_YKN_24149</div>
+      <div class="vehicle-tab">GZU_XWQ_23005</div>
+    </div>
+
+    <!-- 状态信息 -->
+    <div class="info-bar">
+      <div class="info-chips">
+        <!-- 垃圾桶 -->
+        <div class="info-chip">
+          <svg width="13" height="14" viewBox="0 0 13 14" fill="none">
+            <path d="M1 3.5h11M4.5 3.5V2.5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1M2 3.5l.7 8a1 1 0 0 0 1 .9h5.6a1 1 0 0 0 1-.9l.7-8" stroke="#666" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>未满</span>
+        </div>
+        <!-- WiFi延迟 -->
+        <div class="info-chip">
+          <svg width="14" height="12" viewBox="0 0 24 18" fill="none">
+            <path d="M12 14a2 2 0 1 1 0 4 2 2 0 0 1 0-4z" fill="#666"/>
+            <path d="M6.5 11.5a7.7 7.7 0 0 1 11 0" stroke="#666" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <path d="M2 7.5a13.5 13.5 0 0 1 20 0" stroke="#666" stroke-width="2" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span>23ms</span>
+        </div>
+        <!-- 电量 -->
+        <div class="info-chip">
+          <svg width="14" height="13" viewBox="0 0 14 13" fill="none">
+            <rect x="0.5" y="0.5" width="11" height="10" rx="2" stroke="#666" stroke-opacity="0.6"/>
+            <rect x="12" y="3" width="1.5" height="4" rx="0.75" fill="#666" fill-opacity="0.5"/>
+            <rect x="2" y="2" width="6" height="7" rx="1" fill="#666"/>
+          </svg>
+          <span>90%</span>
+        </div>
+        <!-- 水滴 -->
+        <div class="info-chip">
+          <svg width="12" height="14" viewBox="0 0 12 16" fill="none">
+            <path d="M6 1C6 1 1 6.5 1 10a5 5 0 0 0 10 0C11 6.5 6 1 6 1z" stroke="#666" stroke-width="1.4" fill="none"/>
+            <path d="M8.5 11.5a2.5 2.5 0 0 1-2.5 2" stroke="#666" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          <span>95%</span>
+        </div>
+      </div>
+      <div class="speed-card">
+        <div class="speed-val">12</div>
+        <div class="speed-unit">km/h</div>
+        <div class="speed-mode">自动模式</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 可滚动内容 -->
+  <div class="content">
+
+    <!-- 3D 车辆模型 -->
+    <div class="model-section">
+      <div class="model-wrap">
+        <canvas id="threeCanvas"></canvas>
+
+        <!-- 左上角组件状态 -->
+        <div class="comp-status">
+          <div class="comp-chip"><div class="comp-dot-ok"></div>清扫系统 正常</div>
+          <div class="comp-chip"><div class="comp-dot-err"></div>吸嘴总成 堵塞</div>
+          <div class="comp-chip"><div class="comp-dot-err"></div>雷达传感器 异常</div>
+        </div>
+
+        <!-- 右上角故障徽章 -->
+        <div class="fault-panel">
+          <div class="fault-badge" onclick="openFaultModal()">
+            <div class="fault-dot"></div>
+            2 项故障
+          </div>
+        </div>
+
+        <!-- 底部旋转提示 -->
+        <div class="rotate-hint">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12a10 10 0 1 0 10-10"/><path d="M2 4v8h8"/></svg>
+          拖动旋转查看
+        </div>
+      </div>
+    </div>
+
+    <!-- 任务卡片 -->
+    <div class="task-card">
+      <div class="task-tag"><div class="tag-dot"></div>清扫中 60%</div>
       <div class="task-name">
         SDC运营-星汉螺旋大道对冲
-        <span style="color:#ccc; font-size:18px;">›</span>
+        <svg class="task-arrow" width="7" height="12" viewBox="0 0 7 12" fill="none">
+          <path d="M1 1l5 5-5 5" stroke="#ccc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </div>
-      <div class="task-meta">已清扫 <span>2.8/5.1</span> 公里 &nbsp;&nbsp; 预计 <span>15</span> 分钟后完成</div>
+      <div class="task-meta">已清扫 <b>2.8/5.1</b> 公里 &nbsp;·&nbsp; 预计 <b>15</b> 分钟后完成</div>
+      <div class="progress-bar"><div class="progress-fill"></div></div>
     </div>
 
     <!-- 横版控车按钮 -->
-    <div class="control-bar">
-      <div class="ctrl-btn" onclick="alert('暂停清扫任务')">暂停</div>
-      <div class="ctrl-btn danger" onclick="alert('结束清扫任务')">结束</div>
+    <div class="ctrl-row">
+      <!-- 暂停 -->
+      <div class="ctrl-btn" onclick="alert('暂停清扫任务')">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="2" y="1.5" width="3.5" height="11" rx="1.2" fill="#333"/>
+          <rect x="8.5" y="1.5" width="3.5" height="11" rx="1.2" fill="#333"/>
+        </svg>
+        暂停
+      </div>
+      <!-- 结束 -->
+      <div class="ctrl-btn end" onclick="alert('结束清扫任务')">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <rect x="2" y="2" width="9" height="9" rx="2" fill="#e53935"/>
+        </svg>
+        结束
+      </div>
     </div>
 
-    <!-- 功能按钮 -->
-    <div class="function-grid">
+    <!-- 4宫格功能 -->
+    <div class="func-grid">
+      <!-- 排污 -->
       <div class="func-item" onclick="alert('开始排污')">
-        <div class="func-icon blue">🚮</div>
+        <div class="func-icon-wrap fi-blue">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+            <rect x="4" y="5" width="18" height="13" rx="2.5" stroke="#1a6eff" stroke-width="1.6"/>
+            <path d="M9 18v3M17 18v3" stroke="#1a6eff" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M7.5 10h11M7.5 13h7" stroke="#1a6eff" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="19" cy="13" r="2" fill="#1a6eff" fill-opacity="0.2" stroke="#1a6eff" stroke-width="1.2"/>
+          </svg>
+        </div>
         <div class="func-label">排污</div>
       </div>
+      <!-- 加水 -->
       <div class="func-item" onclick="alert('开始加水')">
-        <div class="func-icon cyan">💧</div>
+        <div class="func-icon-wrap fi-cyan">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+            <path d="M13 4C13 4 7 10 7 14.5a6 6 0 0 0 12 0C19 10 13 4 13 4z" stroke="#00aadd" stroke-width="1.6" fill="none"/>
+            <path d="M10 15a3.5 3.5 0 0 0 3.5 3.5" stroke="#00aadd" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M13 4v-2M11 3h4" stroke="#00aadd" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </div>
         <div class="func-label">加水</div>
       </div>
+      <!-- 返程 -->
       <div class="func-item" onclick="alert('车辆返程')">
-        <div class="func-icon purple">↩️</div>
+        <div class="func-icon-wrap fi-purple">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+            <path d="M5 13h14M13 7l6 6-6 6" stroke="#9c27b0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 13c0-4.4 3.6-8 8-8" stroke="#9c27b0" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="2 2"/>
+          </svg>
+        </div>
         <div class="func-label">返程</div>
       </div>
+      <!-- 快捷清扫 -->
       <div class="func-item" onclick="alert('快捷清扫')">
-        <div class="func-icon green">🧹</div>
+        <div class="func-icon-wrap fi-green">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+            <path d="M5 18c2-4 5-7 9-8l3-3 4 4-3 3c-1 4-4 7-8 9L5 18z" stroke="#2e7d32" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
+            <path d="M5 18l-2 4 4-2" stroke="#2e7d32" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="16" cy="8" r="1.5" fill="#2e7d32"/>
+          </svg>
+        </div>
         <div class="func-label">快捷清扫</div>
       </div>
     </div>
 
-    <!-- 方块功能卡片 -->
-    <div class="section-title">更多功能</div>
+    <!-- 更多功能卡片 -->
+    <div class="section-header">更多功能</div>
     <div class="card-grid">
-      <div class="feature-card" onclick="alert('查看车辆实时位置')">
-        <div class="feature-card-header">
-          <div class="feature-icon" style="background:#e8f5e9;">📍</div>
-          <div class="feature-title">车辆位置</div>
+
+      <!-- 车辆位置 -->
+      <div class="feat-card" onclick="alert('查看车辆实时位置')">
+        <div class="feat-head">
+          <div class="feat-icon-wrap" style="background:#e8f5e9;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2C8.69 2 6 4.69 6 8c0 5.25 6 12 6 12s6-6.75 6-12c0-3.31-2.69-6-6-6z" stroke="#2e7d32" stroke-width="1.8" fill="none"/>
+              <circle cx="12" cy="8" r="2" stroke="#2e7d32" stroke-width="1.5" fill="none"/>
+            </svg>
+          </div>
+          <div class="feat-title">车辆位置</div>
         </div>
-        <div class="feature-desc">查看车辆实时GPS定位</div>
+        <div class="feat-desc">实时GPS定位</div>
       </div>
-      <div class="feature-card" onclick="alert('进入遥控驾驶模式')">
-        <div class="feature-card-header">
-          <div class="feature-icon" style="background:#fff3e0;">🎮</div>
-          <div class="feature-title">遥控器驾驶</div>
+
+      <!-- 遥控驾驶 -->
+      <div class="feat-card" onclick="alert('进入遥控驾驶模式')">
+        <div class="feat-head">
+          <div class="feat-icon-wrap" style="background:#fff4e6;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="6" width="18" height="13" rx="4" stroke="#e65100" stroke-width="1.8"/>
+              <circle cx="8.5" cy="12" r="2" stroke="#e65100" stroke-width="1.4"/>
+              <rect x="14" y="9.5" width="1.5" height="5" rx="0.75" fill="#e65100"/>
+              <rect x="12" y="11.5" width="5" height="1.5" rx="0.75" fill="#e65100"/>
+              <path d="M8 3.5h8" stroke="#e65100" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="feat-title">遥控驾驶</div>
         </div>
-        <div class="feature-desc">远程遥控车辆移动</div>
+        <div class="feat-desc">远程操控车辆</div>
       </div>
-      <div class="feature-card" onclick="alert('查看摄像头画面')">
-        <div class="feature-card-header">
-          <div class="feature-icon" style="background:#e3f2fd;">📹</div>
-          <div class="feature-title">摄像头</div>
+
+      <!-- 摄像头 -->
+      <div class="feat-card" onclick="alert('查看摄像头画面')">
+        <div class="feat-head">
+          <div class="feat-icon-wrap" style="background:#e3f2fd;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="6" width="16" height="12" rx="3" stroke="#1565c0" stroke-width="1.8"/>
+              <path d="M18 9l4-3v12l-4-3" stroke="#1565c0" stroke-width="1.8" stroke-linejoin="round"/>
+              <circle cx="10" cy="12" r="2.5" stroke="#1565c0" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div class="feat-title">摄像头</div>
         </div>
-        <div class="feature-desc">查看车载摄像头实时画面</div>
+        <div class="feat-desc">车载实时画面</div>
       </div>
-      <div class="feature-card" onclick="alert('查看车辆健康状态')">
-        <div class="feature-card-header">
-          <div class="feature-icon" style="background:#fce4ec;">🔧</div>
-          <div class="feature-title">车辆自检</div>
+
+      <!-- 车辆自检 -->
+      <div class="feat-card" onclick="openFaultModal()">
+        <div class="feat-head">
+          <div class="feat-icon-wrap" style="background:#fce4ec;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2l2 4h4l-3 3 1 5-4-2-4 2 1-5-3-3h4z" stroke="#c62828" stroke-width="1.6" stroke-linejoin="round" fill="none"/>
+              <path d="M12 8v4M12 14v1.5" stroke="#c62828" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="feat-title">车辆自检</div>
         </div>
-        <div class="feature-desc">全车组件故障诊断</div>
+        <div class="feat-desc">2 项故障待处理</div>
       </div>
-      <div class="feature-card" onclick="alert('查看能耗统计')">
-        <div class="feature-card-header">
-          <div class="feature-icon" style="background:#f3e5f5;">📊</div>
-          <div class="feature-title">能耗分析</div>
+
+      <!-- 能耗分析 -->
+      <div class="feat-card" onclick="alert('查看能耗统计')">
+        <div class="feat-head">
+          <div class="feat-icon-wrap" style="background:#f3e5f5;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <polyline points="2,18 7,12 11,15 16,8 22,8" stroke="#7b1fa2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <line x1="2" y1="20" x2="22" y2="20" stroke="#7b1fa2" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="feat-title">能耗分析</div>
         </div>
-        <div class="feature-desc">电量、水量使用统计</div>
+        <div class="feat-desc">电量·水量统计</div>
       </div>
-      <div class="feature-card" onclick="alert('设置电子围栏')">
-        <div class="feature-card-header">
-          <div class="feature-icon" style="background:#e0f2f1;">⛳</div>
-          <div class="feature-title">电子围栏</div>
+
+      <!-- 电子围栏 -->
+      <div class="feat-card" onclick="alert('设置电子围栏')">
+        <div class="feat-head">
+          <div class="feat-icon-wrap" style="background:#e0f2f1;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="18" height="18" rx="3" stroke="#00695c" stroke-width="1.8" stroke-dasharray="3 2"/>
+              <circle cx="12" cy="12" r="3" stroke="#00695c" stroke-width="1.6"/>
+              <circle cx="3" cy="3" r="1.5" fill="#00695c"/>
+              <circle cx="21" cy="3" r="1.5" fill="#00695c"/>
+              <circle cx="3" cy="21" r="1.5" fill="#00695c"/>
+              <circle cx="21" cy="21" r="1.5" fill="#00695c"/>
+            </svg>
+          </div>
+          <div class="feat-title">电子围栏</div>
         </div>
-        <div class="feature-desc">设置作业区域边界</div>
+        <div class="feat-desc">设置作业区域</div>
       </div>
+
     </div>
+    <div style="height:10px;"></div>
+
+  </div><!-- end content -->
+
+  <!-- 故障弹窗遮罩 -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeFaultModal()"></div>
+  <!-- 故障弹窗 -->
+  <div class="fault-modal" id="faultModal">
+    <div class="modal-title">⚠️ 车辆故障诊断</div>
+    <div class="modal-item">
+      <span class="modal-badge badge-err">故障</span>
+      <div class="modal-text"><b>吸嘴总成</b><br>检测到吸嘴堵塞，建议立即清理，可能影响清扫效果。</div>
+    </div>
+    <div class="modal-item">
+      <span class="modal-badge badge-err">故障</span>
+      <div class="modal-text"><b>雷达传感器</b><br>前置雷达信号异常，请检查传感器是否被遮挡。</div>
+    </div>
+    <div class="modal-item">
+      <span class="modal-badge badge-warn">注意</span>
+      <div class="modal-text"><b>水箱液位</b><br>剩余水量95%，状态正常，无需加水。</div>
+    </div>
+    <button class="modal-close" onclick="closeFaultModal()">关 闭</button>
   </div>
 
   <!-- 底部导航 -->
   <div class="tab-bar">
-    <div class="tab-item">
-      <div class="tab-icon">💝</div>
+    <!-- 服务 -->
+    <div class="tab-item" onclick="setTab(this)">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5A5.5 5.5 0 0 1 12 5.09 5.5 5.5 0 0 1 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/>
+      </svg>
       <div class="tab-label">服务</div>
     </div>
-    <div class="tab-item">
-      <div class="tab-icon">📋</div>
+    <!-- 任务 -->
+    <div class="tab-item" onclick="setTab(this)">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <rect x="4" y="3" width="16" height="18" rx="2"/>
+        <path d="M8 7h8M8 11h8M8 15h5" stroke-linecap="round"/>
+      </svg>
       <div class="tab-label">任务</div>
     </div>
-    <div class="tab-item active">
-      <div class="tab-icon">🚗</div>
+    <!-- 设备（激活） -->
+    <div class="tab-item active" onclick="setTab(this)">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <rect x="1" y="8" width="22" height="10" rx="3"/>
+        <path d="M5 8V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/>
+        <circle cx="12" cy="13" r="2"/>
+      </svg>
       <div class="tab-label">设备</div>
     </div>
-    <div class="tab-item">
-      <div class="tab-icon">📈</div>
+    <!-- 统计 -->
+    <div class="tab-item" onclick="setTab(this)">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M18 20V10M12 20V4M6 20v-6" stroke-linecap="round"/>
+      </svg>
       <div class="tab-label">统计</div>
     </div>
-    <div class="tab-item">
-      <div class="tab-icon">😊</div>
+    <!-- 我 -->
+    <div class="tab-item" onclick="setTab(this)">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke-linecap="round"/>
+      </svg>
       <div class="tab-label">我</div>
     </div>
   </div>
-</div>
+
+</div><!-- end phone-frame -->
 
 <script>
-  // 车辆组件交互
-  const parts = document.querySelectorAll('.vehicle-part');
-  const tooltip = document.getElementById('faultTooltip');
-  const label = document.getElementById('compLabel');
-  const container = document.getElementById('modelContainer');
+/* =============================================
+   Three.js 3D 环卫车模型
+   ============================================= */
+(function() {
+  const canvas = document.getElementById('threeCanvas');
+  const wrap = canvas.parentElement;
 
-  parts.forEach(part => {
-    part.addEventListener('mouseenter', (e) => {
-      const comp = part.dataset.comp;
-      const fault = part.dataset.fault;
+  const W = wrap.clientWidth || 343;
+  const H = 200;
 
-      // 显示组件名称
-      label.textContent = comp;
-      label.classList.add('show');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setSize(W, H);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-      // 如果有故障，显示故障提示
-      if (fault) {
-        tooltip.textContent = fault;
-        tooltip.classList.add('show');
-        part.classList.add('faulty');
-      }
-    });
+  const scene = new THREE.Scene();
+  scene.background = null;
 
-    part.addEventListener('mouseleave', () => {
-      label.classList.remove('show');
-      tooltip.classList.remove('show');
-      parts.forEach(p => p.classList.remove('faulty'));
-    });
+  const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 100);
+  camera.position.set(4.5, 2.8, 5.5);
+  camera.lookAt(0, 0.4, 0);
 
-    part.addEventListener('click', (e) => {
-      const comp = part.dataset.comp;
-      const fault = part.dataset.fault;
-      if (fault) {
-        alert(`【${comp}】\n${fault}`);
-      } else {
-        alert(`【${comp}】\n状态正常`);
-      }
-    });
+  // 灯光
+  const ambient = new THREE.AmbientLight(0xffffff, 0.55);
+  scene.add(ambient);
+
+  const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+  sun.position.set(5, 8, 5);
+  sun.castShadow = true;
+  scene.add(sun);
+
+  const fill = new THREE.DirectionalLight(0xbbd4ff, 0.4);
+  fill.position.set(-4, 3, -3);
+  scene.add(fill);
+
+  // 地面阴影
+  const shadowGeo = new THREE.PlaneGeometry(8, 5);
+  const shadowMat = new THREE.MeshStandardMaterial({ color: 0x8899bb, transparent: true, opacity: 0.08 });
+  const shadow = new THREE.Mesh(shadowGeo, shadowMat);
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.y = -0.76;
+  scene.add(shadow);
+
+  // 材质
+  const matBody   = new THREE.MeshStandardMaterial({ color: 0xdde3f0, roughness: 0.4, metalness: 0.2 });
+  const matCabin  = new THREE.MeshStandardMaterial({ color: 0x2a2f3a, roughness: 0.5, metalness: 0.3 });
+  const matGlass  = new THREE.MeshStandardMaterial({ color: 0x88aacc, roughness: 0.1, metalness: 0.1, transparent: true, opacity: 0.6 });
+  const matWheel  = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.8 });
+  const matHub    = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.4, metalness: 0.6 });
+  const matGreen  = new THREE.MeshStandardMaterial({ color: 0x4caf50, roughness: 0.5 });
+  const matYellow = new THREE.MeshStandardMaterial({ color: 0xffe082, roughness: 0.3 });
+  const matSensor = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.6 });
+  const matRadarErr = new THREE.MeshStandardMaterial({ color: 0xdc3545, roughness: 0.4, emissive: 0xdc3545, emissiveIntensity: 0.4 });
+  const matLogo   = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+  const matBlack  = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
+  const matBottom = new THREE.MeshStandardMaterial({ color: 0x3a3f4a, roughness: 0.7 });
+  const matSweep  = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.7 });
+  const matErrMesh= new THREE.MeshStandardMaterial({ color: 0xdc3545, roughness: 0.5, emissive:0xdc3545, emissiveIntensity:0.3 });
+
+  const group = new THREE.Group();
+
+  function box(w, h, d, mat, x=0, y=0, z=0) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    m.position.set(x, y, z);
+    m.castShadow = true;
+    return m;
+  }
+  function cyl(rt, rb, h, seg, mat, x=0, y=0, z=0, rx=0) {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), mat);
+    m.position.set(x, y, z);
+    if (rx) m.rotation.x = rx;
+    m.castShadow = true;
+    return m;
+  }
+
+  // ——— 车身主体（货厢）———
+  const bodyMain = box(3.6, 1.0, 1.7, matBody, -0.6, 0, 0);
+  group.add(bodyMain);
+
+  // 车厢顶部设备舱
+  const topShelf = box(2.2, 0.2, 1.4, matBody, -0.9, 0.6, 0);
+  group.add(topShelf);
+
+  // 绿色腰线
+  const stripe1 = box(3.6, 0.07, 1.72, matGreen, -0.6, 0.2, 0);
+  group.add(stripe1);
+  const stripe2 = box(3.2, 0.05, 1.72, matYellow, -0.8, 0.1, 0);
+  group.add(stripe2);
+
+  // ——— 驾驶室 ———
+  const cabin = box(1.6, 1.2, 1.7, matCabin, 1.6, 0.1, 0);
+  group.add(cabin);
+
+  // 挡风玻璃
+  const windshield = box(0.04, 0.7, 1.2, matGlass, 2.4, 0.25, 0);
+  group.add(windshield);
+
+  // 车窗侧面
+  const sideWinL = box(1.0, 0.45, 0.04, matGlass, 1.6, 0.3, 0.87);
+  const sideWinR = box(1.0, 0.45, 0.04, matGlass, 1.6, 0.3, -0.87);
+  group.add(sideWinL, sideWinR);
+
+  // ——— 底盘 ———
+  const chassis = box(5.0, 0.18, 1.5, matBottom, 0.1, -0.59, 0);
+  group.add(chassis);
+
+  // ——— 车轮（4个）———
+  const wheelPos = [
+    [-1.4, -0.76, 1.0], [-1.4, -0.76, -1.0],
+    [1.5, -0.76, 1.0],  [1.5, -0.76, -1.0]
+  ];
+  wheelPos.forEach(([x, y, z]) => {
+    const tire = cyl(0.42, 0.42, 0.36, 24, matWheel, x, y, z, Math.PI/2);
+    const hub  = cyl(0.22, 0.22, 0.38, 8, matHub, x, y, z, Math.PI/2);
+    const cap  = cyl(0.1, 0.1, 0.02, 6, matHub, x, y, z + (z>0?0.19:-0.19), Math.PI/2);
+    group.add(tire, hub, cap);
   });
 
-  // 故障指示器交互
-  const indicators = document.querySelectorAll('.fault-indicator');
-  indicators.forEach(ind => {
-    ind.addEventListener('mouseenter', () => {
-      tooltip.textContent = ind.dataset.fault;
-      tooltip.classList.add('show');
-    });
-    ind.addEventListener('mouseleave', () => {
-      tooltip.classList.remove('show');
-    });
-    ind.addEventListener('click', () => {
-      alert(`【${ind.dataset.comp}】\n${ind.dataset.fault}`);
-    });
-  });
+  // ——— 顶部传感器设备 ———
+  // GPS天线杆
+  const antGPS = cyl(0.02, 0.02, 0.4, 6, matSensor, -0.3, 0.9, 0);
+  group.add(antGPS);
+  const antGPSTop = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), matSensor);
+  antGPSTop.position.set(-0.3, 1.15, 0);
+  group.add(antGPSTop);
 
-  // 标签切换
-  document.querySelectorAll('.vehicle-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.vehicle-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-    });
-  });
+  // 路由器天线
+  const antRouter = cyl(0.015, 0.015, 0.3, 6, matSensor, 0.1, 0.85, 0.3);
+  group.add(antRouter);
 
-  // 底部导航切换
-  document.querySelectorAll('.tab-item').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-    });
+  // 补光灯条
+  const lightBar = box(0.6, 0.1, 0.15, matYellow, -0.6, 0.72, 0);
+  group.add(lightBar);
+
+  // ——— 前部传感器（雷达异常 → 红色）———
+  const radar1 = box(0.22, 0.18, 0.3, matRadarErr, 2.42, 0.35, 0.3);
+  const radar2 = box(0.18, 0.18, 0.3, matRadarErr, 2.42, 0.35, -0.3);
+  group.add(radar1, radar2);
+
+  // 摄像头
+  const camL = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), matSensor);
+  camL.position.set(2.42, 0.5, 0.6);
+  const camR = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), matSensor);
+  camR.position.set(2.42, 0.5, -0.6);
+  group.add(camL, camR);
+  // 摄像头镜头
+  const lensL = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8),
+    new THREE.MeshStandardMaterial({ color: 0x4488ff, roughness: 0.1, metalness: 0.8 }));
+  lensL.position.set(2.53, 0.5, 0.6);
+  const lensR = lensL.clone();
+  lensR.position.set(2.53, 0.5, -0.6);
+  group.add(lensL, lensR);
+
+  // ——— 前大灯 ———
+  const headlightL = box(0.05, 0.16, 0.35, matYellow, 2.43, -0.1, 0.55);
+  const headlightR = box(0.05, 0.16, 0.35, matYellow, 2.43, -0.1, -0.55);
+  group.add(headlightL, headlightR);
+
+  // ——— 清扫系统（底部）———
+  const sweepBar = box(1.8, 0.12, 1.6, matSweep, -0.4, -0.72, 0);
+  group.add(sweepBar);
+  // 圆刷左右
+  const brushL = cyl(0.28, 0.28, 1.65, 12, matSweep, -0.4, -0.85, 0, Math.PI/2);
+  group.add(brushL);
+
+  // ——— 吸嘴总成（异常 → 红框）———
+  const nozzle = box(0.8, 0.12, 1.0, matErrMesh, -1.5, -0.82, 0);
+  group.add(nozzle);
+
+  // ——— 水箱液位计（侧面）———
+  const waterTank = box(0.08, 0.7, 0.22, new THREE.MeshStandardMaterial({ color: 0x90caf9, transparent:true, opacity:0.8 }), -2.36, -0.1, 0.78);
+  const waterFill = box(0.09, 0.5, 0.2, new THREE.MeshStandardMaterial({ color: 0x1976d2, transparent:true, opacity:0.85 }), -2.36, -0.22, 0.78);
+  group.add(waterTank, waterFill);
+
+  // ——— 充电口 ———
+  const chargePort = box(0.1, 0.22, 0.22, matBlack, -2.35, 0.1, -0.75);
+  group.add(chargePort);
+
+  // ——— 检修门 ———
+  const door1 = box(0.04, 0.5, 0.6, new THREE.MeshStandardMaterial({ color: 0xc8cdd8, roughness: 0.5 }), -2.38, -0.05, 0.0);
+  group.add(door1);
+
+  // ——— 卸料垃圾箱顶盖 ———
+  const binTop = box(2.0, 0.18, 1.5, new THREE.MeshStandardMaterial({ color: 0xc8cdd8, roughness: 0.5 }), -1.2, 0.62, 0);
+  group.add(binTop);
+
+  // ——— 车牌区文字（用发光面板模拟）———
+  const plateBack = box(0.04, 0.2, 0.55, new THREE.MeshStandardMaterial({ color: 0xffffff, emissive:0xffffff, emissiveIntensity:0.3 }), 2.44, -0.35, 0);
+  group.add(plateBack);
+
+  scene.add(group);
+  group.position.y = -0.1;
+
+  // ============ 拖拽旋转 ============
+  let isDragging = false;
+  let lastX = 0, lastY = 0;
+  let rotY = -0.3, rotX = 0.18;
+
+  function onPointerDown(e) {
+    isDragging = true;
+    lastX = e.clientX ?? e.touches[0].clientX;
+    lastY = e.clientY ?? e.touches[0].clientY;
+    canvas.style.cursor = 'grabbing';
+  }
+  function onPointerMove(e) {
+    if (!isDragging) return;
+    const cx = e.clientX ?? e.touches[0].clientX;
+    const cy = e.clientY ?? e.touches[0].clientY;
+    rotY += (cx - lastX) * 0.012;
+    rotX += (cy - lastY) * 0.008;
+    rotX = Math.max(-0.6, Math.min(0.7, rotX));
+    lastX = cx; lastY = cy;
+  }
+  function onPointerUp() {
+    isDragging = false;
+    canvas.style.cursor = 'grab';
+  }
+
+  canvas.addEventListener('mousedown', onPointerDown);
+  canvas.addEventListener('touchstart', e => { onPointerDown(e); e.preventDefault(); }, { passive: false });
+  window.addEventListener('mousemove', onPointerMove);
+  window.addEventListener('touchmove', e => onPointerMove(e), { passive: true });
+  window.addEventListener('mouseup', onPointerUp);
+  window.addEventListener('touchend', onPointerUp);
+
+  // 雷达红色脉冲动画
+  let t = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    t += 0.04;
+
+    // 自动慢速旋转（无拖拽时）
+    if (!isDragging) {
+      rotY += 0.003;
+    }
+
+    group.rotation.y = rotY;
+    group.rotation.x = rotX;
+
+    // 雷达故障闪烁
+    const intensity = 0.25 + 0.25 * Math.sin(t * 3);
+    matRadarErr.emissiveIntensity = intensity;
+    matErrMesh.emissiveIntensity = intensity * 0.8;
+
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+
+/* ============ UI 交互 ============ */
+// 车辆标签切换
+document.querySelectorAll('.vehicle-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.vehicle-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
   });
+});
+
+// 底部导航
+function setTab(el) {
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// 故障弹窗
+function openFaultModal() {
+  document.getElementById('modalOverlay').classList.add('show');
+  document.getElementById('faultModal').classList.add('show');
+}
+function closeFaultModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+  document.getElementById('faultModal').classList.remove('show');
+}
 </script>
-
 </body>
 </html>
