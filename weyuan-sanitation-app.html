@@ -836,155 +836,329 @@ window.addEventListener('load', function() {
   shadow.position.y = -0.76;
   scene.add(shadow);
 
-  // 材质
-  const matBody   = new THREE.MeshStandardMaterial({ color: 0xdde3f0, roughness: 0.4, metalness: 0.2 });
-  const matCabin  = new THREE.MeshStandardMaterial({ color: 0x2a2f3a, roughness: 0.5, metalness: 0.3 });
-  const matGlass  = new THREE.MeshStandardMaterial({ color: 0x88aacc, roughness: 0.1, metalness: 0.1, transparent: true, opacity: 0.6 });
-  const matWheel  = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.8 });
-  const matHub    = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.4, metalness: 0.6 });
-  const matGreen  = new THREE.MeshStandardMaterial({ color: 0x4caf50, roughness: 0.5 });
-  const matYellow = new THREE.MeshStandardMaterial({ color: 0xffe082, roughness: 0.3 });
-  const matSensor = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.6 });
-  const matRadarErr = new THREE.MeshStandardMaterial({ color: 0xdc3545, roughness: 0.4, emissive: 0xdc3545, emissiveIntensity: 0.4 });
-  const matLogo   = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
-  const matBlack  = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
-  const matBottom = new THREE.MeshStandardMaterial({ color: 0x3a3f4a, roughness: 0.7 });
-  const matSweep  = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.7 });
-  const matErrMesh= new THREE.MeshStandardMaterial({ color: 0xdc3545, roughness: 0.5, emissive:0xdc3545, emissiveIntensity:0.3 });
+  // ===== 材质 =====
+  // 车身：白色烤漆
+  const matBody    = new THREE.MeshStandardMaterial({ color: 0xf0f2f5, roughness: 0.25, metalness: 0.15 });
+  // 车身侧面深色腰带下方（黑色裙边）
+  const matSkirt   = new THREE.MeshStandardMaterial({ color: 0x1c1f24, roughness: 0.6, metalness: 0.1 });
+  // 驾驶室深色
+  const matCabin   = new THREE.MeshStandardMaterial({ color: 0x22262e, roughness: 0.45, metalness: 0.2 });
+  // 车玻璃：深蓝灰色半透明
+  const matGlass   = new THREE.MeshStandardMaterial({ color: 0x4a6a8a, roughness: 0.05, metalness: 0.3, transparent: true, opacity: 0.55 });
+  // 绿色腰线
+  const matGreen   = new THREE.MeshStandardMaterial({ color: 0x3ecf5a, roughness: 0.4, metalness: 0.1 });
+  // 黄色腰线
+  const matYellow  = new THREE.MeshStandardMaterial({ color: 0xf7c843, roughness: 0.35, metalness: 0.1 });
+  // 轮胎
+  const matTire    = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
+  // 轮毂
+  const matHub     = new THREE.MeshStandardMaterial({ color: 0x999999, roughness: 0.3, metalness: 0.7 });
+  // 轮拱（黑色）
+  const matArch    = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.8 });
+  // 传感器/设备（深灰）
+  const matSensor  = new THREE.MeshStandardMaterial({ color: 0x2d2d2d, roughness: 0.5 });
+  // 雷达（故障红色，带发光）
+  const matRadarErr= new THREE.MeshStandardMaterial({ color: 0xcc2233, roughness: 0.4, emissive: 0xcc2233, emissiveIntensity: 0.5 });
+  // 正常雷达（黑色）
+  const matRadarOk = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.5, metalness: 0.4 });
+  // 底盘
+  const matChassis = new THREE.MeshStandardMaterial({ color: 0x2a2d33, roughness: 0.8 });
+  // 清扫件
+  const matSweep   = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.85 });
+  // 故障吸嘴（红色）
+  const matNozzleErr = new THREE.MeshStandardMaterial({ color: 0xcc2233, roughness: 0.5, emissive: 0xcc2233, emissiveIntensity: 0.3 });
+  // 橙色转向灯
+  const matTurn    = new THREE.MeshStandardMaterial({ color: 0xff8800, emissive: 0xff6600, emissiveIntensity: 0.4, roughness: 0.2 });
+  // 白色前灯
+  const matLight   = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffee, emissiveIntensity: 0.6, roughness: 0.1 });
+  // 顶部设备台
+  const matTopDeck = new THREE.MeshStandardMaterial({ color: 0xdde0e8, roughness: 0.4, metalness: 0.2 });
+  // 标志牌白底
+  const matSignBg  = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+  // 标志牌绿色
+  const matSignGrn = new THREE.MeshStandardMaterial({ color: 0x3ecf5a, roughness: 0.5 });
 
   const group = new THREE.Group();
 
-  function box(w, h, d, mat, x=0, y=0, z=0) {
+  // ===== 辅助函数 =====
+  function box(w, h, d, mat, x=0, y=0, z=0, ry=0) {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
     m.position.set(x, y, z);
-    m.castShadow = true;
+    if (ry) m.rotation.y = ry;
+    m.castShadow = true; m.receiveShadow = true;
     return m;
   }
-  function cyl(rt, rb, h, seg, mat, x=0, y=0, z=0, rx=0) {
+  function cyl(rt, rb, h, seg, mat, x=0, y=0, z=0, rx=0, ry=0) {
     const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), mat);
     m.position.set(x, y, z);
     if (rx) m.rotation.x = rx;
+    if (ry) m.rotation.y = ry;
+    m.castShadow = true;
+    return m;
+  }
+  function sphere(r, mat, x=0, y=0, z=0) {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), mat);
+    m.position.set(x, y, z);
     m.castShadow = true;
     return m;
   }
 
-  // ——— 车身主体（货厢）———
-  const bodyMain = box(3.6, 1.0, 1.7, matBody, -0.6, 0, 0);
-  group.add(bodyMain);
+  // ============================================================
+  // S3 环卫车：整体尺寸约 5.5(L) × 1.8(H) × 1.8(W)
+  // 坐标原点在车辆中心底部偏上
+  // X轴：车头(+) → 车尾(-)   Y轴：上(+)   Z轴：左(+) → 右(-)
+  // ============================================================
 
-  // 车厢顶部设备舱
-  const topShelf = box(2.2, 0.2, 1.4, matBody, -0.9, 0.6, 0);
-  group.add(topShelf);
+  // ===== 1. 货厢主体（白色大箱体）=====
+  // 货厢：从车尾到驾驶室背部，宽高大
+  const cargoMain = box(3.2, 1.1, 1.72, matBody, -1.0, 0.05, 0);
+  group.add(cargoMain);
 
-  // 绿色腰线
-  const stripe1 = box(3.6, 0.07, 1.72, matGreen, -0.6, 0.2, 0);
-  group.add(stripe1);
-  const stripe2 = box(3.2, 0.05, 1.72, matYellow, -0.8, 0.1, 0);
-  group.add(stripe2);
+  // 货厢前壁（与驾驶室衔接，稍内缩）
+  const cargoFront = box(0.08, 1.1, 1.72, matBody, 0.56, 0.05, 0);
+  group.add(cargoFront);
 
-  // ——— 驾驶室 ———
-  const cabin = box(1.6, 1.2, 1.7, matCabin, 1.6, 0.1, 0);
-  group.add(cabin);
+  // 货厢后圆角（用多层渐变模拟圆角后壁）
+  const cargoRearA = box(0.12, 1.0, 1.72, matBody, -2.58, 0.05, 0);
+  const cargoRearB = box(0.15, 0.85, 1.68, matBody, -2.68, 0.05, 0);
+  group.add(cargoRearA, cargoRearB);
 
-  // 挡风玻璃
-  const windshield = box(0.04, 0.7, 1.2, matGlass, 2.4, 0.25, 0);
+  // ===== 2. 顶部设备台（货厢上方，平台）=====
+  const topDeck = box(2.8, 0.14, 1.5, matTopDeck, -1.0, 0.63, 0);
+  group.add(topDeck);
+
+  // 高位卸料垃圾箱（顶部后方凸起）
+  const binHopper = box(1.2, 0.38, 1.45, matTopDeck, -1.8, 0.90, 0);
+  group.add(binHopper);
+  // 卸料口盖
+  const binLid = box(1.1, 0.06, 1.3, new THREE.MeshStandardMaterial({color:0xcfd3db,roughness:0.4}), -1.8, 1.1, 0);
+  group.add(binLid);
+
+  // ===== 3. 绿色腰线（横贯货厢）=====
+  // 主绿色腰线
+  const stripeG = box(3.25, 0.1, 1.74, matGreen, -1.0, 0.22, 0);
+  group.add(stripeG);
+  // 黄色细线（绿线上方）
+  const stripeY = box(3.25, 0.04, 1.74, matYellow, -1.0, 0.32, 0);
+  group.add(stripeY);
+
+  // ===== 4. 黑色裙边（腰线以下车身）=====
+  const skirtCargo = box(3.2, 0.5, 1.74, matSkirt, -1.0, -0.25, 0);
+  group.add(skirtCargo);
+
+  // ===== 5. 驾驶室（前舱，圆润方形）=====
+  // 驾驶室主体
+  const cabinMain = box(1.5, 1.25, 1.72, matCabin, 1.22, 0.08, 0);
+  group.add(cabinMain);
+
+  // 驾驶室顶部（与货厢顶平齐，微收）
+  const cabinTop = box(1.3, 0.14, 1.6, matCabin, 1.22, 0.75, 0);
+  group.add(cabinTop);
+
+  // 驾驶室前脸（稍倾斜，用薄盒模拟）
+  const cabinFace = box(0.08, 1.1, 1.72, matCabin, 1.97, 0.08, 0);
+  group.add(cabinFace);
+
+  // 前脸倾斜过渡（上方收窄）
+  const cabinBrow = box(0.25, 0.22, 1.65, matCabin, 1.88, 0.72, 0);
+  group.add(cabinBrow);
+
+  // ===== 6. 挡风玻璃（大面积，深蓝半透）=====
+  const windshield = box(0.06, 0.72, 1.32, matGlass, 1.96, 0.28, 0);
   group.add(windshield);
 
-  // 车窗侧面
-  const sideWinL = box(1.0, 0.45, 0.04, matGlass, 1.6, 0.3, 0.87);
-  const sideWinR = box(1.0, 0.45, 0.04, matGlass, 1.6, 0.3, -0.87);
+  // 驾驶室侧窗（左右各一）
+  const sideWinL = box(0.9, 0.42, 0.05, matGlass, 1.15, 0.38, 0.87);
+  const sideWinR = box(0.9, 0.42, 0.05, matGlass, 1.15, 0.38, -0.87);
   group.add(sideWinL, sideWinR);
 
-  // ——— 底盘 ———
-  const chassis = box(5.0, 0.18, 1.5, matBottom, 0.1, -0.59, 0);
+  // 驾驶室黑色裙边（下半部分）
+  const cabinSkirt = box(1.5, 0.42, 1.74, matSkirt, 1.22, -0.33, 0);
+  group.add(cabinSkirt);
+
+  // ===== 7. 底盘 =====
+  const chassis = box(5.2, 0.16, 1.55, matChassis, -0.3, -0.64, 0);
   group.add(chassis);
 
-  // ——— 车轮（4个）———
-  const wheelPos = [
-    [-1.4, -0.76, 1.0], [-1.4, -0.76, -1.0],
-    [1.5, -0.76, 1.0],  [1.5, -0.76, -1.0]
+  // ===== 8. 轮拱（4个黑色圆弧）=====
+  // 前轮拱（驾驶室下方）
+  const archFL = box(0.65, 0.28, 0.12, matArch, 1.45, -0.35, 0.9);
+  const archFR = box(0.65, 0.28, 0.12, matArch, 1.45, -0.35, -0.9);
+  // 后轮拱（货厢尾部）
+  const archRL = box(0.7, 0.28, 0.12, matArch, -1.85, -0.35, 0.9);
+  const archRR = box(0.7, 0.28, 0.12, matArch, -1.85, -0.35, -0.9);
+  group.add(archFL, archFR, archRL, archRR);
+
+  // ===== 9. 车轮（前2后2）=====
+  const wheelDefs = [
+    [1.45, -0.72, 1.0],  // 前左
+    [1.45, -0.72, -1.0], // 前右
+    [-1.85, -0.72, 1.0], // 后左
+    [-1.85, -0.72, -1.0] // 后右
   ];
-  wheelPos.forEach(([x, y, z]) => {
-    const tire = cyl(0.42, 0.42, 0.36, 24, matWheel, x, y, z, Math.PI/2);
-    const hub  = cyl(0.22, 0.22, 0.38, 8, matHub, x, y, z, Math.PI/2);
-    const cap  = cyl(0.1, 0.1, 0.02, 6, matHub, x, y, z + (z>0?0.19:-0.19), Math.PI/2);
-    group.add(tire, hub, cap);
+  wheelDefs.forEach(([wx, wy, wz]) => {
+    // 外胎
+    const tire = cyl(0.38, 0.38, 0.3, 28, matTire, wx, wy, wz, Math.PI/2);
+    group.add(tire);
+    // 胎侧白线（细环）
+    const sidewall = cyl(0.38, 0.38, 0.02, 28,
+      new THREE.MeshStandardMaterial({color:0xdddddd,roughness:0.9}),
+      wx, wy, wz + (wz>0?0.13:-0.13), Math.PI/2);
+    group.add(sidewall);
+    // 轮毂
+    const hub = cyl(0.2, 0.2, 0.32, 8, matHub, wx, wy, wz, Math.PI/2);
+    group.add(hub);
+    // 中心盖
+    const cap = cyl(0.08, 0.08, 0.04, 6,
+      new THREE.MeshStandardMaterial({color:0xbbbbbb,roughness:0.3,metalness:0.8}),
+      wx, wy, wz + (wz>0?0.17:-0.17), Math.PI/2);
+    group.add(cap);
   });
 
-  // ——— 顶部传感器设备 ———
-  // GPS天线杆
-  const antGPS = cyl(0.02, 0.02, 0.4, 6, matSensor, -0.3, 0.9, 0);
-  group.add(antGPS);
-  const antGPSTop = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), matSensor);
-  antGPSTop.position.set(-0.3, 1.15, 0);
-  group.add(antGPSTop);
+  // ===== 10. 顶部传感器台 =====
+  // 传感器平台底板
+  const sensorDeck = box(1.6, 0.1, 1.2, matTopDeck, 0.4, 0.78, 0);
+  group.add(sensorDeck);
 
-  // 路由器天线
-  const antRouter = cyl(0.015, 0.015, 0.3, 6, matSensor, 0.1, 0.85, 0.3);
-  group.add(antRouter);
+  // GPS天线（两根细杆）
+  const gpsAntL = cyl(0.018, 0.018, 0.35, 6, matSensor, 0.2, 1.05, 0.2);
+  const gpsAntR = cyl(0.018, 0.018, 0.35, 6, matSensor, 0.2, 1.05, -0.2);
+  const gpsBallL = sphere(0.055, matSensor, 0.2, 1.25, 0.2);
+  const gpsBallR = sphere(0.055, matSensor, 0.2, 1.25, -0.2);
+  group.add(gpsAntL, gpsAntR, gpsBallL, gpsBallR);
 
-  // 补光灯条
-  const lightBar = box(0.6, 0.1, 0.15, matYellow, -0.6, 0.72, 0);
-  group.add(lightBar);
+  // 路由器天线（后方竖杆）
+  const routerAnt = cyl(0.012, 0.012, 0.28, 6, matSensor, -0.1, 1.0, 0.45);
+  group.add(routerAnt);
 
-  // ——— 前部传感器（雷达异常 → 红色）———
-  const radar1 = box(0.22, 0.18, 0.3, matRadarErr, 2.42, 0.35, 0.3);
-  const radar2 = box(0.18, 0.18, 0.3, matRadarErr, 2.42, 0.35, -0.3);
-  group.add(radar1, radar2);
+  // 补光灯条（顶台前沿）
+  const lightStrip = box(0.55, 0.08, 0.12, matYellow, 0.7, 0.78, 0);
+  group.add(lightStrip);
 
-  // 摄像头
-  const camL = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), matSensor);
-  camL.position.set(2.42, 0.5, 0.6);
-  const camR = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), matSensor);
-  camR.position.set(2.42, 0.5, -0.6);
-  group.add(camL, camR);
-  // 摄像头镜头
-  const lensL = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8),
-    new THREE.MeshStandardMaterial({ color: 0x4488ff, roughness: 0.1, metalness: 0.8 }));
-  lensL.position.set(2.53, 0.5, 0.6);
-  const lensR = lensL.clone();
-  lensR.position.set(2.53, 0.5, -0.6);
-  group.add(lensL, lensR);
+  // 激光雷达（圆柱，顶台中央）
+  const lidar = cyl(0.12, 0.12, 0.12, 16, matSensor, 0.3, 0.9, 0);
+  const lidarTop = cyl(0.1, 0.1, 0.04, 16,
+    new THREE.MeshStandardMaterial({color:0x333333,roughness:0.3,metalness:0.5}),
+    0.3, 0.97, 0);
+  group.add(lidar, lidarTop);
 
-  // ——— 前大灯 ———
-  const headlightL = box(0.05, 0.16, 0.35, matYellow, 2.43, -0.1, 0.55);
-  const headlightR = box(0.05, 0.16, 0.35, matYellow, 2.43, -0.1, -0.55);
-  group.add(headlightL, headlightR);
+  // ===== 11. 前部传感器（驾驶室前脸）=====
+  // 前保险杠
+  const bumper = box(0.1, 0.22, 1.65, matCabin, 2.02, -0.42, 0);
+  group.add(bumper);
 
-  // ——— 清扫系统（底部）———
-  const sweepBar = box(1.8, 0.12, 1.6, matSweep, -0.4, -0.72, 0);
-  group.add(sweepBar);
-  // 圆刷左右
-  const brushL = cyl(0.28, 0.28, 1.65, 12, matSweep, -0.4, -0.85, 0, Math.PI/2);
-  group.add(brushL);
+  // 前置雷达（左右各一，故障红色）
+  const radarFL = box(0.1, 0.12, 0.22, matRadarErr, 2.02, -0.12, 0.5);
+  const radarFR = box(0.1, 0.12, 0.22, matRadarErr, 2.02, -0.12, -0.5);
+  group.add(radarFL, radarFR);
 
-  // ——— 吸嘴总成（异常 → 红框）———
-  const nozzle = box(0.8, 0.12, 1.0, matErrMesh, -1.5, -0.82, 0);
-  group.add(nozzle);
+  // 前视摄像头（中央，圆形）
+  const camFront = sphere(0.075, matSensor, 2.03, 0.22, 0);
+  const camFrontLens = sphere(0.038,
+    new THREE.MeshStandardMaterial({color:0x3366ff,roughness:0.05,metalness:0.9}),
+    2.1, 0.22, 0);
+  group.add(camFront, camFrontLens);
 
-  // ——— 水箱液位计（侧面）———
-  const waterTank = box(0.08, 0.7, 0.22, new THREE.MeshStandardMaterial({ color: 0x90caf9, transparent:true, opacity:0.8 }), -2.36, -0.1, 0.78);
-  const waterFill = box(0.09, 0.5, 0.2, new THREE.MeshStandardMaterial({ color: 0x1976d2, transparent:true, opacity:0.85 }), -2.36, -0.22, 0.78);
-  group.add(waterTank, waterFill);
+  // 侧方摄像头（驾驶室两侧，对应S3图左上"摄像头"标注）
+  const camSideL = sphere(0.065, matSensor, 1.7, 0.55, 0.88);
+  const camSideR = sphere(0.065, matSensor, 1.7, 0.55, -0.88);
+  group.add(camSideL, camSideR);
+  // 摄像头支架
+  const camBktL = box(0.06, 0.1, 0.06, matSensor, 1.7, 0.48, 0.85);
+  const camBktR = box(0.06, 0.1, 0.06, matSensor, 1.7, 0.48, -0.85);
+  group.add(camBktL, camBktR);
 
-  // ——— 充电口 ———
-  const chargePort = box(0.1, 0.22, 0.22, matBlack, -2.35, 0.1, -0.75);
-  group.add(chargePort);
+  // ===== 12. 车灯 =====
+  // 前大灯（L/R，矩形）
+  const headLL = box(0.06, 0.14, 0.3, matLight, 2.02, -0.1, 0.65);
+  const headLR = box(0.06, 0.14, 0.3, matLight, 2.02, -0.1, -0.65);
+  group.add(headLL, headLR);
+  // 转向灯（驾驶室侧面下角）
+  const turnL = box(0.06, 0.08, 0.08, matTurn, 1.95, -0.28, 0.87);
+  const turnR = box(0.06, 0.08, 0.08, matTurn, 1.95, -0.28, -0.87);
+  group.add(turnL, turnR);
+  // 侧转向灯（货厢侧面前部）
+  const sideTurnL = box(0.06, 0.06, 0.06, matTurn, 0.55, 0.0, 0.87);
+  const sideTurnR = box(0.06, 0.06, 0.06, matTurn, 0.55, 0.0, -0.87);
+  group.add(sideTurnL, sideTurnR);
 
-  // ——— 检修门 ———
-  const door1 = box(0.04, 0.5, 0.6, new THREE.MeshStandardMaterial({ color: 0xc8cdd8, roughness: 0.5 }), -2.38, -0.05, 0.0);
-  group.add(door1);
+  // ===== 13. 清扫系统（底部中央）=====
+  const sweepHousing = box(1.6, 0.1, 1.55, matSweep, -0.5, -0.72, 0);
+  group.add(sweepHousing);
+  // 圆刷（水平滚刷）
+  const roller = cyl(0.22, 0.22, 1.56, 14, matSweep, -0.5, -0.82, 0, Math.PI/2);
+  group.add(roller);
+  // 刷毛模拟（多个细条）
+  for (let i = -0.65; i <= 0.65; i += 0.13) {
+    const bristle = cyl(0.015, 0.03, 0.16, 5, matSweep, -0.5, -0.95, i);
+    group.add(bristle);
+  }
 
-  // ——— 卸料垃圾箱顶盖 ———
-  const binTop = box(2.0, 0.18, 1.5, new THREE.MeshStandardMaterial({ color: 0xc8cdd8, roughness: 0.5 }), -1.2, 0.62, 0);
-  group.add(binTop);
+  // ===== 14. 吸嘴总成（故障，红色）=====
+  const nozzleBase = box(0.7, 0.1, 0.85, matNozzleErr, -1.6, -0.78, 0);
+  const nozzlePipe = cyl(0.06, 0.04, 0.25, 8, matNozzleErr, -1.6, -0.9, 0);
+  group.add(nozzleBase, nozzlePipe);
 
-  // ——— 车牌区文字（用发光面板模拟）———
-  const plateBack = box(0.04, 0.2, 0.55, new THREE.MeshStandardMaterial({ color: 0xffffff, emissive:0xffffff, emissiveIntensity:0.3 }), 2.44, -0.35, 0);
-  group.add(plateBack);
+  // ===== 15. 水箱（侧面）=====
+  const waterGauge = box(0.06, 0.55, 0.18,
+    new THREE.MeshStandardMaterial({color:0x90caf9,transparent:true,opacity:0.75}),
+    -2.0, -0.05, 0.88);
+  const waterLevel = box(0.07, 0.4, 0.16,
+    new THREE.MeshStandardMaterial({color:0x1565c0,transparent:true,opacity:0.8}),
+    -2.0, -0.15, 0.88);
+  group.add(waterGauge, waterLevel);
+
+  // ===== 16. 充电口（侧面）=====
+  const chargeBox = box(0.08, 0.2, 0.2, matSensor, -2.4, 0.12, -0.87);
+  const chargeRing = cyl(0.05, 0.05, 0.04, 10, matSensor, -2.4, 0.12, -0.88, Math.PI/2);
+  group.add(chargeBox, chargeRing);
+
+  // ===== 17. 检修门（货厢侧面，左侧）=====
+  const accessDoorL1 = box(0.04, 0.52, 0.48,
+    new THREE.MeshStandardMaterial({color:0xe2e5ed,roughness:0.4}),
+    -2.1, -0.08, 0.89);
+  const accessDoorL2 = box(0.04, 0.52, 0.48,
+    new THREE.MeshStandardMaterial({color:0xe2e5ed,roughness:0.4}),
+    -1.55, -0.08, 0.89);
+  group.add(accessDoorL1, accessDoorL2);
+  // 门缝线
+  const doorGap1 = box(0.05, 0.52, 0.01, matSkirt, -2.1, -0.08, 0.66);
+  const doorGap2 = box(0.05, 0.52, 0.01, matSkirt, -1.55, -0.08, 0.66);
+  group.add(doorGap1, doorGap2);
+
+  // ===== 18. 车身贴图文字（用几何体模拟，S3图正面文字）=====
+  // "无人驾驶环卫车" —— 绿色标识条
+  const textBar = box(1.4, 0.16, 0.04, matGreen, -0.6, 0.18, 0.87);
+  group.add(textBar);
+  // "文远知行" logo块（白色小牌）
+  const logoBar = box(0.55, 0.1, 0.04, matSignBg, -0.6, 0.36, 0.87);
+  group.add(logoBar);
+  // logo左侧绿色装饰
+  const logoDot = box(0.06, 0.1, 0.04, matSignGrn, -0.9, 0.36, 0.87);
+  group.add(logoDot);
+
+  // 右侧同样的贴条
+  const textBarR = box(1.4, 0.16, 0.04, matGreen, -0.6, 0.18, -0.87);
+  const logoBarR = box(0.55, 0.1, 0.04, matSignBg, -0.6, 0.36, -0.87);
+  const logoDotR = box(0.06, 0.1, 0.04, matSignGrn, -0.9, 0.36, -0.87);
+  group.add(textBarR, logoBarR, logoDotR);
+
+  // ===== 19. 手动加水口（货厢顶部左后）=====
+  const fillPort = cyl(0.06, 0.05, 0.12, 10, matSensor, -2.2, 0.72, 0.35);
+  const fillCap  = cyl(0.08, 0.08, 0.04, 10, matTopDeck, -2.2, 0.79, 0.35);
+  group.add(fillPort, fillCap);
+
+  // 自动加水口（稍前）
+  const autoFill = cyl(0.05, 0.05, 0.1, 10, matSensor, -1.6, 0.72, -0.4);
+  group.add(autoFill);
+
+  // ===== 20. 后部雷达+相机（货厢尾部）=====
+  const rearRadar = box(0.08, 0.1, 0.18, matRadarOk, -2.7, 0.4, 0.2);
+  const rearCam   = sphere(0.06, matSensor, -2.72, 0.55, -0.1);
+  group.add(rearRadar, rearCam);
 
   scene.add(group);
-  group.position.y = -0.1;
+  group.position.y = -0.05;
 
   // ============ 拖拽旋转 ============
   let isDragging = false;
