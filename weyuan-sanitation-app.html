@@ -794,12 +794,17 @@
 /* =============================================
    Three.js 3D 环卫车模型
    ============================================= */
-window.addEventListener('load', function() {
+var _threeInited = false;
+function initThreeJS() {
+  if (_threeInited) return;
+  _threeInited = true;
 (function() {
+  try {
   const canvas = document.getElementById('threeCanvas');
+  if (!canvas) return;
   const wrap = canvas.parentElement;
 
-  const W = wrap.getBoundingClientRect().width || 343;
+  const W = Math.max(wrap.getBoundingClientRect().width, wrap.offsetWidth, 343);
   const H = 200;
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -1205,8 +1210,16 @@ window.addEventListener('load', function() {
     renderer.render(scene, camera);
   }
   animate();
+  } catch(e) { console.error('ThreeJS init error:', e); }
 })();
-}); // window load
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() { setTimeout(initThreeJS, 50); });
+} else {
+  setTimeout(initThreeJS, 50);
+}
+window.addEventListener('load', function() { setTimeout(initThreeJS, 100); });
 
 /* ============ UI 交互 ============ */
 // 车辆标签切换
