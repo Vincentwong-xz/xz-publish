@@ -1200,7 +1200,7 @@ window.addEventListener('load', function() {
     // 雷达故障闪烁
     const intensity = 0.25 + 0.25 * Math.sin(t * 3);
     matRadarErr.emissiveIntensity = intensity;
-    matErrMesh.emissiveIntensity = intensity * 0.8;
+    matNozzleErr.emissiveIntensity = intensity * 0.8;
 
     renderer.render(scene, camera);
   }
