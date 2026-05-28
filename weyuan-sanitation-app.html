@@ -212,6 +212,44 @@
     .comp-dot-ok { width:5px;height:5px;background:#4caf50;border-radius:50%; }
     .comp-dot-err { width:5px;height:5px;background:#dc3545;border-radius:50%; }
 
+    /* 3D模型故障标注 */
+    .model-annotation {
+      position: absolute;
+      pointer-events: none;
+      transform: translate(-50%, -100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .annotation-label {
+      background: rgba(220,53,69,0.92);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 6px;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(220,53,69,0.4);
+      animation: ann-pulse 1.8s infinite;
+    }
+    .annotation-line {
+      width: 1px;
+      height: 12px;
+      background: rgba(220,53,69,0.7);
+    }
+    .annotation-dot {
+      width: 6px; height: 6px;
+      background: #dc3545;
+      border-radius: 50%;
+      border: 1.5px solid #fff;
+      box-shadow: 0 0 4px rgba(220,53,69,0.8);
+      animation: ann-pulse 1.8s infinite;
+    }
+    @keyframes ann-pulse {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.55; }
+    }
+
     /* 任务卡 */
     .task-card {
       margin: 10px 16px 0;
@@ -503,6 +541,18 @@
     <div class="model-section">
       <div class="model-wrap">
         <canvas id="threeCanvas"></canvas>
+
+        <!-- 故障标注（位置由JS投影驱动）-->
+        <div class="model-annotation" id="ann-radar" style="left:50%;top:50%;">
+          <div class="annotation-label">雷达异常</div>
+          <div class="annotation-line"></div>
+          <div class="annotation-dot"></div>
+        </div>
+        <div class="model-annotation" id="ann-nozzle" style="left:50%;top:50%;">
+          <div class="annotation-label">吸嘴堵塞</div>
+          <div class="annotation-line"></div>
+          <div class="annotation-dot"></div>
+        </div>
 
         <!-- 左上角组件状态 -->
         <div class="comp-status">
@@ -1193,7 +1243,35 @@ function initThreeJS() {
   window.addEventListener('mouseup', onPointerUp);
   window.addEventListener('touchend', onPointerUp);
 
-  // 雷达红色脉冲动画
+  // 故障标注的3D世界坐标（对应雷达和吸嘴位置）
+  const annRadarWorld  = new THREE.Vector3(2.02, -0.05, 0.5);   // 前置雷达
+  const annNozzleWorld = new THREE.Vector3(-1.6, -0.72, 0);     // 吸嘴总成
+  const annRadarEl  = document.getElementById('ann-radar');
+  const annNozzleEl = document.getElementById('ann-nozzle');
+
+  function projectToScreen(worldPos) {
+    const v = worldPos.clone();
+    // 将世界坐标加上group偏移
+    v.y += group.position.y;
+    v.applyEuler(new THREE.Euler(group.rotation.x, group.rotation.y, 0, 'XYZ'));
+    v.project(camera);
+    const x = (v.x * 0.5 + 0.5) * W;
+    const y = (-v.y * 0.5 + 0.5) * H;
+    return { x, y, behind: v.z > 1 };
+  }
+
+  function updateAnnotation(el, worldPos) {
+    const p = projectToScreen(worldPos);
+    if (p.behind) {
+      el.style.display = 'none';
+    } else {
+      el.style.display = 'flex';
+      el.style.left = p.x + 'px';
+      el.style.top  = p.y + 'px';
+    }
+  }
+
+  // 雷达故障闪烁
   let t = 0;
   function animate() {
     requestAnimationFrame(animate);
@@ -1206,6 +1284,10 @@ function initThreeJS() {
     const intensity = 0.25 + 0.25 * Math.sin(t * 3);
     matRadarErr.emissiveIntensity = intensity;
     matNozzleErr.emissiveIntensity = intensity * 0.8;
+
+    // 更新标注位置
+    updateAnnotation(annRadarEl,  annRadarWorld);
+    updateAnnotation(annNozzleEl, annNozzleWorld);
 
     renderer.render(scene, camera);
   }
