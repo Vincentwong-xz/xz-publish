@@ -778,11 +778,12 @@
 /* =============================================
    Three.js 3D 环卫车模型
    ============================================= */
+window.addEventListener('load', function() {
 (function() {
   const canvas = document.getElementById('threeCanvas');
   const wrap = canvas.parentElement;
 
-  const W = wrap.clientWidth || 343;
+  const W = wrap.getBoundingClientRect().width || 343;
   const H = 200;
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -1015,6 +1016,7 @@
   }
   animate();
 })();
+}); // window load
 
 /* ============ UI 交互 ============ */
 // 车辆标签切换
