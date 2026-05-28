@@ -964,23 +964,19 @@
 
   // ============ 拖拽旋转 ============
   let isDragging = false;
-  let lastX = 0, lastY = 0;
-  let rotY = -0.3, rotX = 0.18;
+  let lastX = 0;
+  let rotY = -0.3;
 
   function onPointerDown(e) {
     isDragging = true;
     lastX = e.clientX ?? e.touches[0].clientX;
-    lastY = e.clientY ?? e.touches[0].clientY;
     canvas.style.cursor = 'grabbing';
   }
   function onPointerMove(e) {
     if (!isDragging) return;
     const cx = e.clientX ?? e.touches[0].clientX;
-    const cy = e.clientY ?? e.touches[0].clientY;
     rotY += (cx - lastX) * 0.012;
-    rotX += (cy - lastY) * 0.008;
-    rotX = Math.max(-0.6, Math.min(0.7, rotX));
-    lastX = cx; lastY = cy;
+    lastX = cx;
   }
   function onPointerUp() {
     isDragging = false;
@@ -1000,13 +996,8 @@
     requestAnimationFrame(animate);
     t += 0.04;
 
-    // 自动慢速旋转（无拖拽时）
-    if (!isDragging) {
-      rotY += 0.003;
-    }
-
     group.rotation.y = rotY;
-    group.rotation.x = rotX;
+    group.rotation.x = 0.18;
 
     // 雷达故障闪烁
     const intensity = 0.25 + 0.25 * Math.sin(t * 3);
