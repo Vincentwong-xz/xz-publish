@@ -133,6 +133,7 @@
     .model-section {
       padding: 10px 16px 0;
       position: relative;
+      margin-bottom: 10px;
     }
     .model-wrap {
       background: linear-gradient(160deg, #edf1ff 0%, #f0f4ff 60%, #e8f0fe 100%);
@@ -252,7 +253,7 @@
 
     /* 任务卡 */
     .task-card {
-      margin: 10px 16px 0;
+      margin: 0 16px 10px;
       background: #fff;
       border-radius: 14px;
       padding: 10px 14px;
@@ -342,16 +343,18 @@
     .quick-op {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 4px;
-      padding: 4px 6px;
+      padding: 6px 0;
       border-radius: 8px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       transition: opacity 0.12s;
     }
     .quick-op:active { opacity: 0.6; }
+    .quick-op svg { flex-shrink: 0; }
 
     /* 卡片区 */
     .section-header {
@@ -363,7 +366,7 @@
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
-      padding: 0 16px;
+      padding: 0 16px 10px;
     }
     .feat-card {
       background: #fff;
@@ -680,7 +683,35 @@
           </div>
           <div class="feat-title">车辆位置</div>
         </div>
-        <div class="feat-desc">实时GPS定位</div>
+        <!-- 定位预览缩略图 -->
+        <div style="position:relative; width:100%; height:80px; border-radius:10px; overflow:hidden; background:#eaeef6;">
+          <!-- 道路网格 -->
+          <svg width="100%" height="100%" viewBox="0 0 160 80" preserveAspectRatio="xMidYMid slice" style="position:absolute;top:0;left:0;">
+            <!-- 背景 -->
+            <rect width="160" height="80" fill="#eaeef6"/>
+            <!-- 道路 -->
+            <rect x="0" y="20" width="160" height="8" rx="2" fill="#d5d8e0"/>
+            <rect x="0" y="55" width="160" height="8" rx="2" fill="#d5d8e0"/>
+            <rect x="30" y="0" width="8" height="80" rx="2" fill="#d5d8e0"/>
+            <rect x="100" y="0" width="8" height="80" rx="2" fill="#d5d8e0"/>
+            <rect x="65" y="28" width="8" height="28" rx="2" fill="#d5d8e0"/>
+            <!-- 路名 -->
+            <text x="8" y="17" font-size="5" fill="#aaa" font-family="sans-serif">花城大道</text>
+            <text x="40" y="51" font-size="5" fill="#aaa" font-family="sans-serif">星汉路</text>
+            <!-- 已清扫路线（绿色） -->
+            <path d="M34 24 L65 24 L65 56 L100 56" stroke="#3ecf5a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <!-- 未清扫路线（蓝色虚线） -->
+            <path d="M100 24 L104 24 L104 56" stroke="#42a5f5" stroke-width="3" stroke-dasharray="4 3" stroke-linecap="round" fill="none"/>
+            <!-- 起点标记 -->
+            <circle cx="34" cy="24" r="5" fill="#fff" stroke="#2e7d32" stroke-width="1.5"/>
+            <text x="31" y="26" font-size="5" fill="#2e7d32" font-weight="700" font-family="sans-serif">起</text>
+            <!-- 终点标记 -->
+            <circle cx="100" cy="56" r="5" fill="#fff" stroke="#1565c0" stroke-width="1.5"/>
+            <text x="97" y="58" font-size="5" fill="#1565c0" font-weight="700" font-family="sans-serif">终</text>
+            <!-- 车辆当前位置 -->
+            <circle cx="65" cy="40" r="3.5" fill="#1a6eff" stroke="#fff" stroke-width="1.5"/>
+          </svg>
+        </div>
       </div>
 
       <!-- 遥控驾驶 -->
