@@ -255,7 +255,63 @@
       margin: 10px 16px 0;
       background: #fff;
       border-radius: 14px;
-      padding: 12px 14px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: stretch;
+    }
+    .task-left {
+      flex: 0 0 66%;
+      max-width: 66%;
+      overflow: hidden;
+    }
+    .task-left-inner {
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .task-left-inner::-webkit-scrollbar { display: none; }
+    .task-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .mini-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.12s;
+    }
+    .mini-btn:active { opacity: 0.65; }
+    .mini-btn-icon {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .mini-btn-icon.pause-icon {
+      background: #f0f0f0;
+      border: 1.2px solid #ddd;
+    }
+    .mini-btn-icon.end-icon {
+      background: #fff5f5;
+      border: 1.2px solid #ffcdd2;
+    }
+    .mini-btn-label {
+      font-size: 10px;
+      font-weight: 500;
+    }
+    .mini-btn-label.end-label { color: #e53935; }
+    .mini-btn-label.pause-label { color: #333; }
+    .task-nav-icons {
+      display: flex; align-items: center; gap: 4px;
     }
     .task-tag {
       display: inline-flex; align-items: center; gap: 5px;
@@ -266,12 +322,10 @@
     .tag-dot { width:5px;height:5px;background:#43a047;border-radius:50%; }
     .task-name {
       font-size: 16px; font-weight: 600; color: #111;
-      margin-top: 7px;
+      margin-top: 5px;
       display: flex; justify-content: space-between; align-items: center;
     }
-    .task-arrow {
-      color: #ccc;
-    }
+    .task-arrow { color: #ccc; }
     .task-meta { font-size: 12px; color: #aaa; margin-top: 3px; }
     .task-meta b { color: #1a6eff; font-weight: 600; }
 
@@ -285,31 +339,6 @@
       background: linear-gradient(90deg, #1a6eff, #42a5f5);
       border-radius: 2px;
     }
-
-    /* 横版控制按钮 */
-    .ctrl-row {
-      display: flex; gap: 10px;
-      padding: 10px 16px 6px;
-    }
-    .ctrl-btn {
-      flex: 1; height: 44px;
-      border-radius: 10px;
-      border: 1.5px solid #e0e0e0;
-      background: #fff;
-      font-size: 15px; font-weight: 500;
-      color: #333;
-      display: flex; align-items: center; justify-content: center;
-      gap: 6px;
-      cursor: pointer;
-      transition: all 0.12s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .ctrl-btn:active { transform: scale(0.96); background: #f5f5f5; }
-    .ctrl-btn.end {
-      color: #e53935; border-color: #ffcdd2;
-      background: #fff5f5;
-    }
-    .ctrl-btn.end:active { background: #ffebee; }
 
     /* 4宫格功能 */
     .func-grid {
@@ -571,35 +600,47 @@
       </div>
     </div>
 
-    <!-- 任务卡片 -->
+    <!-- 任务卡片 + 操作按钮 -->
     <div class="task-card">
-      <div class="task-tag"><div class="tag-dot"></div>清扫中 60%</div>
-      <div class="task-name">
-        SDC运营-星汉螺旋大道对冲
-        <svg class="task-arrow" width="7" height="12" viewBox="0 0 7 12" fill="none">
-          <path d="M1 1l5 5-5 5" stroke="#ccc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+      <div class="task-left">
+        <div class="task-left-inner">
+          <div class="task-tag"><div class="tag-dot"></div>清扫中 60%</div>
+          <div class="task-name">
+            SDC运营-星汉螺旋大道对冲
+          </div>
+          <div class="task-meta">已清扫 <b>2.8/5.1</b> 公里 &nbsp;·&nbsp; 预计 <b>15</b> 分钟后完成</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
       </div>
-      <div class="task-meta">已清扫 <b>2.8/5.1</b> 公里 &nbsp;·&nbsp; 预计 <b>15</b> 分钟后完成</div>
-      <div class="progress-bar"><div class="progress-fill"></div></div>
-    </div>
-
-    <!-- 横版控车按钮 -->
-    <div class="ctrl-row">
-      <!-- 暂停 -->
-      <div class="ctrl-btn" onclick="alert('暂停清扫任务')">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <rect x="2" y="1.5" width="3.5" height="11" rx="1.2" fill="#333"/>
-          <rect x="8.5" y="1.5" width="3.5" height="11" rx="1.2" fill="#333"/>
-        </svg>
-        暂停
-      </div>
-      <!-- 结束 -->
-      <div class="ctrl-btn end" onclick="alert('结束清扫任务')">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-          <rect x="2" y="2" width="9" height="9" rx="2" fill="#e53935"/>
-        </svg>
-        结束
+      <div class="task-right">
+        <div class="mini-btn" id="btnPause">
+          <div class="mini-btn-icon pause-icon">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="2" y="1.5" width="3.5" height="11" rx="1.2" fill="#333"/>
+              <rect x="8.5" y="1.5" width="3.5" height="11" rx="1.2" fill="#333"/>
+            </svg>
+          </div>
+          <div class="mini-btn-label pause-label">暂停</div>
+        </div>
+        <div class="mini-btn" id="btnEnd">
+          <div class="mini-btn-icon end-icon">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <rect x="2" y="2" width="9" height="9" rx="2" fill="#e53935"/>
+            </svg>
+          </div>
+          <div class="mini-btn-label end-label">结束</div>
+        </div>
+        <div class="task-nav-icons">
+          <!-- 地图图标 -->
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.6">
+            <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/>
+            <path d="M8 2v16M16 6v16" stroke-width="1.2"/>
+          </svg>
+          <!-- >箭头 -->
+          <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
+            <path d="M1 1l5 5-5 5" stroke="#ccc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
       </div>
     </div>
 
