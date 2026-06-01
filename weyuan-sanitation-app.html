@@ -110,14 +110,14 @@
     .speed-card {
       background: #fff;
       border: 1px solid #e8e8e8;
-      border-radius: 10px;
-      padding: 5px 10px;
+      border-radius: 8px;
+      padding: 3px 7px;
       text-align: center;
-      min-width: 64px;
+      min-width: 48px;
     }
-    .speed-val { font-size: 20px; font-weight: 700; color: #1a1a1a; line-height: 1.2; }
-    .speed-unit { font-size: 10px; color: #aaa; }
-    .speed-mode { font-size: 10px; color: #aaa; margin-top: 1px; }
+    .speed-val { font-size: 15px; font-weight: 700; color: #1a1a1a; line-height: 1.2; }
+    .speed-unit { font-size: 9px; color: #aaa; }
+    .speed-mode { font-size: 9px; color: #aaa; margin-top: 0; }
 
     /* 滚动内容 */
     .content {
@@ -139,7 +139,7 @@
       border-radius: 16px;
       overflow: hidden;
       position: relative;
-      height: 200px;
+      height: 150px;
     }
     #threeCanvas {
       display: block;
@@ -554,12 +554,6 @@
           <div class="annotation-dot"></div>
         </div>
 
-        <!-- 左上角组件状态 -->
-        <div class="comp-status">
-          <div class="comp-chip"><div class="comp-dot-ok"></div>清扫系统 正常</div>
-          <div class="comp-chip"><div class="comp-dot-err"></div>吸嘴总成 堵塞</div>
-          <div class="comp-chip"><div class="comp-dot-err"></div>雷达传感器 异常</div>
-        </div>
 
         <!-- 右上角故障徽章 -->
         <div class="fault-panel">
@@ -855,7 +849,7 @@ function initThreeJS() {
   const wrap = canvas.parentElement;
 
   const W = Math.max(wrap.getBoundingClientRect().width, wrap.offsetWidth, 343);
-  const H = 200;
+  const H = 150;
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setSize(W, H);
