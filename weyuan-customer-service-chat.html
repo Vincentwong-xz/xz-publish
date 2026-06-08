@@ -589,7 +589,7 @@
     </div>
     <div class="agent-info">
       <div class="agent-name" id="agentName">文远专属客服</div>
-      <div class="agent-status" id="agentStatus"><span class="dot"></span> 在线 · 平均响应 &lt; 30s</div>
+      <div class="agent-status" id="agentStatus"><span class="dot"></span> 在线</div>
     </div>
     <div class="header-actions">
       <div class="action-btn" title="语音通话">
@@ -754,7 +754,7 @@
       document.getElementById('agentName').textContent = '人工客服 ' + agent.name;
       var statusEl = document.getElementById('agentStatus');
       statusEl.className = 'agent-status human-status';
-      statusEl.innerHTML = '<span class="dot"></span> ' + agent.name + '（工号 ' + agent.id + '）为您服务';
+      statusEl.innerHTML = '<span class="dot"></span> ' + agent.name + '（工号 ' + agent.id + '）为您服务 · 5min无回复结束本次人工服务';
 
       // 系统消息
       var sysMsg = document.createElement('div');
