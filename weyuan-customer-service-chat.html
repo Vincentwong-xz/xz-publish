@@ -16,7 +16,6 @@
     padding: 20px;
   }
 
-  /* 手机外框 */
   .phone-frame {
     width: 375px;
     height: 812px;
@@ -27,7 +26,6 @@
     box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 0 0 2px #1a1a2e;
   }
 
-  /* 状态栏 */
   .status-bar {
     height: 44px;
     background: linear-gradient(135deg, #e8f0fe 0%, #dce8f8 100%);
@@ -42,7 +40,6 @@
   .status-bar .time { font-weight: 700; }
   .status-bar .icons { display: flex; gap: 6px; align-items: center; }
 
-  /* 聊天头部 */
   .chat-header {
     background: linear-gradient(135deg, #e8f0fe 0%, #dce8f8 100%);
     padding: 8px 16px 16px;
@@ -66,6 +63,8 @@
     width: 6px; height: 6px; border-radius: 50%; background: #3ecf5a;
     animation: pulse 2s infinite;
   }
+  .chat-header .agent-status.human-status { color: #f59e0b; }
+  .chat-header .agent-status.human-status .dot { background: #f59e0b; }
   @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.4; }
@@ -80,9 +79,8 @@
   .chat-header .header-actions .action-btn:hover { background: rgba(0,0,0,0.06); }
   .chat-header .header-actions .action-btn svg { width: 18px; height: 18px; stroke: #1a1a2e; }
 
-  /* 聊天内容区 */
   .chat-body {
-    height: calc(812px - 44px - 70px - 120px - 80px);
+    height: calc(812px - 44px - 70px - 60px - 80px);
     overflow-y: auto;
     padding: 16px;
     display: flex;
@@ -93,7 +91,6 @@
   }
   .chat-body::-webkit-scrollbar { width: 0; }
 
-  /* 时间标签 */
   .time-label {
     text-align: center;
     font-size: 12px;
@@ -101,7 +98,6 @@
     padding: 4px 0;
   }
 
-  /* 消息气泡 */
   .message {
     display: flex;
     gap: 10px;
@@ -114,6 +110,7 @@
   }
   .message.bot { align-self: flex-start; }
   .message.user { align-self: flex-end; flex-direction: row-reverse; }
+  .message.human { align-self: flex-start; }
 
   .message .avatar {
     width: 36px; height: 36px; border-radius: 50%;
@@ -129,6 +126,12 @@
     background: linear-gradient(135deg, #3ecf5a, #6ee77a);
     color: white;
   }
+  .message.human .avatar {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+  }
 
   .message .bubble {
     padding: 12px 16px;
@@ -137,7 +140,8 @@
     line-height: 1.6;
     position: relative;
   }
-  .message.bot .bubble {
+  .message.bot .bubble,
+  .message.human .bubble {
     background: white;
     color: #1a1a2e;
     border-top-left-radius: 4px;
@@ -150,14 +154,8 @@
     box-shadow: 0 1px 4px rgba(59,130,246,0.3);
   }
 
-  /* 富文本消息 */
   .bubble .msg-title { font-weight: 600; margin-bottom: 4px; }
-  .bubble .msg-link {
-    color: #3b82f6; text-decoration: underline; cursor: pointer;
-  }
-  .message.user .bubble .msg-link { color: #dbeafe; }
 
-  /* 快捷回复卡片 */
   .quick-replies {
     display: flex;
     flex-wrap: wrap;
@@ -182,37 +180,6 @@
   }
   .quick-reply-btn:active { transform: scale(0.95); }
 
-  /* 图片消息 */
-  .bubble .msg-image {
-    width: 200px; height: 140px;
-    border-radius: 12px;
-    background: #e5e7eb;
-    display: flex; align-items: center; justify-content: center;
-    color: #9ca3af; font-size: 12px;
-    overflow: hidden;
-  }
-  .bubble .msg-image img { width: 100%; height: 100%; object-fit: cover; }
-
-  /* 文件卡片 */
-  .file-card {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 14px;
-    background: #f8fafc;
-    border-radius: 12px;
-    margin-top: 8px;
-    cursor: pointer;
-  }
-  .file-card .file-icon {
-    width: 36px; height: 36px; border-radius: 8px;
-    background: #fee2e2; display: flex; align-items: center; justify-content: center;
-  }
-  .file-card .file-icon.pdf { background: #fee2e2; }
-  .file-card .file-icon img-icon { background: #dbeafe; }
-  .file-card .file-info { flex: 1; }
-  .file-card .file-name { font-size: 13px; font-weight: 500; color: #1a1a2e; }
-  .file-card .file-size { font-size: 11px; color: #9ca3af; }
-
-  /* 正在输入 */
   .typing-indicator {
     display: flex; gap: 4px; padding: 12px 16px;
     background: white; border-radius: 18px; border-top-left-radius: 4px;
@@ -231,32 +198,6 @@
     30% { transform: translateY(-6px); opacity: 1; }
   }
 
-  /* 评价卡片 */
-  .rating-card {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    animation: msgIn 0.3s ease-out;
-  }
-  .rating-card .rating-title { font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 12px; }
-  .rating-card .stars { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
-  .rating-card .star {
-    width: 32px; height: 32px; cursor: pointer;
-    transition: transform 0.2s;
-  }
-  .rating-card .star:hover { transform: scale(1.2); }
-  .rating-card .star svg { width: 32px; height: 32px; }
-  .rating-card .rating-btns { display: flex; gap: 12px; justify-content: center; }
-  .rating-card .rating-btn {
-    padding: 8px 24px; border-radius: 20px; font-size: 13px; cursor: pointer;
-    border: none; transition: all 0.2s;
-  }
-  .rating-card .rating-btn.confirm { background: #3b82f6; color: white; }
-  .rating-card .rating-btn.cancel { background: #f3f4f6; color: #6b7280; }
-
-  /* 输入区 */
   .chat-input-area {
     position: absolute;
     bottom: 80px;
@@ -310,7 +251,6 @@
   .chat-input-area .send-btn:active { transform: scale(0.95); }
   .chat-input-area .send-btn svg { width: 18px; height: 18px; stroke: white; fill: none; }
 
-  /* 底部导航 */
   .tab-bar {
     position: absolute;
     bottom: 0; left: 0; right: 0;
@@ -331,7 +271,6 @@
   .tab-item svg { width: 24px; height: 24px; }
   .tab-item .tab-label { font-size: 10px; }
 
-  /* 服务页面（入口页） */
   .service-page {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -431,7 +370,6 @@
   }
   .faq-item .faq-text { font-size: 13px; color: #1a1a2e; }
 
-  /* 页面切换提示 */
   .page-hint {
     position: fixed;
     top: 20px;
@@ -449,20 +387,6 @@
   }
   .page-hint.show { opacity: 1; }
 
-  /* 未读消息角标 */
-  .unread-badge {
-    position: absolute;
-    top: -4px; right: -4px;
-    width: 18px; height: 18px;
-    background: #ef4444;
-    border-radius: 50%;
-    font-size: 10px;
-    color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 600;
-  }
-
-  /* 系统消息 */
   .system-msg {
     text-align: center;
     font-size: 12px;
@@ -474,6 +398,85 @@
     padding: 4px 12px;
     border-radius: 12px;
   }
+
+  /* 图片选择弹窗 */
+  .image-popup-overlay {
+    position: absolute;
+    bottom: 80px; left: 0; right: 0; top: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 50;
+    display: none;
+  }
+  .image-popup-overlay.show { display: block; }
+  .image-popup {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: white;
+    border-radius: 20px 20px 0 0;
+    padding: 20px 16px 32px;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .image-popup .popup-title {
+    text-align: center; font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 20px;
+  }
+  .image-popup .popup-options {
+    display: flex; justify-content: space-around; gap: 16px;
+  }
+  .image-popup .popup-option {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    cursor: pointer; padding: 16px 24px; border-radius: 16px;
+    transition: background 0.2s; flex: 1;
+  }
+  .image-popup .popup-option:hover { background: #f3f4f6; }
+  .image-popup .popup-option .opt-icon {
+    width: 52px; height: 52px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+  .image-popup .popup-option .opt-icon.album { background: #dbeafe; }
+  .image-popup .popup-option .opt-icon.camera { background: #d1fae5; }
+  .image-popup .popup-option .opt-label { font-size: 13px; color: #1a1a2e; font-weight: 500; }
+  .image-popup .popup-cancel {
+    display: block; width: 100%; margin-top: 12px; padding: 12px;
+    text-align: center; font-size: 14px; color: #6b7280;
+    cursor: pointer; border-radius: 12px; transition: background 0.2s;
+  }
+  .image-popup .popup-cancel:hover { background: #f3f4f6; }
+
+  /* 定位消息 */
+  .location-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: #f0f4fa;
+    border-radius: 12px;
+    margin-top: 8px;
+  }
+  .location-card .loc-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: #dbeafe; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .location-card .loc-info { flex: 1; }
+  .location-card .loc-name { font-size: 13px; font-weight: 500; color: #1a1a2e; }
+  .location-card .loc-addr { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+  /* 转人工系统消息 */
+  .transfer-msg {
+    text-align: center;
+    padding: 12px 0;
+    animation: msgIn 0.3s ease-out;
+  }
+  .transfer-msg .transfer-card {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #92400e;
+    font-weight: 500;
+  }
+  .transfer-msg .transfer-card .transfer-icon { font-size: 18px; }
 </style>
 </head>
 <body>
@@ -498,24 +501,24 @@
         <div class="title">使用保养，一站解决</div>
         <div class="subtitle">文远环卫很高兴为您服务</div>
       </div>
-      <div class="mascot">😊</div>
+      <div class="mascot"></div>
     </div>
 
     <div class="service-grid">
       <div class="service-grid-item">
-        <div class="icon" style="background:#dbeafe;">📘</div>
+        <div class="icon" style="background:#dbeafe;"></div>
         <div class="label">使用指南</div>
       </div>
       <div class="service-grid-item">
-        <div class="icon" style="background:#fef3c7;">📋</div>
+        <div class="icon" style="background:#fef3c7;"></div>
         <div class="label">保养手册</div>
       </div>
       <div class="service-grid-item">
-        <div class="icon" style="background:#d1fae5;">🛒</div>
+        <div class="icon" style="background:#d1fae5;"></div>
         <div class="label">耗材商城</div>
       </div>
       <div class="service-grid-item">
-        <div class="icon" style="background:#ede9fe;">🔧</div>
+        <div class="icon" style="background:#ede9fe;"></div>
         <div class="label">设备保养</div>
       </div>
     </div>
@@ -524,12 +527,12 @@
       <div class="service-card customer" onclick="openChat()">
         <div class="card-title">专属客服</div>
         <div class="card-desc">快速响应</div>
-        <div class="card-icon">💬</div>
+        <div class="card-icon"></div>
       </div>
       <div class="service-card value-add">
         <div class="card-title">增值服务</div>
         <div class="card-desc">现场跟进</div>
-        <div class="card-icon">🎁</div>
+        <div class="card-icon"></div>
       </div>
     </div>
 
@@ -538,33 +541,14 @@
         <div class="faq-title">常见问题</div>
         <div class="faq-more">全部 &gt;</div>
       </div>
-      <div class="faq-item">
-        <div class="faq-num">1</div>
-        <div class="faq-text">为什么作业几周后，扫刷不贴边？</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-num">2</div>
-        <div class="faq-text">设备停在路边，是在做什么？</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-num">3</div>
-        <div class="faq-text">下雨时设备为什么不作业？</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-num">4</div>
-        <div class="faq-text">如何设置设备定时开机？</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-num">5</div>
-        <div class="faq-text">APP上提示设备胎压低时应对步骤</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-num">6</div>
-        <div class="faq-text">这个问题我也不知道是什么？</div>
-      </div>
+      <div class="faq-item"><div class="faq-num">1</div><div class="faq-text">为什么作业几周后，扫刷不贴边？</div></div>
+      <div class="faq-item"><div class="faq-num">2</div><div class="faq-text">设备停在路边，是在做什么？</div></div>
+      <div class="faq-item"><div class="faq-num">3</div><div class="faq-text">下雨时设备为什么不作业？</div></div>
+      <div class="faq-item"><div class="faq-num">4</div><div class="faq-text">如何设置设备定时开机？</div></div>
+      <div class="faq-item"><div class="faq-num">5</div><div class="faq-text">APP上提示设备胎压低时应对步骤</div></div>
+      <div class="faq-item"><div class="faq-num">6</div><div class="faq-text">这个问题我也不知道是什么？</div></div>
     </div>
 
-    <!-- 底部导航 -->
     <div class="tab-bar">
       <div class="tab-item active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5A5.5 5.5 0 0 1 12 5.09 5.5 5.5 0 0 1 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg>
@@ -604,8 +588,8 @@
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
     </div>
     <div class="agent-info">
-      <div class="agent-name">文远专属客服</div>
-      <div class="agent-status"><span class="dot"></span> 在线 · 平均响应 &lt; 30s</div>
+      <div class="agent-name" id="agentName">文远专属客服</div>
+      <div class="agent-status" id="agentStatus"><span class="dot"></span> 在线 · 平均响应 &lt; 30s</div>
     </div>
     <div class="header-actions">
       <div class="action-btn" title="语音通话">
@@ -618,22 +602,15 @@
   </div>
 
   <div class="chat-body" id="chatBody">
-    <!-- 时间标签 -->
     <div class="time-label">今天 09:30</div>
-
-    <!-- 系统消息 -->
     <div class="system-msg"><span>您已进入专属客服对话，客服将尽快为您解答</span></div>
-
-    <!-- 客服欢迎消息 -->
     <div class="message bot">
       <div class="avatar"></div>
       <div class="bubble">
-        <div class="msg-title">您好，我是文远环卫专属客服小远 👋</div>
+        <div class="msg-title">您好，我是文远环卫专属客服小远</div>
         请问有什么可以帮您的？您可以直接描述问题，或点击下方快捷入口：
       </div>
     </div>
-
-    <!-- 快捷回复 -->
     <div class="quick-replies" id="quickReplies">
       <button class="quick-reply-btn" onclick="sendQuickReply(this)">设备故障报修</button>
       <button class="quick-reply-btn" onclick="sendQuickReply(this)">作业异常咨询</button>
@@ -641,87 +618,34 @@
       <button class="quick-reply-btn" onclick="sendQuickReply(this)">耗材订购</button>
       <button class="quick-reply-btn" onclick="sendQuickReply(this)">投诉建议</button>
     </div>
+  </div>
 
-    <!-- 用户消息示例 -->
-    <div class="message user">
-      <div class="avatar">我</div>
-      <div class="bubble">GZU_SDD_22017 的吸嘴好像堵了，清扫效果变差了</div>
-    </div>
-
-    <!-- 客服回复 -->
-    <div class="message bot">
-      <div class="avatar">🤖</div>
-      <div class="bubble">
-        收到，吸嘴堵塞是常见问题。请先确认以下几点：<br><br>
-        1️⃣ 检查吸嘴是否有大块垃圾卡住<br>
-        2️⃣ 查看APP设备页是否显示"吸嘴异常"告警<br>
-        3️⃣ 尝试在快捷操作中执行一次"排污"流程<br><br>
-        如果以上步骤无法解决，我可以为您安排现场维保人员上门处理，请问需要吗？
-      </div>
-    </div>
-
-    <!-- 用户回复 -->
-    <div class="message user">
-      <div class="avatar">我</div>
-      <div class="bubble">排污试过了，还是不行，安排一下吧</div>
-    </div>
-
-    <!-- 客服回复 - 工单卡片 -->
-    <div class="message bot">
-      <div class="avatar">🤖</div>
-      <div class="bubble">
-        好的，已为您创建维保工单 📋<br><br>
-        <strong>工单编号：</strong>WO-20260608-0042<br>
-        <strong>设备：</strong>GZU_SDD_22017<br>
-        <strong>问题：</strong>吸嘴堵塞，排污无效<br>
-        <strong>预计上门：</strong>今日 14:00-16:00<br><br>
-        维保人员出发前会电话确认，请保持手机畅通。
-        <div class="file-card">
-          <div class="file-icon pdf" style="background:#fee2e2;">📄</div>
-          <div class="file-info">
-            <div class="file-name">维保工单 WO-20260608-0042.pdf</div>
-            <div class="file-size">128 KB · 可下载</div>
-          </div>
+  <!-- 图片选择弹窗 -->
+  <div class="image-popup-overlay" id="imagePopup">
+    <div class="image-popup">
+      <div class="popup-title">选择图片来源</div>
+      <div class="popup-options">
+        <div class="popup-option" onclick="selectImage('album')">
+          <div class="opt-icon album"></div>
+          <div class="opt-label">选择图片</div>
+        </div>
+        <div class="popup-option" onclick="selectImage('camera')">
+          <div class="opt-icon camera"></div>
+          <div class="opt-label">现场拍照</div>
         </div>
       </div>
-    </div>
-
-    <!-- 用户消息 -->
-    <div class="message user">
-      <div class="avatar">我</div>
-      <div class="bubble">好的，谢谢</div>
-    </div>
-
-    <!-- 客服评价 -->
-    <div class="message bot">
-      <div class="avatar">🤖</div>
-      <div class="bubble" style="padding:0; overflow:hidden;">
-        <div class="rating-card" style="border-radius:0 0 18px 18px; box-shadow:none;">
-          <div class="rating-title">请为本次服务打分</div>
-          <div class="stars" id="stars">
-            <div class="star" onclick="rateStar(1)"><svg viewBox="0 0 24 24" fill="#e5e7eb"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-            <div class="star" onclick="rateStar(2)"><svg viewBox="0 0 24 24" fill="#e5e7eb"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-            <div class="star" onclick="rateStar(3)"><svg viewBox="0 0 24 24" fill="#e5e7eb"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-            <div class="star" onclick="rateStar(4)"><svg viewBox="0 0 24 24" fill="#e5e7eb"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-            <div class="star" onclick="rateStar(5)"><svg viewBox="0 0 24 24" fill="#e5e7eb"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-          </div>
-          <div class="rating-btns">
-            <button class="rating-btn cancel" onclick="skipRating()">跳过</button>
-            <button class="rating-btn confirm" onclick="submitRating()">提交</button>
-          </div>
-        </div>
-      </div>
+      <div class="popup-cancel" onclick="closeImagePopup()">取消</div>
     </div>
   </div>
 
   <!-- 输入区 -->
   <div class="chat-input-area">
     <div class="input-tools">
-      <div class="tool-btn" title="图片">
+      <div class="tool-btn" title="图片" onclick="openImagePopup()">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
       </div>
-      <div class="tool-btn" title="文件">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <div class="tool-btn" title="发送定位" onclick="sendLocation()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       </div>
     </div>
     <div class="input-wrapper">
@@ -759,7 +683,13 @@
 </div>
 
 <script>
-  // 页面切换
+  var transferredToHuman = false;
+  var humanAgents = [
+    { id: 'A1024', name: '张明' },
+    { id: 'A1037', name: '李婷' },
+    { id: 'A1056', name: '王强' },
+  ];
+
   function openChat() {
     document.getElementById('servicePage').classList.add('hidden');
     showHint('进入专属客服对话');
@@ -769,109 +699,211 @@
     showHint('返回服务页面');
   }
 
-  // 发送消息
   function sendMessage() {
-    const input = document.getElementById('msgInput');
-    const text = input.value.trim();
+    var input = document.getElementById('msgInput');
+    var text = input.value.trim();
     if (!text) return;
     appendUserMessage(text);
     input.value = '';
-    simulateBotReply(text);
+    if (isTransferKeyword(text)) {
+      triggerTransferToHuman();
+    } else {
+      simulateBotReply(text);
+    }
   }
 
   function sendQuickReply(btn) {
-    const text = btn.textContent;
+    var text = btn.textContent;
     appendUserMessage(text);
     document.getElementById('quickReplies').style.display = 'none';
-    simulateBotReply(text);
+    if (isTransferKeyword(text)) {
+      triggerTransferToHuman();
+    } else {
+      simulateBotReply(text);
+    }
+  }
+
+  function isTransferKeyword(text) {
+    var keywords = ['转人工', '人工客服', '人工', '真人', '转接人工', '人工服务', '找人工', '客服人工'];
+    for (var i = 0; i < keywords.length; i++) {
+      if (text.indexOf(keywords[i]) !== -1) return true;
+    }
+    return false;
+  }
+
+  function triggerTransferToHuman() {
+    if (transferredToHuman) {
+      simulateHumanReply('您好，我已经在为您服务了，请描述您的问题，我会尽快帮您处理。');
+      return;
+    }
+    var body = document.getElementById('chatBody');
+
+    // 转人工提示
+    var transferDiv = document.createElement('div');
+    transferDiv.className = 'transfer-msg';
+    transferDiv.innerHTML = '<div class="transfer-card"><span class="transfer-icon"></span> 正在为您转接人工客服，请稍候...</div>';
+    body.appendChild(transferDiv);
+    body.scrollTop = body.scrollHeight;
+
+    // 模拟排队等待
+    setTimeout(function() {
+      var agent = humanAgents[Math.floor(Math.random() * humanAgents.length)];
+      transferredToHuman = true;
+
+      // 更新头部状态
+      document.getElementById('agentName').textContent = '人工客服 ' + agent.name;
+      var statusEl = document.getElementById('agentStatus');
+      statusEl.className = 'agent-status human-status';
+      statusEl.innerHTML = '<span class="dot"></span> ' + agent.name + '（工号 ' + agent.id + '）为您服务';
+
+      // 系统消息
+      var sysMsg = document.createElement('div');
+      sysMsg.className = 'system-msg';
+      sysMsg.innerHTML = '<span>人工客服 ' + agent.name + '（工号 ' + agent.id + '）已接入，将为您提供专属服务</span>';
+      body.appendChild(sysMsg);
+
+      // 人工客服问候
+      setTimeout(function() {
+        simulateHumanReply('您好，我是客服' + agent.name + '（工号' + agent.id + '），很高兴为您服务！请问有什么可以帮您的？');
+      }, 800);
+    }, 2000);
+  }
+
+  function simulateHumanReply(text) {
+    var body = document.getElementById('chatBody');
+    var typing = document.createElement('div');
+    typing.className = 'message human';
+    typing.id = 'typingMsg';
+    typing.innerHTML = '<div class="avatar">客服</div><div class="typing-indicator"><span></span><span></span><span></span></div>';
+    body.appendChild(typing);
+    body.scrollTop = body.scrollHeight;
+
+    setTimeout(function() {
+      typing.remove();
+      var msg = document.createElement('div');
+      msg.className = 'message human';
+      msg.innerHTML = '<div class="avatar">客服</div><div class="bubble">' + escapeHtml(text) + '</div>';
+      body.appendChild(msg);
+      body.scrollTop = body.scrollHeight;
+    }, 1000 + Math.random() * 600);
   }
 
   function appendUserMessage(text) {
-    const body = document.getElementById('chatBody');
-    const msg = document.createElement('div');
+    var body = document.getElementById('chatBody');
+    var msg = document.createElement('div');
     msg.className = 'message user';
-    msg.innerHTML = `
-      <div class="avatar">我</div>
-      <div class="bubble">${escapeHtml(text)}</div>
-    `;
+    msg.innerHTML = '<div class="avatar">我</div><div class="bubble">' + escapeHtml(text) + '</div>';
     body.appendChild(msg);
     body.scrollTop = body.scrollHeight;
   }
 
   function simulateBotReply(userText) {
-    const body = document.getElementById('chatBody');
-
-    // 显示正在输入
-    const typing = document.createElement('div');
+    var body = document.getElementById('chatBody');
+    var typing = document.createElement('div');
     typing.className = 'message bot';
     typing.id = 'typingMsg';
-    typing.innerHTML = `
-      <div class="avatar">🤖</div>
-      <div class="typing-indicator"><span></span><span></span><span></span></div>
-    `;
+    typing.innerHTML = '<div class="avatar"></div><div class="typing-indicator"><span></span><span></span><span></span></div>';
     body.appendChild(typing);
     body.scrollTop = body.scrollHeight;
 
-    setTimeout(() => {
+    setTimeout(function() {
       typing.remove();
-      const reply = getBotReply(userText);
-      const msg = document.createElement('div');
+      var reply = getBotReply(userText);
+      var msg = document.createElement('div');
       msg.className = 'message bot';
-      msg.innerHTML = `
-        <div class="avatar">🤖</div>
-        <div class="bubble">${reply}</div>
-      `;
+      msg.innerHTML = '<div class="avatar"></div><div class="bubble">' + reply + '</div>';
       body.appendChild(msg);
       body.scrollTop = body.scrollHeight;
     }, 1200 + Math.random() * 800);
   }
 
   function getBotReply(text) {
-    const replies = {
-      '设备故障报修': '请问是哪台设备出现了故障？请提供设备编号或描述故障现象，我会为您创建工单。',
+    var replies = {
+      '设备故障报修': '请问是哪台设备出现了故障？请提供设备编号或描述故障现象，我来帮您排查。',
       '作业异常咨询': '请问具体是什么异常情况？例如：路线偏离、清扫不干净、设备停机等问题，我来帮您排查。',
-      '保养预约': '好的，请告诉我需要保养的设备编号和期望的时间，我来为您安排维保人员。',
+      '保养预约': '好的，请告诉我需要保养的设备编号和期望的时间，我来为您安排。',
       '耗材订购': '请问需要订购什么耗材？目前商城可售：扫刷、滤芯、吸嘴密封圈、轮胎等。',
       '投诉建议': '非常抱歉给您带来不便，请详细描述您的问题或建议，我会记录并反馈给相关部门处理。',
     };
-    return replies[text] || `收到您的消息：「${escapeHtml(text)}」<br><br>客服正在为您处理，请稍候。如需紧急帮助，可拨打客服热线 400-xxx-xxxx。`;
+    if (replies[text]) return replies[text];
+    return '收到您的消息，客服正在为您处理，请稍候。如需紧急帮助，可拨打客服热线 400-xxx-xxxx。<br><br>如需转接人工客服，请发送"转人工"。';
   }
 
   function escapeHtml(text) {
-    const div = document.createElement('div');
+    var div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   }
 
-  // 评分
-  let currentRating = 0;
-  function rateStar(n) {
-    currentRating = n;
-    const stars = document.querySelectorAll('#stars .star svg');
-    stars.forEach((s, i) => {
-      s.setAttribute('fill', i < n ? '#fbbf24' : '#e5e7eb');
-    });
+  // 图片弹窗
+  function openImagePopup() {
+    document.getElementById('imagePopup').classList.add('show');
   }
-  function submitRating() {
-    if (currentRating === 0) { showHint('请先选择评分'); return; }
-    showHint(`感谢您的 ${currentRating} 星评价！`);
-    document.querySelector('.rating-card').innerHTML = '<div style="padding:20px; color:#3ecf5a; font-size:15px;">✓ 感谢您的评价！</div>';
+  function closeImagePopup() {
+    document.getElementById('imagePopup').classList.remove('show');
   }
-  function skipRating() {
-    document.querySelector('.rating-card').innerHTML = '<div style="padding:20px; color:#9ca3af; font-size:14px;">已跳过</div>';
+  function selectImage(type) {
+    closeImagePopup();
+    var typeName = type === 'camera' ? '现场拍照' : '选择图片';
+    showHint('已打开' + typeName + '（原型演示）');
+
+    // 模拟发送图片消息
+    var body = document.getElementById('chatBody');
+    var msg = document.createElement('div');
+    msg.className = 'message user';
+    msg.innerHTML = '<div class="avatar">我</div><div class="bubble"><div class="msg-image" style="width:200px;height:140px;border-radius:12px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px;">[' + typeName + ' 图片预览]</div></div>';
+    body.appendChild(msg);
+    body.scrollTop = body.scrollHeight;
+
+    // AI 回复
+    setTimeout(function() {
+      var reply = transferredToHuman
+        ? '收到您发送的图片，我正在查看，请稍等。'
+        : '收到图片，已记录。请问还有其他需要帮助的吗？如需人工客服请发送"转人工"。';
+      if (transferredToHuman) {
+        simulateHumanReply(reply);
+      } else {
+        simulateBotReply('[图片]');
+      }
+    }, 1000);
   }
 
-  // 提示
+  // 点击弹窗外部关闭
+  document.getElementById('imagePopup').addEventListener('click', function(e) {
+    if (e.target === this) closeImagePopup();
+  });
+
+  // 发送定位
+  function sendLocation() {
+    var body = document.getElementById('chatBody');
+    var msg = document.createElement('div');
+    msg.className = 'message user';
+    msg.innerHTML = '<div class="avatar">我</div><div class="bubble">发送了位置信息<div class="location-card"><div class="loc-icon"></div><div class="loc-info"><div class="loc-name">广州市天河区黄埔大道西</div><div class="loc-addr">广东省广州市天河区 · 刚刚</div></div></div></div>';
+    body.appendChild(msg);
+    body.scrollTop = body.scrollHeight;
+    showHint('已发送当前位置');
+
+    setTimeout(function() {
+      var reply = transferredToHuman
+        ? '已收到您的位置，我会通知附近的工作人员尽快前往。'
+        : '已收到您的位置信息。如需人工客服协助，请发送"转人工"。';
+      if (transferredToHuman) {
+        simulateHumanReply(reply);
+      } else {
+        simulateBotReply('[位置]');
+      }
+    }, 1000);
+  }
+
   function showHint(text) {
-    const hint = document.getElementById('pageHint');
+    var hint = document.getElementById('pageHint');
     hint.textContent = text;
     hint.classList.add('show');
-    setTimeout(() => hint.classList.remove('show'), 1500);
+    setTimeout(function() { hint.classList.remove('show'); }, 1500);
   }
 
-  // 初始化滚动到底部
-  window.onload = () => {
-    const body = document.getElementById('chatBody');
+  window.onload = function() {
+    var body = document.getElementById('chatBody');
     body.scrollTop = body.scrollHeight;
   };
 </script>
