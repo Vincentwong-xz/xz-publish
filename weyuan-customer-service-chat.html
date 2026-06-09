@@ -203,13 +203,13 @@
     bottom: 80px;
     left: 0; right: 0;
     background: white;
-    padding: 10px 16px;
+    padding: 8px 12px;
     display: flex;
-    align-items: flex-end;
-    gap: 10px;
+    align-items: center;
+    gap: 6px;
     border-top: 1px solid #e5e7eb;
   }
-  .chat-input-area .input-tools { display: flex; gap: 4px; padding-bottom: 6px; }
+  .chat-input-area .input-tools { display: flex; gap: 2px; }
   .chat-input-area .input-tools .tool-btn {
     width: 32px; height: 32px;
     display: flex; align-items: center; justify-content: center;
@@ -246,8 +246,8 @@
     flex-shrink: 0;
   }
   .voice-btn-toggle:hover { background: #f3f4f6; }
-  .voice-btn-toggle.active { color: #3b82f6; }
-  .voice-btn-toggle svg { width: 20px; height: 20px; stroke: #6b7280; }
+  .voice-btn-toggle.active { background: #eff6ff; }
+  .voice-btn-toggle svg { width: 18px; height: 18px; stroke: #6b7280; }
   .voice-btn-toggle.active svg { stroke: #3b82f6; }
 
   .voice-record-area {
@@ -262,10 +262,11 @@
     flex: 1;
     height: 36px;
     border: none;
-    border-radius: 20px;
+    border-radius: 18px;
     background: #f3f4f6;
     color: #6b7280;
     font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.15s;
     user-select: none;
