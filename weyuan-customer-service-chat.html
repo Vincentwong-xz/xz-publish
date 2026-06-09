@@ -249,6 +249,12 @@
   }
   .chat-input-area .send-btn:hover { transform: scale(1.05); box-shadow: 0 2px 8px rgba(59,130,246,0.4); }
   .chat-input-area .send-btn:active { transform: scale(0.95); }
+  .chat-input-area .send-btn.disabled {
+    background: #d1d5db;
+    cursor: default;
+    box-shadow: none;
+  }
+  .chat-input-area .send-btn.disabled:hover { transform: none; box-shadow: none; }
   .chat-input-area .send-btn svg { width: 18px; height: 18px; stroke: white; fill: none; }
 
   .tab-bar {
@@ -275,11 +281,19 @@
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     background: linear-gradient(180deg, #e8f0fe 0%, #f0f4fa 30%);
-    overflow-y: auto;
+    overflow: hidden;
     z-index: 10;
     transition: transform 0.3s ease;
   }
   .service-page.hidden { transform: translateX(-100%); pointer-events: none; }
+
+  .service-page-inner {
+    height: 100%;
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .service-page-inner::-webkit-scrollbar { display: none; }
 
   .service-header {
     padding: 60px 20px 20px;
@@ -511,6 +525,7 @@
 
   <!-- ===== 服务页面（入口） ===== -->
   <div class="service-page" id="servicePage">
+    <div class="service-page-inner">
     <div class="status-bar">
       <span class="time">9:41</span>
       <div class="icons">
@@ -595,6 +610,7 @@
         <div class="tab-label">我</div>
       </div>
     </div>
+    </div>
   </div>
 
   <!-- ===== 聊天页面 ===== -->
@@ -667,7 +683,7 @@
     <div class="input-wrapper">
       <input type="text" id="msgInput" placeholder="输入您的问题..." onkeydown="if(event.key==='Enter')sendMessage()">
     </div>
-    <button class="send-btn" onclick="sendMessage()" title="发送">
+    <button class="send-btn disabled" id="sendBtn" onclick="sendMessage()" title="发送">
       <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
   </div>
@@ -722,6 +738,7 @@
     if (!text) return;
     appendUserMessage(text);
     input.value = '';
+    document.getElementById('sendBtn').classList.add('disabled');
     if (transferredToHuman) {
       if (isEndKeyword(text)) {
         endHumanService();
@@ -1008,6 +1025,15 @@
   window.onload = function() {
     var body = document.getElementById('chatBody');
     body.scrollTop = body.scrollHeight;
+    var input = document.getElementById('msgInput');
+    var sendBtn = document.getElementById('sendBtn');
+    input.addEventListener('input', function() {
+      if (this.value.trim()) {
+        sendBtn.classList.remove('disabled');
+      } else {
+        sendBtn.classList.add('disabled');
+      }
+    });
   };
 </script>
 
