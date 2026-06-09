@@ -477,6 +477,30 @@
     font-weight: 500;
   }
   .transfer-msg .transfer-card .transfer-icon { font-size: 18px; }
+
+  /* 评价卡片 */
+  .rating-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    animation: msgIn 0.3s ease-out;
+  }
+  .rating-card .rating-title { font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 12px; }
+  .rating-card .stars { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
+  .rating-card .star {
+    width: 32px; height: 32px; cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .rating-card .star:hover { transform: scale(1.2); }
+  .rating-card .star svg { width: 32px; height: 32px; }
+  .rating-card .rating-btns { display: flex; gap: 12px; justify-content: center; }
+  .rating-card .rating-btn {
+    padding: 8px 24px; border-radius: 20px; font-size: 13px; cursor: pointer;
+    border: none; transition: all 0.2s;
+  }
+  .rating-card .rating-btn.confirm { background: #3b82f6; color: white; }
+  .rating-card .rating-btn.cancel { background: #f3f4f6; color: #6b7280; }
 </style>
 </head>
 <body>
@@ -676,6 +700,7 @@
 
 <script>
   var transferredToHuman = false;
+  var currentHumanAgent = null;
   var humanAgents = [
     { id: 'A1024', name: '张明' },
     { id: 'A1037', name: '李婷' },
@@ -697,7 +722,13 @@
     if (!text) return;
     appendUserMessage(text);
     input.value = '';
-    if (isTransferKeyword(text)) {
+    if (transferredToHuman) {
+      if (isEndKeyword(text)) {
+        endHumanService();
+      } else {
+        simulateHumanReply('好的，我正在为您处理这个问题，请稍等。');
+      }
+    } else if (isTransferKeyword(text)) {
       triggerTransferToHuman();
     } else {
       simulateBotReply(text);
@@ -723,6 +754,14 @@
     return false;
   }
 
+  function isEndKeyword(text) {
+    var keywords = ['结束', '退出', '不再需要', '没有了', '没别的', '没事了', '再见', '谢谢', '拜拜', '好了不用', '结束服务'];
+    for (var i = 0; i < keywords.length; i++) {
+      if (text.indexOf(keywords[i]) !== -1) return true;
+    }
+    return false;
+  }
+
   function triggerTransferToHuman() {
     if (transferredToHuman) {
       simulateHumanReply('您好，我已经在为您服务了，请描述您的问题，我会尽快帮您处理。');
@@ -730,35 +769,107 @@
     }
     var body = document.getElementById('chatBody');
 
-    // 转人工提示
+    // 排队信息
+    var queueNum = Math.floor(Math.random() * 5) + 1;
+    var waitMin = Math.floor(Math.random() * 3) + 1;
     var transferDiv = document.createElement('div');
     transferDiv.className = 'transfer-msg';
-    transferDiv.innerHTML = '<div class="transfer-card"><span class="transfer-icon"></span> 正在为您转接人工客服，请稍候...</div>';
+    transferDiv.innerHTML = '<div class="transfer-card"><span class="transfer-icon"></span> 正在为您转接人工客服，前方排队 ' + queueNum + ' 人，预计等待 ' + waitMin + ' 分钟...</div>';
     body.appendChild(transferDiv);
     body.scrollTop = body.scrollHeight;
 
-    // 模拟排队等待
     setTimeout(function() {
       var agent = humanAgents[Math.floor(Math.random() * humanAgents.length)];
       transferredToHuman = true;
+      currentHumanAgent = agent;
 
-      // 更新头部状态
       document.getElementById('agentName').textContent = '人工客服 ' + agent.name;
       var statusEl = document.getElementById('agentStatus');
       statusEl.className = 'agent-status human-status';
       statusEl.innerHTML = '<span class="dot"></span> ' + agent.name + '（工号 ' + agent.id + '）为您服务 · 5min无回复结束本次人工服务';
 
-      // 系统消息
       var sysMsg = document.createElement('div');
       sysMsg.className = 'system-msg';
       sysMsg.innerHTML = '<span>人工客服 ' + agent.name + '（工号 ' + agent.id + '）已接入，将为您提供专属服务</span>';
       body.appendChild(sysMsg);
 
-      // 人工客服问候
       setTimeout(function() {
         simulateHumanReply('您好，我是客服' + agent.name + '（工号' + agent.id + '），很高兴为您服务！请问有什么可以帮您的？');
       }, 800);
     }, 2000);
+  }
+
+  function endHumanService() {
+    if (!transferredToHuman) return;
+    transferredToHuman = false;
+    var body = document.getElementById('chatBody');
+
+    // 结束系统消息
+    var endMsg = document.createElement('div');
+    endMsg.className = 'system-msg';
+    endMsg.innerHTML = '<span>人工客服 ' + currentHumanAgent.name + ' 已结束本次服务</span>';
+    body.appendChild(endMsg);
+
+    // 恢复AI客服头部
+    document.getElementById('agentName').textContent = '文远专属客服';
+    var statusEl = document.getElementById('agentStatus');
+    statusEl.className = 'agent-status';
+    statusEl.innerHTML = '<span class="dot"></span> 在线';
+
+    // 评价卡片
+    setTimeout(function() {
+      var ratingMsg = document.createElement('div');
+      ratingMsg.className = 'message bot';
+      ratingMsg.innerHTML = '<div class="avatar"></div><div class="bubble" style="padding:0; overflow:hidden;"><div class="rating-card" style="border-radius:0 0 18px 18px; box-shadow:none;"><div class="rating-title">请为本次人工服务打分</div><div class="stars" id="stars"></div><textarea id="ratingComment" placeholder="请输入评价内容（选填）" style="width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:8px;font-size:13px;margin-bottom:12px;resize:none;height:60px;outline:none;"></textarea><div class="rating-btns"><button class="rating-btn cancel" onclick="skipRating()">跳过</button><button class="rating-btn confirm" onclick="submitRating()">提交</button></div></div></div>';
+      body.appendChild(ratingMsg);
+      body.scrollTop = body.scrollHeight;
+      renderStars();
+    }, 600);
+  }
+
+  function renderStars() {
+    var container = document.getElementById('stars');
+    if (!container) return;
+    container.innerHTML = '';
+    for (var i = 1; i <= 5; i++) {
+      var star = document.createElement('div');
+      star.className = 'star';
+      star.setAttribute('data-value', i);
+      star.onclick = (function(val) { return function() { rateStar(val); }; })(i);
+      star.innerHTML = '<svg viewBox="0 0 24 24" fill="#e5e7eb"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+      container.appendChild(star);
+    }
+  }
+
+  var currentRating = 0;
+  function rateStar(n) {
+    currentRating = n;
+    var stars = document.querySelectorAll('#stars .star svg');
+    for (var i = 0; i < stars.length; i++) {
+      stars[i].setAttribute('fill', i < n ? '#fbbf24' : '#e5e7eb');
+    }
+  }
+  function submitRating() {
+    if (currentRating === 0) { showHint('请先选择评分'); return; }
+    var comment = document.getElementById('ratingComment') ? document.getElementById('ratingComment').value : '';
+    showHint('感谢您的 ' + currentRating + ' 星评价！');
+    var card = document.querySelector('.rating-card');
+    if (card) {
+      card.innerHTML = '<div style="padding:20px; color:#3ecf5a; font-size:15px;">' + (comment ? '感谢您的评价！' : '感谢您的评价！') + '</div>';
+    }
+    // AI客服继续
+    setTimeout(function() {
+      simulateBotReply('感谢评价！如需转接人工客服，请发送"转人工"。');
+    }, 1000);
+  }
+  function skipRating() {
+    var card = document.querySelector('.rating-card');
+    if (card) {
+      card.innerHTML = '<div style="padding:20px; color:#9ca3af; font-size:14px;">已跳过</div>';
+    }
+    setTimeout(function() {
+      simulateBotReply('如需转接人工客服，请发送"转人工"。');
+    }, 800);
   }
 
   function simulateHumanReply(text) {
