@@ -10,65 +10,53 @@
     html, body {
       margin: 0;
       padding: 0;
-      height: 100%;
+      min-height: 100%;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
-      overflow: hidden;
+      background: #f1f5f9;
+      color: #1e293b;
+      overflow-x: hidden;
     }
     #app {
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      width: 100vw;
+      min-height: 100vh;
     }
     #header {
-      height: 56px;
-      background: #1e293b;
-      border-bottom: 1px solid #334155;
+      height: 48px;
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       padding: 0 20px;
       flex-shrink: 0;
     }
-    #header h1 {
-      font-size: 18px;
-      margin: 0;
-      color: #f8fafc;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    #header .meta {
+      font-size: 13px;
+      color: #64748b;
     }
-    #header .badge {
-      background: #3b82f6;
-      color: white;
-      font-size: 12px;
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-weight: 500;
-    }
+    #header .meta strong { color: #1e293b; font-weight: 500; }
     #main {
       display: flex;
       flex: 1;
-      overflow: hidden;
+      min-height: 0;
     }
     #sidebar {
-      width: 300px;
-      background: #1e293b;
-      border-right: 1px solid #334155;
+      width: 320px;
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0;
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
     }
     .panel {
       padding: 16px;
-      border-bottom: 1px solid #334155;
+      border-bottom: 1px solid #e2e8f0;
     }
     .panel-title {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
-      color: #94a3b8;
+      color: #64748b;
       margin-bottom: 12px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -76,58 +64,59 @@
     .form-row {
       margin-bottom: 12px;
     }
+    .form-row:last-child { margin-bottom: 0; }
     .form-row label {
       display: block;
       font-size: 12px;
-      color: #94a3b8;
+      color: #64748b;
       margin-bottom: 5px;
     }
     select, input[type="date"] {
       width: 100%;
       padding: 8px 10px;
-      border: 1px solid #475569;
+      border: 1px solid #cbd5e1;
       border-radius: 6px;
-      background: #0f172a;
-      color: #e2e8f0;
+      background: #ffffff;
+      color: #1e293b;
       font-size: 13px;
     }
     .task-list {
-      overflow-y: auto;
-      flex: 1;
-      padding: 0 16px 16px;
+      padding: 0 16px 24px;
     }
     .task-item {
       position: relative;
-      padding: 12px 0 12px 24px;
-      border-left: 2px solid #475569;
+      padding: 14px 0 14px 26px;
+      border-left: 2px solid #e2e8f0;
       margin-left: 8px;
     }
     .task-item::before {
       content: '';
       position: absolute;
       left: -7px;
-      top: 16px;
+      top: 18px;
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background: #475569;
-      border: 2px solid #1e293b;
+      background: #e2e8f0;
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 0 1px #e2e8f0;
     }
-    .task-item.done::before { background: #22c55e; }
-    .task-item.running::before { background: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.3); }
-    .task-item.pending::before { background: #94a3b8; }
+    .task-item.done::before { background: #22c55e; box-shadow: 0 0 0 1px #22c55e; }
+    .task-item.running::before { background: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.25); }
+    .task-item.pending::before { background: #cbd5e1; }
     .task-time {
       font-size: 12px;
-      color: #94a3b8;
+      color: #64748b;
     }
     .task-name {
       font-size: 14px;
-      color: #f1f5f9;
+      color: #1e293b;
       margin-top: 3px;
+      font-weight: 500;
     }
     .task-meta {
       font-size: 12px;
-      color: #64748b;
+      color: #94a3b8;
       margin-top: 3px;
     }
     #map-container {
@@ -135,26 +124,28 @@
       display: flex;
       flex-direction: column;
       position: relative;
+      min-height: 520px;
     }
     #map {
       flex: 1;
-      background: #0f172a;
+      background: #f1f5f9;
+      min-height: 520px;
     }
     #legend {
       position: absolute;
-      top: 16px;
-      right: 16px;
-      background: rgba(15, 23, 42, 0.95);
-      border: 1px solid #334155;
+      top: 12px;
+      right: 12px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid #e2e8f0;
       border-radius: 10px;
       padding: 12px;
       min-width: 150px;
       z-index: 1000;
-      backdrop-filter: blur(4px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
     .legend-title {
       font-size: 12px;
-      color: #94a3b8;
+      color: #64748b;
       margin-bottom: 8px;
       font-weight: 600;
     }
@@ -166,8 +157,9 @@
       cursor: pointer;
       user-select: none;
       font-size: 12px;
+      color: #334155;
     }
-    .legend-item.disabled { opacity: 0.4; }
+    .legend-item.disabled { opacity: 0.35; }
     .legend-line {
       width: 24px;
       height: 3px;
@@ -178,21 +170,40 @@
       background: linear-gradient(90deg, currentColor 50%, transparent 50%);
       background-size: 8px 3px;
     }
-    #bottom {
-      height: 260px;
-      background: #1e293b;
-      border-top: 1px solid #334155;
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
+    #status-float {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px 16px;
+      z-index: 1000;
+      min-width: 180px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
-    #playback-bar {
-      height: 70px;
-      border-bottom: 1px solid #334155;
-      padding: 10px 20px;
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin: 4px 0;
+    }
+    .status-label { color: #64748b; }
+    .status-value { color: #1e293b; font-weight: 500; }
+    #map-playback {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      right: 24px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      z-index: 1000;
       display: flex;
       align-items: center;
       gap: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
     }
     .btn {
       background: #3b82f6;
@@ -205,31 +216,34 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-shrink: 0;
     }
     .btn:hover { background: #2563eb; }
     .btn.secondary {
-      background: #334155;
-      color: #e2e8f0;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
     }
-    .btn.secondary:hover { background: #475569; }
+    .btn.secondary:hover { background: #e2e8f0; }
     #progress-wrapper {
       flex: 1;
       display: flex;
       flex-direction: column;
       gap: 6px;
+      min-width: 0;
     }
     #progress-info {
       display: flex;
       justify-content: space-between;
       font-size: 12px;
-      color: #94a3b8;
+      color: #64748b;
     }
     #progress-track {
       position: relative;
       height: 24px;
-      background: #0f172a;
+      background: #f1f5f9;
       border-radius: 12px;
-      border: 1px solid #334155;
+      border: 1px solid #e2e8f0;
       overflow: visible;
     }
     #progress-input {
@@ -269,50 +283,38 @@
     #speed-select {
       width: 70px;
       padding: 7px;
-      background: #0f172a;
-      color: #e2e8f0;
-      border: 1px solid #475569;
+      background: #ffffff;
+      color: #1e293b;
+      border: 1px solid #cbd5e1;
       border-radius: 6px;
       font-size: 13px;
+      flex-shrink: 0;
     }
-    #status-float {
-      position: absolute;
-      bottom: 280px;
-      right: 16px;
-      background: rgba(15, 23, 42, 0.95);
-      border: 1px solid #334155;
-      border-radius: 10px;
-      padding: 12px 16px;
-      z-index: 1000;
-      min-width: 180px;
-      backdrop-filter: blur(4px);
-    }
-    .status-row {
+    #bottom {
+      background: #ffffff;
+      border-top: 1px solid #e2e8f0;
       display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      margin: 4px 0;
+      flex-direction: column;
+      flex-shrink: 0;
     }
-    .status-label { color: #94a3b8; }
-    .status-value { color: #f1f5f9; font-weight: 500; }
     #bottom-content {
-      flex: 1;
       display: flex;
-      overflow: hidden;
+      padding: 16px;
+      gap: 16px;
     }
     .bottom-section {
       flex: 1;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
       padding: 16px;
-      border-right: 1px solid #334155;
-      overflow-y: auto;
       min-width: 0;
     }
-    .bottom-section:last-child { border-right: none; }
     .section-title {
       font-size: 13px;
       font-weight: 600;
-      color: #94a3b8;
-      margin-bottom: 10px;
+      color: #64748b;
+      margin-bottom: 12px;
     }
     .anomaly-table {
       width: 100%;
@@ -321,17 +323,17 @@
     }
     .anomaly-table th {
       text-align: left;
-      color: #64748b;
+      color: #94a3b8;
       padding: 6px 8px;
-      border-bottom: 1px solid #334155;
+      border-bottom: 1px solid #e2e8f0;
       font-weight: 500;
     }
     .anomaly-table td {
       padding: 8px;
-      border-bottom: 1px solid #334155;
-      color: #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      color: #334155;
     }
-    .anomaly-table tr:hover { background: #334155; cursor: pointer; }
+    .anomaly-table tr:hover { background: #f1f5f9; cursor: pointer; }
     .anomaly-tag {
       display: inline-flex;
       align-items: center;
@@ -347,19 +349,19 @@
       gap: 10px;
     }
     .info-item {
-      background: #0f172a;
+      background: #ffffff;
       padding: 10px;
       border-radius: 8px;
-      border: 1px solid #334155;
+      border: 1px solid #e2e8f0;
     }
     .info-label {
       font-size: 11px;
-      color: #64748b;
+      color: #94a3b8;
       margin-bottom: 4px;
     }
     .info-value {
       font-size: 14px;
-      color: #f1f5f9;
+      color: #1e293b;
       font-weight: 500;
     }
     .stats-grid {
@@ -368,16 +370,16 @@
       gap: 10px;
     }
     .stat-card {
-      background: #0f172a;
+      background: #ffffff;
       padding: 12px;
       border-radius: 8px;
-      border: 1px solid #334155;
+      border: 1px solid #e2e8f0;
       text-align: center;
     }
     .stat-value {
       font-size: 20px;
       font-weight: 700;
-      color: #f8fafc;
+      color: #1e293b;
     }
     .stat-label {
       font-size: 11px;
@@ -393,30 +395,26 @@
       justify-content: center;
       font-size: 13px;
       color: white;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
     .leaflet-popup-content-wrapper {
-      background: #1e293b;
-      color: #e2e8f0;
-      border: 1px solid #334155;
+      background: #ffffff;
+      color: #1e293b;
+      border: 1px solid #e2e8f0;
       border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
     }
-    .leaflet-popup-tip { background: #1e293b; }
+    .leaflet-popup-tip { background: #ffffff; }
     .popup-title { font-weight: 600; margin-bottom: 6px; }
-    .popup-row { font-size: 12px; margin: 3px 0; color: #cbd5e1; }
-    .leaflet-container { background: #0f172a; }
+    .popup-row { font-size: 12px; margin: 3px 0; color: #475569; }
+    .leaflet-container { background: #f1f5f9; }
   </style>
 </head>
 <body>
   <div id="app">
     <header id="header">
-      <h1>
-        <span>🚛</span>
-        清扫报告 - 车辆轨迹结合
-        <span class="badge">Web 原型</span>
-      </h1>
-      <div style="font-size: 13px; color: #94a3b8;">
-        车辆：<strong style="color: #f1f5f9;">GZU-YKU-25216</strong> · 日期：<strong style="color: #f1f5f9;">2026-04-22</strong> · 班次：<strong style="color: #f1f5f9;">早班 06:00-14:00</strong>
+      <div class="meta">
+        车辆：<strong>GZU-YKU-25216</strong> · 日期：<strong>2026-04-22</strong> · 班次：<strong>早班 06:00-14:00</strong>
       </div>
     </header>
 
@@ -453,32 +451,31 @@
           <div class="status-row"><span class="status-label">速度</span><span class="status-value" id="statusSpeed">-- km/h</span></div>
           <div class="status-row"><span class="status-label">里程</span><span class="status-value" id="statusDistance">0.0 km</span></div>
         </div>
+        <div id="map-playback">
+          <button class="btn" id="playBtn"><span>▶</span> 播放</button>
+          <div id="progress-wrapper">
+            <div id="progress-info">
+              <span>06:00:00</span>
+              <span id="currentTime">06:00:00</span>
+              <span>14:00:00</span>
+            </div>
+            <div id="progress-track">
+              <div id="progress-fill"></div>
+              <div id="progress-anchors"></div>
+              <input type="range" id="progress-input" min="0" max="100" value="0">
+            </div>
+          </div>
+          <select id="speed-select">
+            <option value="1">1x</option>
+            <option value="2">2x</option>
+            <option value="4" selected>4x</option>
+            <option value="8">8x</option>
+          </select>
+        </div>
       </div>
     </div>
 
     <div id="bottom">
-      <div id="playback-bar">
-        <button class="btn" id="playBtn"><span>▶</span> 播放</button>
-        <div id="progress-wrapper">
-          <div id="progress-info">
-            <span>06:00:00</span>
-            <span id="currentTime">06:00:00</span>
-            <span>14:00:00</span>
-          </div>
-          <div id="progress-track">
-            <div id="progress-fill"></div>
-            <div id="progress-anchors"></div>
-            <input type="range" id="progress-input" min="0" max="100" value="0">
-          </div>
-        </div>
-        <select id="speed-select">
-          <option value="1">1x</option>
-          <option value="2">2x</option>
-          <option value="4" selected>4x</option>
-          <option value="8">8x</option>
-        </select>
-      </div>
-
       <div id="bottom-content">
         <div class="bottom-section">
           <div class="section-title">异常事件列表</div>
@@ -542,33 +539,125 @@
     ];
 
     const ANOMALY_TYPES = {
-      '长停':     { color: '#facc15', icon: '⏱', bg: 'rgba(250,204,21,0.25)' },
-      '速度异常': { color: '#f97316', icon: '⚡', bg: 'rgba(249,115,22,0.25)' },
-      '绕行':     { color: '#f97316', icon: '↪', bg: 'rgba(249,115,22,0.15)' },
-      '漏扫':     { color: '#ef4444', icon: '⚠', bg: 'rgba(239,68,68,0.25)' },
-      '重复清扫': { color: '#22c55e', icon: '↻', bg: 'rgba(34,197,94,0.25)' }
+      '长停':     { color: '#facc15', icon: '⏱', bg: 'rgba(250,204,21,0.15)' },
+      '速度异常': { color: '#f97316', icon: '⚡', bg: 'rgba(249,115,22,0.15)' },
+      '绕行':     { color: '#f97316', icon: '↪', bg: 'rgba(249,115,22,0.12)' },
+      '漏扫':     { color: '#ef4444', icon: '⚠', bg: 'rgba(239,68,68,0.15)' },
+      '重复清扫': { color: '#22c55e', icon: '↻', bg: 'rgba(34,197,94,0.15)' }
     };
 
-    function generateTrajectory() {
+    // Bio Island road waypoints (approximate real road segments)
+    const ROAD_WAYPOINTS = [
+      [23.0905, 113.4265], // south parking
+      [23.0915, 113.4268], // 星汉大道 south
+      [23.0930, 113.4270],
+      [23.0945, 113.4272],
+      [23.0960, 113.4273], // center
+      [23.0975, 113.4275],
+      [23.0990, 113.4277],
+      [23.1002, 113.4279], // north end
+      [23.1003, 113.4290], // east loop north
+      [23.0995, 113.4300],
+      [23.0980, 113.4308], // east center
+      [23.0965, 113.4312],
+      [23.0945, 113.4308],
+      [23.0928, 113.4300], // southeast
+      [23.0915, 113.4292],
+      [23.0908, 113.4285],
+      [23.0905, 113.4275], // back to west
+      [23.0912, 113.4272], // 星汉大道
+      [23.0928, 113.4274],
+      [23.0942, 113.4276],
+      [23.0958, 113.4278],
+      [23.0972, 113.4280],
+      [23.0988, 113.4282],
+      [23.0998, 113.4284], // northeast
+      [23.0995, 113.4295],
+      [23.0982, 113.4302], // 星际大道 east-west
+      [23.0965, 113.4305],
+      [23.0948, 113.4302],
+      [23.0932, 113.4295],
+      [23.0918, 113.4288],
+      [23.0908, 113.4280],
+      [23.0905, 113.4270], // return to south parking area
+      [23.0910, 113.4268],
+      [23.0925, 113.4270],
+      [23.0940, 113.4272],
+      [23.0955, 113.4274],
+      [23.0970, 113.4276],
+      [23.0985, 113.4278],
+      [23.0998, 113.4280],
+      [23.0992, 113.4292], // inner loop back
+      [23.0978, 113.4298],
+      [23.0960, 113.4300],
+      [23.0942, 113.4296],
+      [23.0928, 113.4288],
+      [23.0918, 113.4280],
+      [23.0912, 113.4272],
+      [23.0905, 113.4265]  // return
+    ];
+
+    function interpolateWaypoints(waypoints, totalPoints) {
       const points = [];
-      const baseLat = CENTER[0], baseLng = CENTER[1];
-      let current = { lat: baseLat, lng: baseLng };
+      const segmentLengths = [];
+      let totalLength = 0;
+      for (let i = 0; i < waypoints.length - 1; i++) {
+        const [lat1, lng1] = waypoints[i];
+        const [lat2, lng2] = waypoints[i + 1];
+        const dx = lat2 - lat1;
+        const dy = lng2 - lng1;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        segmentLengths.push(len);
+        totalLength += len;
+      }
+
+      const stepLen = totalLength / (totalPoints - 1);
+      let currentDist = 0;
+      let segmentIdx = 0;
+      let segmentProgress = 0;
+
+      for (let i = 0; i < totalPoints; i++) {
+        while (segmentIdx < segmentLengths.length && currentDist > segmentLengths[segmentIdx]) {
+          currentDist -= segmentLengths[segmentIdx];
+          segmentIdx++;
+          segmentProgress = 0;
+        }
+        if (segmentIdx >= segmentLengths.length) {
+          const last = waypoints[waypoints.length - 1];
+          points.push([last[0], last[1]]);
+          continue;
+        }
+        const [lat1, lng1] = waypoints[segmentIdx];
+        const [lat2, lng2] = waypoints[segmentIdx + 1];
+        const ratio = currentDist / segmentLengths[segmentIdx];
+        points.push([
+          lat1 + (lat2 - lat1) * ratio,
+          lng1 + (lng2 - lng1) * ratio
+        ]);
+        currentDist += stepLen;
+      }
+      return points;
+    }
+
+    function generateTrajectory() {
+      const roadPoints = interpolateWaypoints(ROAD_WAYPOINTS, 520);
+      const points = [];
       let seconds = 6 * 3600; // 06:00
       const modeSequence = [
         { mode: 'idle',      count: 15 },
         { mode: 'manual',    count: 20 },
-        { mode: 'fullSweep', count: 80 },
-        { mode: 'wetSweep',  count: 60 },
-        { mode: 'fullWash',  count: 40 },
-        { mode: 'hedge',     count: 50 },
-        { mode: 'rearSpray', count: 40 },
-        { mode: 'fullSweep', count: 70 },
-        { mode: 'manual',    count: 20 },
+        { mode: 'fullSweep', count: 85 },
+        { mode: 'wetSweep',  count: 65 },
+        { mode: 'fullWash',  count: 45 },
+        { mode: 'hedge',     count: 55 },
+        { mode: 'rearSpray', count: 45 },
+        { mode: 'fullSweep', count: 75 },
+        { mode: 'manual',    count: 25 },
         { mode: 'idle',      count: 15 }
       ];
 
       let seqIndex = 0, inSeq = 0;
-      for (let i = 0; i < 500; i++) {
+      for (let i = 0; i < roadPoints.length; i++) {
         if (inSeq >= modeSequence[seqIndex].count) {
           seqIndex = (seqIndex + 1) % modeSequence.length;
           inSeq = 0;
@@ -576,16 +665,11 @@
         const mode = modeSequence[seqIndex].mode;
         inSeq++;
 
-        const angle = (i / 500) * Math.PI * 4 + Math.sin(i * 0.1) * 0.5;
-        const step = 0.00015 + Math.random() * 0.00005;
-        current = {
-          lat: current.lat + Math.cos(angle) * step,
-          lng: current.lng + Math.sin(angle) * step * 1.2
-        };
+        const [lat, lng] = roadPoints[i];
         const speed = mode === 'idle' ? 0 : (mode === 'manual' ? 15 + Math.random() * 10 : 8 + Math.random() * 12);
         const timeStr = new Date(2026, 3, 22, 0, 0, seconds).toTimeString().slice(0, 8);
-        points.push({ lat: current.lat, lng: current.lng, timestamp: timeStr, mode, speed, index: i });
-        seconds += 40 + Math.floor(Math.random() * 30);
+        points.push({ lat, lng, timestamp: timeStr, mode, speed, index: i });
+        seconds += 42 + Math.floor(Math.random() * 28);
       }
       return points;
     }
