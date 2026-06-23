@@ -155,10 +155,10 @@
       display: flex;
       flex-direction: column;
       position: relative;
-      min-height: 520px;
+      min-height: 560px;
     }
     #map {
-      height: 560px;
+      height: calc(560px - 48px);
       width: 100%;
       background: #f1f5f9;
     }
@@ -773,15 +773,17 @@
 
     // ===================== Render Anomalies =====================
     const anomalyMarkers = {};
+    const anomalyLayers = {}; // all layers per anomaly id for filtering
 
     function renderAnomalies() {
       ANOMALIES.forEach(anomaly => {
         const point = TRAJECTORY[anomaly.index];
         const style = ANOMALY_TYPES[anomaly.type];
+        anomalyLayers[anomaly.id] = [];
 
         // Highlight circle for long stop / speed anomaly
         if (anomaly.type === '长停' || anomaly.type === '速度异常') {
-          L.circleMarker([point.lat, point.lng], {
+          const circle = L.circleMarker([point.lat, point.lng], {
             radius: anomaly.type === '长停' ? 35 : 25,
             fillColor: style.color,
             color: style.color,
@@ -789,6 +791,7 @@
             opacity: 0.6,
             fillOpacity: 0.2
           }).addTo(map);
+          anomalyLayers[anomaly.id].push(circle);
         }
 
         // Special path rendering for detour / missed / duplicate
@@ -800,8 +803,9 @@
             actual.push([TRAJECTORY[idx].lat, TRAJECTORY[idx].lng]);
             planned.push([TRAJECTORY[idx].lat + 0.0003, TRAJECTORY[idx].lng + 0.0002]);
           }
-          L.polyline(planned, { color: '#f97316', weight: 3, opacity: 0.6, dashArray: '6, 6' }).addTo(map);
-          L.polyline(actual, { color: '#f97316', weight: 4, opacity: 0.9 }).addTo(map).bindTooltip(`绕行：+${anomaly.extraDistanceM}m / +${anomaly.extraTimeMin}min`, { permanent: false });
+          const plannedLine = L.polyline(planned, { color: '#f97316', weight: 3, opacity: 0.6, dashArray: '6, 6' }).addTo(map);
+          const actualLine = L.polyline(actual, { color: '#f97316', weight: 4, opacity: 0.9 }).addTo(map).bindTooltip(`绕行：+${anomaly.extraDistanceM}m / +${anomaly.extraTimeMin}min`, { permanent: false });
+          anomalyLayers[anomaly.id].push(plannedLine, actualLine);
         }
 
         if (anomaly.type === '漏扫') {
@@ -810,9 +814,10 @@
             const idx = Math.max(0, Math.min(TRAJECTORY.length - 1, anomaly.index + i));
             path.push([TRAJECTORY[idx].lat, TRAJECTORY[idx].lng]);
           }
-          L.polyline(path, { color: '#ef4444', weight: 6, opacity: 0.9, dashArray: '8, 6' }).addTo(map);
-          L.marker(path[0], { icon: L.divIcon({ className: 'anomaly-end', html: '<div style="color:#ef4444;font-size:16px;font-weight:bold;">▶</div>', iconSize: [20, 20] }) }).addTo(map);
-          L.marker(path[path.length - 1], { icon: L.divIcon({ className: 'anomaly-end', html: '<div style="color:#ef4444;font-size:16px;font-weight:bold;">■</div>', iconSize: [20, 20] }) }).addTo(map);
+          const missLine = L.polyline(path, { color: '#ef4444', weight: 6, opacity: 0.9, dashArray: '8, 6' }).addTo(map);
+          const startMk = L.marker(path[0], { icon: L.divIcon({ className: 'anomaly-end', html: '<div style="color:#ef4444;font-size:16px;font-weight:bold;">▶</div>', iconSize: [20, 20] }) }).addTo(map);
+          const endMk = L.marker(path[path.length - 1], { icon: L.divIcon({ className: 'anomaly-end', html: '<div style="color:#ef4444;font-size:16px;font-weight:bold;">■</div>', iconSize: [20, 20] }) }).addTo(map);
+          anomalyLayers[anomaly.id].push(missLine, startMk, endMk);
         }
 
         if (anomaly.type === '重复清扫') {
@@ -821,7 +826,8 @@
             const idx = Math.max(0, Math.min(TRAJECTORY.length - 1, anomaly.index + i));
             path.push([TRAJECTORY[idx].lat, TRAJECTORY[idx].lng]);
           }
-          L.polyline(path, { color: '#22c55e', weight: 7, opacity: 0.85 }).addTo(map).bindTooltip(`重复清扫 ${anomaly.repeatCount} 次`, { permanent: false });
+          const dupLine = L.polyline(path, { color: '#22c55e', weight: 7, opacity: 0.85 }).addTo(map).bindTooltip(`重复清扫 ${anomaly.repeatCount} 次`, { permanent: false });
+          anomalyLayers[anomaly.id].push(dupLine);
         }
 
         // Marker icon
@@ -839,6 +845,7 @@
         `);
 
         anomalyMarkers[anomaly.id] = marker;
+        anomalyLayers[anomaly.id].push(marker);
       });
     }
 
@@ -975,15 +982,14 @@
           tr.classList.add('hidden');
         }
       });
-      // Filter map markers
+      // Filter all map layers per anomaly
       ANOMALIES.forEach(anomaly => {
-        const marker = anomalyMarkers[anomaly.id];
-        if (!marker) return;
-        if (showAll || activeFilters.has(anomaly.type)) {
-          if (!map.hasLayer(marker)) map.addLayer(marker);
-        } else {
-          if (map.hasLayer(marker)) map.removeLayer(marker);
-        }
+        const layers = anomalyLayers[anomaly.id] || [];
+        const visible = showAll || activeFilters.has(anomaly.type);
+        layers.forEach(layer => {
+          if (visible && !map.hasLayer(layer)) map.addLayer(layer);
+          if (!visible && map.hasLayer(layer)) map.removeLayer(layer);
+        });
       });
     }
 
