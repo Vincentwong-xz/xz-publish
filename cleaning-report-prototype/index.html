@@ -38,7 +38,7 @@
     #header .meta strong { color: #1e293b; font-weight: 500; }
     #main {
       display: flex;
-      flex: 1;
+      flex: 1 0 auto;
       min-height: 0;
     }
     #sidebar {
@@ -48,6 +48,10 @@
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
+    }
+    .task-list {
+      flex: 1;
+      padding: 0 16px 24px;
     }
     .panel {
       padding: 16px;
@@ -79,9 +83,6 @@
       background: #ffffff;
       color: #1e293b;
       font-size: 13px;
-    }
-    .task-list {
-      padding: 0 16px 24px;
     }
     .task-item {
       position: relative;
@@ -127,9 +128,9 @@
       min-height: 520px;
     }
     #map {
-      flex: 1;
+      height: 560px;
+      width: 100%;
       background: #f1f5f9;
-      min-height: 520px;
     }
     #legend {
       position: absolute;
