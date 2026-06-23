@@ -223,18 +223,18 @@
     .status-value { color: #1e293b; font-weight: 500; }
     #map-playback {
       position: absolute;
-      bottom: 24px;
-      left: 24px;
-      right: 24px;
+      bottom: 0;
+      left: 0;
+      right: 0;
       background: rgba(255, 255, 255, 0.96);
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 12px 16px;
+      border-top: 1px solid #e2e8f0;
+      border-radius: 0;
+      padding: 10px 20px;
       z-index: 1000;
       display: flex;
       align-items: center;
       gap: 16px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
     }
     .btn {
       background: #3b82f6;
@@ -513,7 +513,7 @@
           <div class="anomaly-filters" id="anomalyFilters"></div>
           <table class="anomaly-table" id="anomalyTable">
             <thead>
-              <tr><th>类型</th><th>时间</th><th>描述</th><th>操作</th></tr>
+              <tr><th>类型</th><th>时间</th><th>描述</th></tr>
             </thead>
             <tbody></tbody>
           </table>
@@ -996,7 +996,6 @@
         <td><span class="anomaly-tag" style="background:${style.bg}; color:${style.color};">${style.icon} ${anomaly.type}</span></td>
         <td>${point.timestamp}</td>
         <td>${anomaly.description}</td>
-        <td><button class="btn secondary" style="padding:4px 10px;font-size:11px;">定位</button></td>
       `;
       tr.addEventListener('click', () => {
         const marker = anomalyMarkers[anomaly.id];
