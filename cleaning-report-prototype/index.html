@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>清扫报告 - 车辆轨迹结合 Web</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      overflow: hidden;
+    }
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+    }
+    #header {
+      height: 56px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      flex-shrink: 0;
+    }
+    #header h1 {
+      font-size: 18px;
+      margin: 0;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #header .badge {
+      background: #3b82f6;
+      color: white;
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+    #main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    #sidebar {
+      width: 300px;
+      background: #1e293b;
+      border-right: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .panel {
+      padding: 16px;
+      border-bottom: 1px solid #334155;
+    }
+    .panel-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-row {
+      margin-bottom: 12px;
+    }
+    .form-row label {
+      display: block;
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 5px;
+    }
+    select, input[type="date"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 13px;
+    }
+    .task-list {
+      overflow-y: auto;
+      flex: 1;
+      padding: 0 16px 16px;
+    }
+    .task-item {
+      position: relative;
+      padding: 12px 0 12px 24px;
+      border-left: 2px solid #475569;
+      margin-left: 8px;
+    }
+    .task-item::before {
+      content: '';
+      position: absolute;
+      left: -7px;
+      top: 16px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #475569;
+      border: 2px solid #1e293b;
+    }
+    .task-item.done::before { background: #22c55e; }
+    .task-item.running::before { background: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.3); }
+    .task-item.pending::before { background: #94a3b8; }
+    .task-time {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .task-name {
+      font-size: 14px;
+      color: #f1f5f9;
+      margin-top: 3px;
+    }
+    .task-meta {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 3px;
+    }
+    #map-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    #map {
+      flex: 1;
+      background: #0f172a;
+    }
+    #legend {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 12px;
+      min-width: 150px;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+    .legend-title {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 0;
+      cursor: pointer;
+      user-select: none;
+      font-size: 12px;
+    }
+    .legend-item.disabled { opacity: 0.4; }
+    .legend-line {
+      width: 24px;
+      height: 3px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .legend-line.dotted {
+      background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+      background-size: 8px 3px;
+    }
+    #bottom {
+      height: 260px;
+      background: #1e293b;
+      border-top: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    #playback-bar {
+      height: 70px;
+      border-bottom: 1px solid #334155;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover { background: #2563eb; }
+    .btn.secondary {
+      background: #334155;
+      color: #e2e8f0;
+    }
+    .btn.secondary:hover { background: #475569; }
+    #progress-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    #progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    #progress-track {
+      position: relative;
+      height: 24px;
+      background: #0f172a;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      overflow: visible;
+    }
+    #progress-input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 5;
+    }
+    #progress-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+      border-radius: 12px;
+      width: 0%;
+      pointer-events: none;
+    }
+    .anomaly-anchor {
+      position: absolute;
+      top: 3px;
+      width: 8px;
+      height: 16px;
+      border-radius: 4px;
+      transform: translateX(-50%);
+      cursor: pointer;
+      z-index: 2;
+    }
+    .anomaly-anchor:hover {
+      transform: translateX(-50%) scale(1.3);
+    }
+    #speed-select {
+      width: 70px;
+      padding: 7px;
+      background: #0f172a;
+      color: #e2e8f0;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    #status-float {
+      position: absolute;
+      bottom: 280px;
+      right: 16px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 12px 16px;
+      z-index: 1000;
+      min-width: 180px;
+      backdrop-filter: blur(4px);
+    }
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin: 4px 0;
+    }
+    .status-label { color: #94a3b8; }
+    .status-value { color: #f1f5f9; font-weight: 500; }
+    #bottom-content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    .bottom-section {
+      flex: 1;
+      padding: 16px;
+      border-right: 1px solid #334155;
+      overflow-y: auto;
+      min-width: 0;
+    }
+    .bottom-section:last-child { border-right: none; }
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+    .anomaly-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .anomaly-table th {
+      text-align: left;
+      color: #64748b;
+      padding: 6px 8px;
+      border-bottom: 1px solid #334155;
+      font-weight: 500;
+    }
+    .anomaly-table td {
+      padding: 8px;
+      border-bottom: 1px solid #334155;
+      color: #e2e8f0;
+    }
+    .anomaly-table tr:hover { background: #334155; cursor: pointer; }
+    .anomaly-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .vehicle-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .info-item {
+      background: #0f172a;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+    }
+    .info-label {
+      font-size: 11px;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+    .info-value {
+      font-size: 14px;
+      color: #f1f5f9;
+      font-weight: 500;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .stat-card {
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .anomaly-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      color: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .leaflet-popup-content-wrapper {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 8px;
+    }
+    .leaflet-popup-tip { background: #1e293b; }
+    .popup-title { font-weight: 600; margin-bottom: 6px; }
+    .popup-row { font-size: 12px; margin: 3px 0; color: #cbd5e1; }
+    .leaflet-container { background: #0f172a; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header id="header">
+      <h1>
+        <span>🚛</span>
+        清扫报告 - 车辆轨迹结合
+        <span class="badge">Web 原型</span>
+      </h1>
+      <div style="font-size: 13px; color: #94a3b8;">
+        车辆：<strong style="color: #f1f5f9;">GZU-YKU-25216</strong> · 日期：<strong style="color: #f1f5f9;">2026-04-22</strong> · 班次：<strong style="color: #f1f5f9;">早班 06:00-14:00</strong>
+      </div>
+    </header>
+
+    <div id="main">
+      <aside id="sidebar">
+        <div class="panel">
+          <div class="panel-title">筛选条件</div>
+          <div class="form-row">
+            <label>日期</label>
+            <input type="date" value="2026-04-22">
+          </div>
+          <div class="form-row">
+            <label>车辆</label>
+            <select>
+              <option>清扫车-001 (GZU-YKU-25216)</option>
+              <option>清扫车-002 (GZU-YKU-25217)</option>
+              <option>清扫车-003 (GZU-YKU-25218)</option>
+            </select>
+          </div>
+        </div>
+        <div class="panel-title" style="padding: 16px 16px 0;">班次任务序列</div>
+        <div class="task-list" id="taskList"></div>
+      </aside>
+
+      <div id="map-container">
+        <div id="map"></div>
+        <div id="legend">
+          <div class="legend-title">清扫模式</div>
+          <div id="legendContent"></div>
+        </div>
+        <div id="status-float">
+          <div class="status-row"><span class="status-label">时间</span><span class="status-value" id="statusTime">--:--:--</span></div>
+          <div class="status-row"><span class="status-label">模式</span><span class="status-value" id="statusMode">--</span></div>
+          <div class="status-row"><span class="status-label">速度</span><span class="status-value" id="statusSpeed">-- km/h</span></div>
+          <div class="status-row"><span class="status-label">里程</span><span class="status-value" id="statusDistance">0.0 km</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="bottom">
+      <div id="playback-bar">
+        <button class="btn" id="playBtn"><span>▶</span> 播放</button>
+        <div id="progress-wrapper">
+          <div id="progress-info">
+            <span>06:00:00</span>
+            <span id="currentTime">06:00:00</span>
+            <span>14:00:00</span>
+          </div>
+          <div id="progress-track">
+            <div id="progress-fill"></div>
+            <div id="progress-anchors"></div>
+            <input type="range" id="progress-input" min="0" max="100" value="0">
+          </div>
+        </div>
+        <select id="speed-select">
+          <option value="1">1x</option>
+          <option value="2">2x</option>
+          <option value="4" selected>4x</option>
+          <option value="8">8x</option>
+        </select>
+      </div>
+
+      <div id="bottom-content">
+        <div class="bottom-section">
+          <div class="section-title">异常事件列表</div>
+          <table class="anomaly-table" id="anomalyTable">
+            <thead>
+              <tr><th>类型</th><th>时间</th><th>描述</th><th>操作</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="bottom-section">
+          <div class="section-title">车辆异常信息</div>
+          <div class="vehicle-info-grid">
+            <div class="info-item"><div class="info-label">上电状态</div><div class="info-value">正常</div></div>
+            <div class="info-item"><div class="info-label">电量</div><div class="info-value">68%</div></div>
+            <div class="info-item"><div class="info-label">水量</div><div class="info-value">42%</div></div>
+            <div class="info-item"><div class="info-label">胎压</div><div class="info-value">正常</div></div>
+            <div class="info-item"><div class="info-label">充电次数</div><div class="info-value">1 次</div></div>
+            <div class="info-item"><div class="info-label">加水次数</div><div class="info-value">2 次</div></div>
+          </div>
+        </div>
+
+        <div class="bottom-section">
+          <div class="section-title">清扫概览</div>
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-value" id="statTotal">42.5</div><div class="stat-label">总里程 km</div></div>
+            <div class="stat-card"><div class="stat-value" id="statSweep">31.2</div><div class="stat-label">清扫里程 km</div></div>
+            <div class="stat-card"><div class="stat-value" id="statWater">1240</div><div class="stat-label">用水量 L</div></div>
+            <div class="stat-card"><div class="stat-value" id="statPower">68.4</div><div class="stat-label">用电量 kWh</div></div>
+            <div class="stat-card"><div class="stat-value" id="statTask">6</div><div class="stat-label">任务数</div></div>
+            <div class="stat-card"><div class="stat-value" id="statAnomaly">5</div><div class="stat-label">异常数</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // ===================== Mock Data =====================
+    const CENTER = [23.0965, 113.4285];
+    const MODES = {
+      idle:      { name: '非作业状态', color: '#9e9e9e' },
+      manual:    { name: '手动驾驶',   color: '#facc15' },
+      detour:    { name: '绕行',       color: '#f97316' },
+      fullSweep: { name: '全扫',       color: '#22c55e' },
+      wetSweep:  { name: '湿扫',       color: '#3b82f6' },
+      fullWash:  { name: '全洗扫',     color: '#3b82f6', dotted: true },
+      hedge:     { name: '对冲',       color: '#a855f7' },
+      rearSpray: { name: '后喷雾',     color: '#a855f7', dotted: true }
+    };
+
+    const TASKS = [
+      { id: 1, type: '清扫', name: '生物岛主干道', startTime: '06:15', endTime: '08:30', status: 'done' },
+      { id: 2, type: '加水', name: '加水站-A', startTime: '08:35', endTime: '08:50', status: 'done' },
+      { id: 3, type: '清扫', name: '环岛西路', startTime: '09:00', endTime: '10:45', status: 'done' },
+      { id: 4, type: '排污', name: '排污站-B', startTime: '10:50', endTime: '11:05', status: 'done' },
+      { id: 5, type: '清扫', name: '科创一路', startTime: '11:15', endTime: '12:30', status: 'done' },
+      { id: 6, type: '返程', name: '返回停车场', startTime: '12:35', endTime: '13:10', status: 'done' }
+    ];
+
+    const ANOMALY_TYPES = {
+      '长停':     { color: '#facc15', icon: '⏱', bg: 'rgba(250,204,21,0.25)' },
+      '速度异常': { color: '#f97316', icon: '⚡', bg: 'rgba(249,115,22,0.25)' },
+      '绕行':     { color: '#f97316', icon: '↪', bg: 'rgba(249,115,22,0.15)' },
+      '漏扫':     { color: '#ef4444', icon: '⚠', bg: 'rgba(239,68,68,0.25)' },
+      '重复清扫': { color: '#22c55e', icon: '↻', bg: 'rgba(34,197,94,0.25)' }
+    };
+
+    function generateTrajectory() {
+      const points = [];
+      const baseLat = CENTER[0], baseLng = CENTER[1];
+      let current = { lat: baseLat, lng: baseLng };
+      let seconds = 6 * 3600; // 06:00
+      const modeSequence = [
+        { mode: 'idle',      count: 15 },
+        { mode: 'manual',    count: 20 },
+        { mode: 'fullSweep', count: 80 },
+        { mode: 'wetSweep',  count: 60 },
+        { mode: 'fullWash',  count: 40 },
+        { mode: 'hedge',     count: 50 },
+        { mode: 'rearSpray', count: 40 },
+        { mode: 'fullSweep', count: 70 },
+        { mode: 'manual',    count: 20 },
+        { mode: 'idle',      count: 15 }
+      ];
+
+      let seqIndex = 0, inSeq = 0;
+      for (let i = 0; i < 500; i++) {
+        if (inSeq >= modeSequence[seqIndex].count) {
+          seqIndex = (seqIndex + 1) % modeSequence.length;
+          inSeq = 0;
+        }
+        const mode = modeSequence[seqIndex].mode;
+        inSeq++;
+
+        const angle = (i / 500) * Math.PI * 4 + Math.sin(i * 0.1) * 0.5;
+        const step = 0.00015 + Math.random() * 0.00005;
+        current = {
+          lat: current.lat + Math.cos(angle) * step,
+          lng: current.lng + Math.sin(angle) * step * 1.2
+        };
+        const speed = mode === 'idle' ? 0 : (mode === 'manual' ? 15 + Math.random() * 10 : 8 + Math.random() * 12);
+        const timeStr = new Date(2026, 3, 22, 0, 0, seconds).toTimeString().slice(0, 8);
+        points.push({ lat: current.lat, lng: current.lng, timestamp: timeStr, mode, speed, index: i });
+        seconds += 40 + Math.floor(Math.random() * 30);
+      }
+      return points;
+    }
+
+    const TRAJECTORY = generateTrajectory();
+
+    const ANOMALIES = [
+      { id: 1, type: '长停', index: 120, durationMin: 8, description: '路口红灯前长停 8 分钟' },
+      { id: 2, type: '速度异常', index: 210, speed: 45, description: '限速 20km/h 路段超速' },
+      { id: 3, type: '绕行', index: 300, extraDistanceM: 320, extraTimeMin: 4, description: '因施工绕行约 320m' },
+      { id: 4, type: '漏扫', index: 400, lengthM: 280, description: '约 280m 路段未覆盖清扫' },
+      { id: 5, type: '重复清扫', index: 480, repeatCount: 3, description: '同一路段重复清扫 3 次' }
+    ];
+
+    // ===================== Map Setup =====================
+    const map = L.map('map', {
+      center: CENTER,
+      zoom: 15,
+      zoomControl: true,
+      attributionControl: false
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    L.control.scale({ metric: true, imperial: false }).addTo(map);
+
+    // ===================== Render Trajectory =====================
+    const modeLayers = {};
+    const polylines = [];
+
+    function renderTrajectory() {
+      let currentMode = TRAJECTORY[0].mode;
+      let segment = [TRAJECTORY[0]];
+
+      function flushSegment() {
+        if (segment.length < 2) return;
+        const mode = currentMode;
+        const latlngs = segment.map(p => [p.lat, p.lng]);
+        const style = MODES[mode];
+        const polyline = L.polyline(latlngs, {
+          color: style.color,
+          weight: 4,
+          opacity: 0.9,
+          dashArray: style.dotted ? '4, 6' : null,
+          lineCap: 'round',
+          lineJoin: 'round'
+        }).addTo(map);
+        polyline.mode = mode;
+        polylines.push(polyline);
+        if (!modeLayers[mode]) modeLayers[mode] = [];
+        modeLayers[mode].push(polyline);
+      }
+
+      for (let i = 1; i < TRAJECTORY.length; i++) {
+        if (TRAJECTORY[i].mode !== currentMode) {
+          flushSegment();
+          currentMode = TRAJECTORY[i].mode;
+          segment = [TRAJECTORY[i - 1]];
+        }
+        segment.push(TRAJECTORY[i]);
+      }
+      flushSegment();
+    }
+
+    renderTrajectory();
+
+    // ===================== Render Anomalies =====================
+    const anomalyMarkers = {};
+
+    function renderAnomalies() {
+      ANOMALIES.forEach(anomaly => {
+        const point = TRAJECTORY[anomaly.index];
+        const style = ANOMALY_TYPES[anomaly.type];
+
+        // Highlight circle for long stop / speed anomaly
+        if (anomaly.type === '长停' || anomaly.type === '速度异常') {
+          L.circleMarker([point.lat, point.lng], {
+            radius: anomaly.type === '长停' ? 35 : 25,
+            fillColor: style.color,
+            color: style.color,
+            weight: 2,
+            opacity: 0.6,
+            fillOpacity: 0.2
+          }).addTo(map);
+        }
+
+        // Special path rendering for detour / missed / duplicate
+        if (anomaly.type === '绕行') {
+          const actual = [];
+          const planned = [];
+          for (let i = -20; i <= 20; i++) {
+            const idx = Math.max(0, Math.min(TRAJECTORY.length - 1, anomaly.index + i));
+            actual.push([TRAJECTORY[idx].lat, TRAJECTORY[idx].lng]);
+            planned.push([TRAJECTORY[idx].lat + 0.0003, TRAJECTORY[idx].lng + 0.0002]);
+          }
+          L.polyline(planned, { color: '#f97316', weight: 3, opacity: 0.6, dashArray: '6, 6' }).addTo(map);
+          L.polyline(actual, { color: '#f97316', weight: 4, opacity: 0.9 }).addTo(map).bindTooltip(`绕行：+${anomaly.extraDistanceM}m / +${anomaly.extraTimeMin}min`, { permanent: false });
+        }
+
+        if (anomaly.type === '漏扫') {
+          const path = [];
+          for (let i = -15; i <= 15; i++) {
+            const idx = Math.max(0, Math.min(TRAJECTORY.length - 1, anomaly.index + i));
+            path.push([TRAJECTORY[idx].lat, TRAJECTORY[idx].lng]);
+          }
+          L.polyline(path, { color: '#ef4444', weight: 6, opacity: 0.9, dashArray: '8, 6' }).addTo(map);
+          L.marker(path[0], { icon: L.divIcon({ className: 'anomaly-end', html: '<div style="color:#ef4444;font-size:16px;font-weight:bold;">▶</div>', iconSize: [20, 20] }) }).addTo(map);
+          L.marker(path[path.length - 1], { icon: L.divIcon({ className: 'anomaly-end', html: '<div style="color:#ef4444;font-size:16px;font-weight:bold;">■</div>', iconSize: [20, 20] }) }).addTo(map);
+        }
+
+        if (anomaly.type === '重复清扫') {
+          const path = [];
+          for (let i = -15; i <= 15; i++) {
+            const idx = Math.max(0, Math.min(TRAJECTORY.length - 1, anomaly.index + i));
+            path.push([TRAJECTORY[idx].lat, TRAJECTORY[idx].lng]);
+          }
+          L.polyline(path, { color: '#22c55e', weight: 7, opacity: 0.85 }).addTo(map).bindTooltip(`重复清扫 ${anomaly.repeatCount} 次`, { permanent: false });
+        }
+
+        // Marker icon
+        const iconHtml = `<div class="anomaly-icon" style="background:${style.color};">${style.icon}</div>`;
+        const marker = L.marker([point.lat, point.lng], {
+          icon: L.divIcon({ className: 'anomaly-marker', html: iconHtml, iconSize: [24, 24], iconAnchor: [12, 12] })
+        }).addTo(map);
+
+        marker.bindPopup(`
+          <div class="popup-title">${anomaly.type}</div>
+          <div class="popup-row">时间：${point.timestamp}</div>
+          <div class="popup-row">${anomaly.description}</div>
+          ${anomaly.durationMin ? `<div class="popup-row">持续时长：${anomaly.durationMin} 分钟</div>` : ''}
+          ${anomaly.speed ? `<div class="popup-row">当前速度：${anomaly.speed} km/h</div>` : ''}
+        `);
+
+        anomalyMarkers[anomaly.id] = marker;
+      });
+    }
+
+    renderAnomalies();
+
+    // ===================== Vehicle Marker =====================
+    const vehicleMarker = L.marker(CENTER, {
+      icon: L.divIcon({
+        className: 'vehicle-marker',
+        html: '<div style="width:16px;height:16px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.5);"></div>',
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+      })
+    }).addTo(map);
+
+    // ===================== Legend =====================
+    const legendContent = document.getElementById('legendContent');
+    Object.keys(MODES).forEach(mode => {
+      const style = MODES[mode];
+      const item = document.createElement('div');
+      item.className = 'legend-item';
+      item.innerHTML = `
+        <div class="legend-line ${style.dotted ? 'dotted' : ''}" style="background:${style.dotted ? 'transparent' : style.color}; color:${style.color};"></div>
+        <span>${style.name}</span>
+      `;
+      item.addEventListener('click', () => {
+        item.classList.toggle('disabled');
+        const visible = !item.classList.contains('disabled');
+        (modeLayers[mode] || []).forEach(layer => {
+          if (visible) map.addLayer(layer);
+          else map.removeLayer(layer);
+        });
+      });
+      legendContent.appendChild(item);
+    });
+
+    // ===================== Task List =====================
+    const taskList = document.getElementById('taskList');
+    TASKS.forEach((task, idx) => {
+      const div = document.createElement('div');
+      div.className = `task-item ${idx === 0 ? 'running' : 'done'}`;
+      div.innerHTML = `
+        <div class="task-time">${task.startTime} - ${task.endTime}</div>
+        <div class="task-name">${task.type} · ${task.name}</div>
+        <div class="task-meta">状态：${task.status === 'done' ? '已完成' : '进行中'}</div>
+      `;
+      taskList.appendChild(div);
+    });
+
+    // ===================== Anomaly Table =====================
+    const anomalyTable = document.querySelector('#anomalyTable tbody');
+    ANOMALIES.forEach(anomaly => {
+      const point = TRAJECTORY[anomaly.index];
+      const style = ANOMALY_TYPES[anomaly.type];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="anomaly-tag" style="background:${style.bg}; color:${style.color};">${style.icon} ${anomaly.type}</span></td>
+        <td>${point.timestamp}</td>
+        <td>${anomaly.description}</td>
+        <td><button class="btn secondary" style="padding:4px 10px;font-size:11px;">定位</button></td>
+      `;
+      tr.addEventListener('click', () => {
+        const marker = anomalyMarkers[anomaly.id];
+        if (marker) {
+          map.setView([point.lat, point.lng], 16, { animate: true });
+          marker.openPopup();
+        }
+      });
+      anomalyTable.appendChild(tr);
+    });
+
+    // ===================== Playback =====================
+    let currentIndex = 0;
+    let isPlaying = false;
+    let playInterval = null;
+    const playBtn = document.getElementById('playBtn');
+    const progressInput = document.getElementById('progress-input');
+    const progressFill = document.getElementById('progress-fill');
+    const speedSelect = document.getElementById('speed-select');
+    const statusTime = document.getElementById('statusTime');
+    const statusMode = document.getElementById('statusMode');
+    const statusSpeed = document.getElementById('statusSpeed');
+    const statusDistance = document.getElementById('statusDistance');
+    const currentTimeLabel = document.getElementById('currentTime');
+
+    progressInput.max = TRAJECTORY.length - 1;
+
+    function updateStatus(index) {
+      const p = TRAJECTORY[index];
+      vehicleMarker.setLatLng([p.lat, p.lng]);
+      statusTime.textContent = p.timestamp;
+      statusMode.textContent = MODES[p.mode].name;
+      statusMode.style.color = MODES[p.mode].color;
+      statusSpeed.textContent = p.speed.toFixed(1) + ' km/h';
+      const distance = (index / TRAJECTORY.length * 42.5).toFixed(1);
+      statusDistance.textContent = distance + ' km';
+      currentTimeLabel.textContent = p.timestamp;
+      progressFill.style.width = (index / (TRAJECTORY.length - 1) * 100) + '%';
+      progressInput.value = index;
+
+      // Highlight active task
+      const timeMin = parseInt(p.timestamp.slice(0, 2)) * 60 + parseInt(p.timestamp.slice(3, 5));
+      document.querySelectorAll('.task-item').forEach((el, idx) => {
+        const task = TASKS[idx];
+        const start = parseInt(task.startTime.slice(0, 2)) * 60 + parseInt(task.startTime.slice(3, 5));
+        const end = parseInt(task.endTime.slice(0, 2)) * 60 + parseInt(task.endTime.slice(3, 5));
+        el.className = `task-item ${timeMin >= start && timeMin < end ? 'running' : (timeMin >= end ? 'done' : 'pending')}`;
+      });
+    }
+
+    function renderAnchors() {
+      const container = document.getElementById('progress-anchors');
+      ANOMALIES.forEach(anomaly => {
+        const style = ANOMALY_TYPES[anomaly.type];
+        const left = (anomaly.index / (TRAJECTORY.length - 1) * 100) + '%';
+        const div = document.createElement('div');
+        div.className = 'anomaly-anchor';
+        div.style.left = left;
+        div.style.background = style.color;
+        div.title = `${anomaly.type} · ${TRAJECTORY[anomaly.index].timestamp}`;
+        div.addEventListener('click', () => {
+          pause();
+          currentIndex = anomaly.index;
+          updateStatus(currentIndex);
+          const marker = anomalyMarkers[anomaly.id];
+          const p = TRAJECTORY[anomaly.index];
+          map.setView([p.lat, p.lng], 16);
+          if (marker) marker.openPopup();
+        });
+        container.appendChild(div);
+      });
+    }
+
+    renderAnchors();
+
+    function play() {
+      if (isPlaying) return;
+      isPlaying = true;
+      playBtn.innerHTML = '<span>⏸</span> 暂停';
+      const speed = parseInt(speedSelect.value);
+      playInterval = setInterval(() => {
+        currentIndex += speed;
+        if (currentIndex >= TRAJECTORY.length) {
+          currentIndex = 0;
+        }
+        updateStatus(currentIndex);
+      }, 100);
+    }
+
+    function pause() {
+      isPlaying = false;
+      playBtn.innerHTML = '<span>▶</span> 播放';
+      clearInterval(playInterval);
+    }
+
+    playBtn.addEventListener('click', () => {
+      if (isPlaying) pause(); else play();
+    });
+
+    progressInput.addEventListener('input', (e) => {
+      pause();
+      currentIndex = parseInt(e.target.value);
+      updateStatus(currentIndex);
+    });
+
+    speedSelect.addEventListener('change', () => {
+      if (isPlaying) {
+        pause();
+        play();
+      }
+    });
+
+    // Initialize
+    updateStatus(0);
+  </script>
+</body>
+</html>
