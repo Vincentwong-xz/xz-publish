@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>清扫报告 - 车辆轨迹结合 Web</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
   <style>
     * { box-sizing: border-box; }
     html, body {
@@ -706,10 +705,46 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+  <script src="https://webapi.amap.com/maps?v=2.0&key=61a8cf4a79d07666f9bdb0cbdd92eea4&plugin=AMap.Driving"></script>
   <script>
+    // ===================== WGS-84 → GCJ-02 =====================
+    function outOfChina(lng, lat) {
+      return lng < 72.004 || lng > 137.8347 || lat < 0.8293 || lat > 55.8271;
+    }
+    function _transformLat(lng, lat) {
+      let ret = -100.0 + 2.0 * lng + 3.0 * lat + 0.2 * lat * lat + 0.1 * lng * lat + 0.2 * Math.sqrt(Math.abs(lng));
+      ret += (20.0 * Math.sin(6.0 * lng * Math.PI) + 20.0 * Math.sin(2.0 * lng * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(lat * Math.PI) + 40.0 * Math.sin(lat / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(lat / 12.0 * Math.PI) + 320 * Math.sin(lat * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function _transformLng(lng, lat) {
+      let ret = 300.0 + lng + 2.0 * lat + 0.1 * lng * lng + 0.1 * lng * lat + 0.1 * Math.sqrt(Math.abs(lng));
+      ret += (20.0 * Math.sin(6.0 * lng * Math.PI) + 20.0 * Math.sin(2.0 * lng * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(lng * Math.PI) + 40.0 * Math.sin(lng / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(lng / 12.0 * Math.PI) + 300.0 * Math.sin(lng / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function wgs84ToGcj02(lng, lat) {
+      const a = 6378245.0, ee = 0.00669342162296594323;
+      if (outOfChina(lng, lat)) return [lng, lat];
+      let dlat = _transformLat(lng - 105.0, lat - 35.0);
+      let dlng = _transformLng(lng - 105.0, lat - 35.0);
+      const radlat = lat / 180.0 * Math.PI;
+      let magic = Math.sin(radlat);
+      magic = 1 - ee * magic * magic;
+      const sqrtmagic = Math.sqrt(magic);
+      dlat = (dlat * 180.0) / ((a * (1 - ee)) / (magic * sqrtmagic) * Math.PI);
+      dlng = (dlng * 180.0) / (a / sqrtmagic * Math.cos(radlat) * Math.PI);
+      return [lng + dlng, lat + dlat];
+    }
+
     // ===================== Mock Data =====================
-    const CENTER = [23.0965, 113.4285];
+    const CENTER_WGS = [23.0965, 113.4285];
+    // Convert center to GCJ-02
+    const _c = wgs84ToGcj02(CENTER_WGS[1], CENTER_WGS[0]);
+    const CENTER = [_c[1], _c[0]];
+
     const MODES = {
       idle:      { name: '非作业状态', color: '#9e9e9e' },
       manual:    { name: '手动驾驶',   color: '#facc15' },
@@ -738,26 +773,29 @@
       '重复清扫': { color: '#22c55e', icon: '↻', bg: 'rgba(34,197,94,0.15)' }
     };
 
-    // Key waypoints for the cleaning route on Bio Island
-    // OSRM will compute real road paths between these; fallback to straight lines
-    const ROUTE_WAYPOINTS = [
-      [23.0918, 113.4258],   // south parking
-      [23.0988, 113.4271],   // north on 星汉大道
-      [23.1006, 113.4286],   // 螺旋大道 north end
-      [23.0984, 113.4306],   // 螺旋大道 east side
-      [23.0936, 113.4305],   // 螺旋大道 south-east
-      [23.0916, 113.4280],   // 螺旋大道 south-west
-      [23.0930, 113.4294],   // 寰宇三路 east
-      [23.0920, 113.4276],   // back to 星汉大道
-      [23.0950, 113.4296],   // 寰宇二路 east
-      [23.0980, 113.4300],   // 螺旋大道 east upper
-      [23.0982, 113.4276],   // 寰宇一路 west
-      [23.0936, 113.4263],   // 星汉大道 south
-      [23.0932, 113.4290],   // 寰宇三路 mid
-      [23.0918, 113.4274],   // 螺旋大道 south
-      [23.0986, 113.4280],   // center north
-      [23.0918, 113.4258]    // return parking
+    // Key waypoints (WGS-84) → convert to GCJ-02 for AMap tiles alignment
+    const ROUTE_WAYPOINTS_WGS = [
+      [23.0918, 113.4258],
+      [23.0988, 113.4271],
+      [23.1006, 113.4286],
+      [23.0984, 113.4306],
+      [23.0936, 113.4305],
+      [23.0916, 113.4280],
+      [23.0930, 113.4294],
+      [23.0920, 113.4276],
+      [23.0950, 113.4296],
+      [23.0980, 113.4300],
+      [23.0982, 113.4276],
+      [23.0936, 113.4263],
+      [23.0932, 113.4290],
+      [23.0918, 113.4274],
+      [23.0986, 113.4280],
+      [23.0918, 113.4258]
     ];
+    const ROUTE_WAYPOINTS = ROUTE_WAYPOINTS_WGS.map(([lat, lng]) => {
+      const [gLng, gLat] = wgs84ToGcj02(lng, lat);
+      return [gLat, gLng];
+    });
 
     const modeSequence = [
       { mode: 'idle',      count: 15 },
@@ -772,12 +810,20 @@
       { mode: 'idle',      count: 15 }
     ];
 
+    const ANOMALIES = [
+      { id: 1, type: '长停', index: 120, durationMin: 8, description: '路口红灯前长停 8 分钟' },
+      { id: 2, type: '速度异常', index: 210, speed: 45, description: '限速 20km/h 路段超速' },
+      { id: 3, type: '绕行', index: 300, extraDistanceM: 320, extraTimeMin: 4, description: '因施工绕行约 320m' },
+      { id: 4, type: '漏扫', index: 400, lengthM: 280, description: '约 280m 路段未覆盖清扫' },
+      { id: 5, type: '重复清扫', index: 480, repeatCount: 3, description: '同一路段重复清扫 3 次' }
+    ];
+
+    // ===================== Helpers =====================
     function buildTrajectoryFromCoords(coords) {
       const points = [];
       let seconds = 6 * 3600;
       let seqIndex = 0, inSeq = 0;
       const targetCount = 520;
-      // Resample coords to targetCount
       const resampled = resampleCoords(coords, targetCount);
 
       for (let i = 0; i < resampled.length; i++) {
@@ -825,7 +871,7 @@
       return result;
     }
 
-    // Static fallback coordinates (direct lines between waypoints)
+    // Fallback: straight-line interpolation between GCJ-02 waypoints
     function getStaticCoords() {
       const coords = [];
       for (let i = 0; i < ROUTE_WAYPOINTS.length - 1; i++) {
@@ -841,38 +887,64 @@
       return coords;
     }
 
-    // Fetch OSRM route and build trajectory, then init the app
+    // ===================== AMap Driving Route =====================
     let TRAJECTORY = [];
 
-    async function initTrajectory() {
-      try {
-        // Build OSRM URL from waypoints (lng,lat format for OSRM)
-        const coordsParam = ROUTE_WAYPOINTS.map(p => `${p[1]},${p[0]}`).join(';');
-        const url = `https://router.project-osrm.org/route/v1/driving/${coordsParam}?overview=full&geometries=geojson`;
-        const resp = await fetch(url);
-        const data = await resp.json();
-        if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
-          const routeCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-          TRAJECTORY = buildTrajectoryFromCoords(routeCoords);
-          console.log(`OSRM route loaded: ${routeCoords.length} coords, ${TRAJECTORY.length} trajectory points`);
-        } else {
-          throw new Error('OSRM response not Ok');
+    function fetchAmapDrivingRoute() {
+      return new Promise((resolve, reject) => {
+        if (typeof AMap === 'undefined' || !AMap.Driving) {
+          reject(new Error('AMap not available'));
+          return;
         }
-      } catch (e) {
-        console.warn('OSRM routing failed, using static fallback:', e.message);
-        const staticCoords = getStaticCoords();
-        TRAJECTORY = buildTrajectoryFromCoords(staticCoords);
-      }
-      initApp();
+        const driving = new AMap.Driving({ policy: 2 });
+        const origin = new AMap.LngLat(ROUTE_WAYPOINTS[0][1], ROUTE_WAYPOINTS[0][0]);
+        const dest = new AMap.LngLat(ROUTE_WAYPOINTS[ROUTE_WAYPOINTS.length-1][1], ROUTE_WAYPOINTS[ROUTE_WAYPOINTS.length-1][0]);
+        const midPts = ROUTE_WAYPOINTS.slice(1, -1).map(p => new AMap.LngLat(p[1], p[0]));
+
+        driving.search(origin, dest, { waypoints: midPts }, function(status, result) {
+          if (status === 'complete' && result.routes && result.routes.length > 0) {
+            const route = result.routes[0];
+            const allCoords = [];
+            route.steps.forEach(step => {
+              if (step.path && step.path.length > 0) {
+                step.path.forEach(lnglat => {
+                  allCoords.push([lnglat.getLat(), lnglat.getLng()]);
+                });
+              }
+            });
+            if (allCoords.length > 2) {
+              resolve(allCoords);
+            } else {
+              reject(new Error('Route too short'));
+            }
+          } else {
+            reject(new Error('AMap driving: ' + status));
+          }
+        });
+      });
     }
 
-    const ANOMALIES = [
-      { id: 1, type: '长停', index: 120, durationMin: 8, description: '路口红灯前长停 8 分钟' },
-      { id: 2, type: '速度异常', index: 210, speed: 45, description: '限速 20km/h 路段超速' },
-      { id: 3, type: '绕行', index: 300, extraDistanceM: 320, extraTimeMin: 4, description: '因施工绕行约 320m' },
-      { id: 4, type: '漏扫', index: 400, lengthM: 280, description: '约 280m 路段未覆盖清扫' },
-      { id: 5, type: '重复清扫', index: 480, repeatCount: 3, description: '同一路段重复清扫 3 次' }
-    ];
+    async function initTrajectory() {
+      let routeFound = false;
+
+      // Try AMap driving route (follows real roads)
+      try {
+        const routeCoords = await fetchAmapDrivingRoute();
+        TRAJECTORY = buildTrajectoryFromCoords(routeCoords);
+        routeFound = true;
+        console.log(`AMap driving route: ${routeCoords.length} coords, ${TRAJECTORY.length} trajectory points`);
+      } catch (e) {
+        console.warn('AMap driving failed:', e.message);
+      }
+
+      // Fallback: straight-line interpolation (GCJ-02, aligns with AMap tiles)
+      if (!routeFound) {
+        TRAJECTORY = buildTrajectoryFromCoords(getStaticCoords());
+        console.log('Using static fallback (GCJ-02 waypoints)');
+      }
+
+      initApp();
+    }
 
     // ===================== App Initialization =====================
     function initApp() {
@@ -885,9 +957,10 @@
       attributionControl: false
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors'
+    // Use AMap tiles (has real Chinese road data including Bio Island)
+    L.tileLayer('https://wprd0{s}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7', {
+      subdomains: ['1', '2', '3', '4'],
+      maxZoom: 18
     }).addTo(map);
 
     L.control.scale({ metric: true, imperial: false }).addTo(map);
@@ -914,6 +987,8 @@
           lineJoin: 'round'
         }).addTo(map);
         polyline.mode = mode;
+        polyline._startIndex = segment[0].index;
+        polyline._endIndex = segment[segment.length - 1].index;
         polylines.push(polyline);
         if (!modeLayers[mode]) modeLayers[mode] = [];
         modeLayers[mode].push(polyline);
@@ -934,7 +1009,7 @@
 
     // ===================== Render Anomalies =====================
     const anomalyMarkers = {};
-    const anomalyLayers = {}; // all layers per anomaly id for filtering
+    const anomalyLayers = {};
 
     function renderAnomalies() {
       ANOMALIES.forEach(anomaly => {
@@ -942,7 +1017,6 @@
         const style = ANOMALY_TYPES[anomaly.type];
         anomalyLayers[anomaly.id] = [];
 
-        // Highlight circle for long stop / speed anomaly
         if (anomaly.type === '长停' || anomaly.type === '速度异常') {
           const circle = L.circleMarker([point.lat, point.lng], {
             radius: anomaly.type === '长停' ? 35 : 25,
@@ -955,7 +1029,6 @@
           anomalyLayers[anomaly.id].push(circle);
         }
 
-        // Special path rendering for detour / missed / duplicate
         if (anomaly.type === '绕行') {
           const actual = [];
           const planned = [];
@@ -991,7 +1064,6 @@
           anomalyLayers[anomaly.id].push(dupLine);
         }
 
-        // Marker icon
         const iconHtml = `<div class="anomaly-icon" style="background:${style.color};">${style.icon}</div>`;
         const marker = L.marker([point.lat, point.lng], {
           icon: L.divIcon({ className: 'anomaly-marker', html: iconHtml, iconSize: [24, 24], iconAnchor: [12, 12] })
@@ -1047,7 +1119,6 @@
     const taskList = document.getElementById('taskList');
     let selectedTaskIdx = -1;
 
-    // Pre-compute task → trajectory index range
     const taskRanges = TASKS.map(task => {
       const toMin = t => parseInt(t.slice(0, 2)) * 60 + parseInt(t.slice(3, 5));
       const taskStart = toMin(task.startTime);
@@ -1067,9 +1138,9 @@
 
     function highlightTaskRange(startIdx, endIdx) {
       polylines.forEach(p => {
-        const pStart = p._latlngs[0] ? TRAJECTORY.findIndex(t => t.lat === p._latlngs[0].lat && t.lng === p._latlngs[0].lng) : -1;
-        const pEnd = p._latlngs[p._latlngs.length - 1] ? TRAJECTORY.findIndex(t => t.lat === p._latlngs[p._latlngs.length - 1].lat && t.lng === p._latlngs[p._latlngs.length - 1].lng) : -1;
-        const overlaps = (pStart <= endIdx && pEnd >= startIdx) || (pEnd === -1 && pStart <= endIdx);
+        const pStart = p._startIndex;
+        const pEnd = p._endIndex;
+        const overlaps = pStart <= endIdx && pEnd >= startIdx;
         p.setStyle({ opacity: overlaps ? 0.95 : 0.15 });
       });
     }
@@ -1096,7 +1167,6 @@
         div.classList.add('selected');
         const range = taskRanges[idx];
         highlightTaskRange(range.startIdx, range.endIdx);
-        // Fit map to the task's trajectory segment
         const bounds = L.latLngBounds(
           TRAJECTORY.slice(range.startIdx, range.endIdx + 1).map(p => [p.lat, p.lng])
         );
@@ -1111,7 +1181,6 @@
     const activeFilters = new Set();
     const anomalyTypeNames = [...new Set(ANOMALIES.map(a => a.type))];
 
-    // Build filter chips
     anomalyTypeNames.forEach(type => {
       const style = ANOMALY_TYPES[type];
       const chip = document.createElement('div');
@@ -1135,7 +1204,6 @@
 
     function applyAnomalyFilters() {
       const showAll = activeFilters.size === 0;
-      // Filter table rows
       document.querySelectorAll('#anomalyTable tbody tr').forEach(tr => {
         if (showAll || activeFilters.has(tr.dataset.type)) {
           tr.classList.remove('hidden');
@@ -1143,7 +1211,6 @@
           tr.classList.add('hidden');
         }
       });
-      // Filter all map layers per anomaly
       ANOMALIES.forEach(anomaly => {
         const layers = anomalyLayers[anomaly.id] || [];
         const visible = showAll || activeFilters.has(anomaly.type);
@@ -1203,7 +1270,6 @@
       progressFill.style.width = (index / (TRAJECTORY.length - 1) * 100) + '%';
       progressInput.value = index;
 
-      // Highlight active task
       const timeMin = parseInt(p.timestamp.slice(0, 2)) * 60 + parseInt(p.timestamp.slice(3, 5));
       document.querySelectorAll('.task-item').forEach((el, idx) => {
         const task = TASKS[idx];
@@ -1275,12 +1341,10 @@
       }
     });
 
-    // Initialize
     updateStatus(0);
 
     } // end initApp()
 
-    // Kick off async OSRM routing → then initApp()
     initTrajectory();
   </script>
 </body>
