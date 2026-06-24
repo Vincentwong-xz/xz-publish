@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>清扫报告 - 车辆轨迹结合 Web</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
   <style>
     * { box-sizing: border-box; }
     html, body {
@@ -705,6 +706,7 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
   <script>
     // ===================== Mock Data =====================
     const CENTER = [23.0965, 113.4285];
@@ -736,185 +738,56 @@
       '重复清扫': { color: '#22c55e', icon: '↻', bg: 'rgba(34,197,94,0.15)' }
     };
 
-    // Bio Island road waypoints — follows actual island shape & road layout
-    // Island: oval ~1.8km N-S × 0.8km E-W, center ~23.0965, 113.4285
-    // Main roads: 螺旋大道 (perimeter loop), 星汉大道 (N-S spine),
-    //             寰宇一路/二路/三路 (E-W cross streets)
-    const ROAD_WAYPOINTS = [
-      // ── Start: south parking area ──
-      [23.0918, 113.4258],
-
-      // ── 星汉大道 (west side, heading north) ──
-      [23.0928, 113.4260],
-      [23.0940, 113.4263],
-      [23.0952, 113.4265],
-      [23.0964, 113.4267],
-      [23.0976, 113.4269],
-      [23.0988, 113.4271],
-
-      // ── 螺旋大道 northwest curve ──
-      [23.0998, 113.4275],
-      [23.1004, 113.4280],
-      [23.1006, 113.4286],
-
-      // ── 螺旋大道 northeast curve ──
-      [23.1004, 113.4292],
-      [23.0998, 113.4297],
-      [23.0992, 113.4301],
-
-      // ── 螺旋大道 east side, heading south ──
-      [23.0984, 113.4306],
-      [23.0972, 113.4309],
-      [23.0960, 113.4311],
-      [23.0948, 113.4309],
-      [23.0936, 113.4305],
-
-      // ── 螺旋大道 southeast curve ──
-      [23.0928, 113.4300],
-      [23.0922, 113.4294],
-      [23.0918, 113.4288],
-
-      // ── 螺旋大道 southwest curve, back to start area ──
-      [23.0916, 113.4280],
-      [23.0918, 113.4272],
-
-      // ── Turn onto 寰宇三路 (south cross street, heading east) ──
-      [23.0925, 113.4270],
-      [23.0930, 113.4278],
-      [23.0932, 113.4286],
-      [23.0930, 113.4294],
-
-      // ── South onto 星汉大道 east branch ──
-      [23.0924, 113.4298],
-      [23.0920, 113.4292],
-      [23.0918, 113.4284],
-      [23.0920, 113.4276],
-      [23.0925, 113.4268],
-
-      // ── North on 星汉大道 (west side, 2nd pass) ──
-      [23.0936, 113.4268],
-      [23.0948, 113.4269],
-
-      // ── Turn onto 寰宇二路 (mid cross street, heading east) ──
-      [23.0950, 113.4272],
-      [23.0950, 113.4280],
-      [23.0950, 113.4288],
-      [23.0950, 113.4296],
-      [23.0952, 113.4304],
-
-      // ── North on 螺旋大道 east side ──
-      [23.0960, 113.4306],
-      [23.0972, 113.4304],
-      [23.0980, 113.4300],
-
-      // ── Turn onto 寰宇一路 (north cross street, heading west) ──
-      [23.0982, 113.4292],
-      [23.0982, 113.4284],
-      [23.0982, 113.4276],
-      [23.0980, 113.4270],
-
-      // ── South on 星汉大道 (west side, 3rd pass) ──
-      [23.0972, 113.4268],
-      [23.0960, 113.4266],
-      [23.0948, 113.4265],
-      [23.0936, 113.4263],
-
-      // ── 寰宇三路 again heading east (south) ──
-      [23.0932, 113.4270],
-      [23.0932, 113.4280],
-      [23.0932, 113.4290],
-
-      // ── South on 螺旋大道 ──
-      [23.0926, 113.4296],
-      [23.0920, 113.4290],
-      [23.0918, 113.4282],
-      [23.0920, 113.4274],
-
-      // ── Final: north on 星汉大道 to center ──
-      [23.0932, 113.4272],
-      [23.0944, 113.4274],
-      [23.0956, 113.4275],
-      [23.0968, 113.4277],
-      [23.0978, 113.4278],
-      [23.0986, 113.4280],
-
-      // ── Return to parking ──
-      [23.0980, 113.4272],
-      [23.0968, 113.4268],
-      [23.0952, 113.4264],
-      [23.0936, 113.4260],
-      [23.0918, 113.4258]
+    // Key waypoints for the cleaning route on Bio Island
+    // OSRM will compute real road paths between these; fallback to straight lines
+    const ROUTE_WAYPOINTS = [
+      [23.0918, 113.4258],   // south parking
+      [23.0988, 113.4271],   // north on 星汉大道
+      [23.1006, 113.4286],   // 螺旋大道 north end
+      [23.0984, 113.4306],   // 螺旋大道 east side
+      [23.0936, 113.4305],   // 螺旋大道 south-east
+      [23.0916, 113.4280],   // 螺旋大道 south-west
+      [23.0930, 113.4294],   // 寰宇三路 east
+      [23.0920, 113.4276],   // back to 星汉大道
+      [23.0950, 113.4296],   // 寰宇二路 east
+      [23.0980, 113.4300],   // 螺旋大道 east upper
+      [23.0982, 113.4276],   // 寰宇一路 west
+      [23.0936, 113.4263],   // 星汉大道 south
+      [23.0932, 113.4290],   // 寰宇三路 mid
+      [23.0918, 113.4274],   // 螺旋大道 south
+      [23.0986, 113.4280],   // center north
+      [23.0918, 113.4258]    // return parking
     ];
 
-    function interpolateWaypoints(waypoints, totalPoints) {
+    const modeSequence = [
+      { mode: 'idle',      count: 15 },
+      { mode: 'manual',    count: 20 },
+      { mode: 'fullSweep', count: 85 },
+      { mode: 'wetSweep',  count: 65 },
+      { mode: 'fullWash',  count: 45 },
+      { mode: 'hedge',     count: 55 },
+      { mode: 'rearSpray', count: 45 },
+      { mode: 'fullSweep', count: 75 },
+      { mode: 'manual',    count: 25 },
+      { mode: 'idle',      count: 15 }
+    ];
+
+    function buildTrajectoryFromCoords(coords) {
       const points = [];
-      const segmentLengths = [];
-      let totalLength = 0;
-      for (let i = 0; i < waypoints.length - 1; i++) {
-        const [lat1, lng1] = waypoints[i];
-        const [lat2, lng2] = waypoints[i + 1];
-        const dx = lat2 - lat1;
-        const dy = lng2 - lng1;
-        const len = Math.sqrt(dx * dx + dy * dy);
-        segmentLengths.push(len);
-        totalLength += len;
-      }
-
-      const stepLen = totalLength / (totalPoints - 1);
-      let currentDist = 0;
-      let segmentIdx = 0;
-      let segmentProgress = 0;
-
-      for (let i = 0; i < totalPoints; i++) {
-        while (segmentIdx < segmentLengths.length && currentDist > segmentLengths[segmentIdx]) {
-          currentDist -= segmentLengths[segmentIdx];
-          segmentIdx++;
-          segmentProgress = 0;
-        }
-        if (segmentIdx >= segmentLengths.length) {
-          const last = waypoints[waypoints.length - 1];
-          points.push([last[0], last[1]]);
-          continue;
-        }
-        const [lat1, lng1] = waypoints[segmentIdx];
-        const [lat2, lng2] = waypoints[segmentIdx + 1];
-        const ratio = currentDist / segmentLengths[segmentIdx];
-        points.push([
-          lat1 + (lat2 - lat1) * ratio,
-          lng1 + (lng2 - lng1) * ratio
-        ]);
-        currentDist += stepLen;
-      }
-      return points;
-    }
-
-    function generateTrajectory() {
-      const roadPoints = interpolateWaypoints(ROAD_WAYPOINTS, 520);
-      const points = [];
-      let seconds = 6 * 3600; // 06:00
-      const modeSequence = [
-        { mode: 'idle',      count: 15 },
-        { mode: 'manual',    count: 20 },
-        { mode: 'fullSweep', count: 85 },
-        { mode: 'wetSweep',  count: 65 },
-        { mode: 'fullWash',  count: 45 },
-        { mode: 'hedge',     count: 55 },
-        { mode: 'rearSpray', count: 45 },
-        { mode: 'fullSweep', count: 75 },
-        { mode: 'manual',    count: 25 },
-        { mode: 'idle',      count: 15 }
-      ];
-
+      let seconds = 6 * 3600;
       let seqIndex = 0, inSeq = 0;
-      for (let i = 0; i < roadPoints.length; i++) {
+      const targetCount = 520;
+      // Resample coords to targetCount
+      const resampled = resampleCoords(coords, targetCount);
+
+      for (let i = 0; i < resampled.length; i++) {
         if (inSeq >= modeSequence[seqIndex].count) {
           seqIndex = (seqIndex + 1) % modeSequence.length;
           inSeq = 0;
         }
         const mode = modeSequence[seqIndex].mode;
         inSeq++;
-
-        const [lat, lng] = roadPoints[i];
+        const [lat, lng] = resampled[i];
         const speed = mode === 'idle' ? 0 : (mode === 'manual' ? 15 + Math.random() * 10 : 8 + Math.random() * 12);
         const timeStr = new Date(2026, 3, 22, 0, 0, seconds).toTimeString().slice(0, 8);
         points.push({ lat, lng, timestamp: timeStr, mode, speed, index: i });
@@ -923,7 +796,75 @@
       return points;
     }
 
-    const TRAJECTORY = generateTrajectory();
+    function resampleCoords(coords, count) {
+      if (coords.length < 2) return coords;
+      const segLens = [];
+      let total = 0;
+      for (let i = 1; i < coords.length; i++) {
+        const d = Math.sqrt(Math.pow(coords[i][0]-coords[i-1][0],2) + Math.pow(coords[i][1]-coords[i-1][1],2));
+        segLens.push(d);
+        total += d;
+      }
+      const step = total / (count - 1);
+      const result = [coords[0]];
+      let accum = 0, segIdx = 0;
+      for (let i = 1; i < count - 1; i++) {
+        const target = i * step;
+        while (segIdx < segLens.length - 1 && accum + segLens[segIdx] < target) {
+          accum += segLens[segIdx];
+          segIdx++;
+        }
+        const remain = target - accum;
+        const ratio = segLens[segIdx] > 0 ? remain / segLens[segIdx] : 0;
+        result.push([
+          coords[segIdx][0] + (coords[segIdx+1][0] - coords[segIdx][0]) * ratio,
+          coords[segIdx][1] + (coords[segIdx+1][1] - coords[segIdx][1]) * ratio
+        ]);
+      }
+      result.push(coords[coords.length - 1]);
+      return result;
+    }
+
+    // Static fallback coordinates (direct lines between waypoints)
+    function getStaticCoords() {
+      const coords = [];
+      for (let i = 0; i < ROUTE_WAYPOINTS.length - 1; i++) {
+        const [lat1, lng1] = ROUTE_WAYPOINTS[i];
+        const [lat2, lng2] = ROUTE_WAYPOINTS[i + 1];
+        const steps = 30;
+        for (let s = 0; s < steps; s++) {
+          const r = s / steps;
+          coords.push([lat1 + (lat2-lat1)*r, lng1 + (lng2-lng1)*r]);
+        }
+      }
+      coords.push(ROUTE_WAYPOINTS[ROUTE_WAYPOINTS.length - 1]);
+      return coords;
+    }
+
+    // Fetch OSRM route and build trajectory, then init the app
+    let TRAJECTORY = [];
+
+    async function initTrajectory() {
+      try {
+        // Build OSRM URL from waypoints (lng,lat format for OSRM)
+        const coordsParam = ROUTE_WAYPOINTS.map(p => `${p[1]},${p[0]}`).join(';');
+        const url = `https://router.project-osrm.org/route/v1/driving/${coordsParam}?overview=full&geometries=geojson`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+          const routeCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+          TRAJECTORY = buildTrajectoryFromCoords(routeCoords);
+          console.log(`OSRM route loaded: ${routeCoords.length} coords, ${TRAJECTORY.length} trajectory points`);
+        } else {
+          throw new Error('OSRM response not Ok');
+        }
+      } catch (e) {
+        console.warn('OSRM routing failed, using static fallback:', e.message);
+        const staticCoords = getStaticCoords();
+        TRAJECTORY = buildTrajectoryFromCoords(staticCoords);
+      }
+      initApp();
+    }
 
     const ANOMALIES = [
       { id: 1, type: '长停', index: 120, durationMin: 8, description: '路口红灯前长停 8 分钟' },
@@ -932,6 +873,9 @@
       { id: 4, type: '漏扫', index: 400, lengthM: 280, description: '约 280m 路段未覆盖清扫' },
       { id: 5, type: '重复清扫', index: 480, repeatCount: 3, description: '同一路段重复清扫 3 次' }
     ];
+
+    // ===================== App Initialization =====================
+    function initApp() {
 
     // ===================== Map Setup =====================
     const map = L.map('map', {
@@ -1333,6 +1277,11 @@
 
     // Initialize
     updateStatus(0);
+
+    } // end initApp()
+
+    // Kick off async OSRM routing → then initApp()
+    initTrajectory();
   </script>
 </body>
 </html>
